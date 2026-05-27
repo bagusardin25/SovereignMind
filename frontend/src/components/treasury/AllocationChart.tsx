@@ -51,7 +51,7 @@ export default function AllocationChart({
     <div className="flex flex-col items-center gap-6">
       {/* Chart */}
       <div className="relative" style={{ width: size, height: size }}>
-        <svg width={size} height={size} className="-rotate-90">
+        <svg width={size} height={size} className="-rotate-90" role="img" aria-label="Treasury allocation donut chart">
           {/* Background ring */}
           <circle
             cx={center}
@@ -73,7 +73,7 @@ export default function AllocationChart({
               strokeWidth={hoveredIndex === index ? strokeWidth + 4 : strokeWidth}
               strokeDasharray={`${dashLength} ${gapLength}`}
               strokeDashoffset={-offset}
-              strokeLinecap="round"
+              strokeLinecap="butt"
               className="donut-segment transition-all duration-300"
               style={{
                 filter: hoveredIndex === index ? `drop-shadow(0 0 8px ${holding.color}80)` : 'none',

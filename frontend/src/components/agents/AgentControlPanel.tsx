@@ -4,8 +4,8 @@
 // AgentControlPanel — Owner-only controls for agent management
 // ============================================================
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Play,
   Pause,
@@ -13,8 +13,10 @@ import {
   Target,
   RefreshCw,
   Shield,
+  Loader2,
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
+import { toast } from '@/components/ui/Toast';
 
 interface AgentControlPanelProps {
   currentObjective?: string | null;
@@ -25,6 +27,62 @@ export default function AgentControlPanel({
 }: AgentControlPanelProps) {
   const [objective, setObjective] = useState(currentObjective || '');
   const [isPaused, setIsPaused] = useState(false);
+  const [isRunningCycle, setIsRunningCycle] = useState(false);
+  const [isSettingObjective, setIsSettingObjective] = useState(false);
+  const [emergencyConfirm, setEmergencyConfirm] = useState(false);
+  const [emergencyTimer, setEmergencyTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Set Objective ────────────────────────────────────────
+  const handleSetObjective = useCallback(() => {
+    if (!objective.trim()) {
+      toast('Please enter a strategic objective', 'warning');
+      return;
+    }
+    setIsSettingObjective(true);
+    setTimeout(() => {
+      setIsSettingObjective(false);
+      toast('Objective updated successfully', 'success');
+    }, 800);
+  }, [objective]);
+
+  // ── Run Cycle ────────────────────────────────────────────
+  const handleRunCycle = useCallback(() => {
+    if (isRunningCycle) return;
+    setIsRunningCycle(true);
+    toast('Autonomous cycle initiated...', 'info');
+    setTimeout(() => {
+      setIsRunningCycle(false);
+      toast('Decision cycle completed', 'success');
+    }, 2000);
+  }, [isRunningCycle]);
+
+  // ── Pause / Resume ───────────────────────────────────────
+  const handleTogglePause = useCallback(() => {
+    const next = !isPaused;
+    setIsPaused(next);
+    toast(
+      next ? 'Agent operations paused' : 'Agent operations resumed',
+      next ? 'warning' : 'success'
+    );
+  }, [isPaused]);
+
+  // ── Emergency Stop (double-click confirm) ────────────────
+  const handleEmergencyStop = useCallback(() => {
+    if (!emergencyConfirm) {
+      setEmergencyConfirm(true);
+      toast('Click again to confirm Emergency Stop', 'warning');
+      const timer = setTimeout(() => {
+        setEmergencyConfirm(false);
+      }, 3000);
+      setEmergencyTimer(timer);
+      return;
+    }
+    // Confirmed
+    if (emergencyTimer) clearTimeout(emergencyTimer);
+    setEmergencyConfirm(false);
+    setIsPaused(true);
+    toast('Emergency Stop executed — all agents halted', 'error');
+  }, [emergencyConfirm, emergencyTimer]);
 
   return (
     <GlassCard glow="blue" padding="lg">
@@ -55,8 +113,22 @@ export default function AgentControlPanel({
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="px-4 py-2.5 rounded-xl bg-[--color-agent-ceo] text-white text-sm font-medium hover:bg-[--color-agent-ceo-light] transition-colors"
+            onClick={handleSetObjective}
+            disabled={isSettingObjective}
+            className="px-4 py-2.5 rounded-xl bg-[--color-agent-ceo] text-white text-sm font-medium hover:bg-[--color-agent-ceo-light] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
+            <AnimatePresence mode="wait">
+              {isSettingObjective ? (
+                <motion.span
+                  key="spinner"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <Loader2 size={14} className="animate-spin" />
+                </motion.span>
+              ) : null}
+            </AnimatePresence>
             Set
           </motion.button>
         </div>
@@ -67,16 +139,22 @@ export default function AgentControlPanel({
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[--color-success]/10 border border-[--color-success]/20 text-[--color-success] text-sm font-medium hover:bg-[--color-success]/20 transition-all"
+          onClick={handleRunCycle}
+          disabled={isRunningCycle}
+          className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[--color-success]/10 border border-[--color-success]/20 text-[--color-success] text-sm font-medium hover:bg-[--color-success]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <RefreshCw size={16} />
-          Run Cycle
+          {isRunningCycle ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <RefreshCw size={16} />
+          )}
+          {isRunningCycle ? 'Running...' : 'Run Cycle'}
         </motion.button>
 
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => setIsPaused(!isPaused)}
+          onClick={handleTogglePause}
           className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
             isPaused
               ? 'bg-[--color-success]/10 border border-[--color-success]/20 text-[--color-success] hover:bg-[--color-success]/20'
@@ -92,10 +170,15 @@ export default function AgentControlPanel({
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[--color-error]/10 border border-[--color-error]/30 text-[--color-error] text-sm font-bold hover:bg-[--color-error]/20 transition-all"
+        onClick={handleEmergencyStop}
+        className={`w-full mt-3 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+          emergencyConfirm
+            ? 'bg-[--color-error]/30 border-2 border-[--color-error] text-[--color-error] animate-pulse'
+            : 'bg-[--color-error]/10 border border-[--color-error]/30 text-[--color-error] hover:bg-[--color-error]/20'
+        }`}
       >
         <OctagonX size={16} />
-        Emergency Stop
+        {emergencyConfirm ? 'Click Again to Confirm' : 'Emergency Stop'}
       </motion.button>
     </GlassCard>
   );

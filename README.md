@@ -268,26 +268,6 @@ SovereignMind/
 
 ---
 
-## 🏆 Hackathon Info
-
-| Detail | Info |
-|--------|------|
-| **Hackathon** | Somnia Agentathon 2026 |
-| **Track** | Novel & High-Impact Agent-Driven Applications |
-| **Organized by** | Encode Club × Somnia Network |
-| **Duration** | May – June 2026 |
-
-### Judging Criteria Alignment
-
-| Criteria | Our Approach |
-|----------|-------------|
-| **Functionality** | Full autonomous loop on Somnia Testnet with verifiable on-chain transactions |
-| **Agent-First Design** | 100% built on Somnia native agent primitives — no off-chain servers |
-| **Innovation** | First C-suite metaphor abstraction over Somnia's native agents; uses all 3 base agents coordinatively |
-| **Autonomous Performance** | Zero human trigger after initial objective; BFT consensus-verified decisions |
-
----
-
 ## 👥 Team
 
 **Team SovereignMind**

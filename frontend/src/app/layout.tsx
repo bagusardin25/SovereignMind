@@ -50,7 +50,7 @@ export default function RootLayout({
             <Sidebar />
 
             {/* Main Content Area */}
-            <div className="flex-1 ml-[240px] flex flex-col overflow-hidden transition-all duration-300">
+            <div className="flex-1 ml-0 md:ml-[240px] flex flex-col overflow-hidden transition-all duration-300">
               <Header />
               <main className="flex-1 overflow-y-auto bg-grid-pattern">
                 {/* Decorative orbs */}

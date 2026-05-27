@@ -65,7 +65,17 @@ export default function DecisionCard({ decision, delay = 0 }: DecisionCardProps)
       {/* Main Content */}
       <div
         className="p-5 cursor-pointer"
+        role="button"
+        tabIndex={0}
+        aria-expanded={expanded}
+        aria-label={`${decision.agentRole} decision: ${decision.title}. ${outcome.label}. Confidence ${decision.confidenceScore}%`}
         onClick={() => setExpanded(!expanded)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setExpanded(!expanded);
+          }
+        }}
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">

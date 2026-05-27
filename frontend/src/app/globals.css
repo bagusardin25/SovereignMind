@@ -252,3 +252,20 @@ body {
 [data-rk] * {
   font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
 }
+
+/* ── Mobile Sidebar Overlay ──────────────────────────────── */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* ── Mobile Responsive ───────────────────────────────────── */
+@media (max-width: 767px) {
+  .bg-grid-pattern {
+    background-size: 24px 24px;
+  }
+}

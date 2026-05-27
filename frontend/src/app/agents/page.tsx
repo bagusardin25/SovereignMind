@@ -11,6 +11,7 @@ import GlassCard from '@/components/ui/GlassCard';
 import { mockAgents } from '@/lib/mock-data';
 import { AGENT_COLORS } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
+import { User, Landmark } from 'lucide-react';
 
 export default function AgentsPage() {
   const router = useRouter();
@@ -47,7 +48,7 @@ export default function AgentsPage() {
         <h3 className="text-lg font-semibold text-[--color-foreground] mb-6">
           Agent Interaction Flow
         </h3>
-        <div className="flex items-center justify-center gap-4 py-6">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 py-6">
           {/* Owner */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
@@ -55,18 +56,18 @@ export default function AgentsPage() {
             transition={{ duration: 0.5 }}
             className="flex flex-col items-center gap-2"
           >
-            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-[--color-border] flex items-center justify-center text-2xl">
-              👤
+            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-[--color-border] flex items-center justify-center">
+              <User size={28} className="text-[--color-muted-foreground]" />
             </div>
             <span className="text-xs font-medium text-[--color-muted-foreground]">Owner</span>
           </motion.div>
 
           {/* Arrow */}
           <motion.div
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 1, scaleX: 1 }}
+            initial={{ opacity: 0, scaleX: 0, scaleY: 0 }}
+            animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
             transition={{ duration: 0.3, delay: 0.2 }}
-            className="w-12 h-px bg-gradient-to-r from-[--color-muted] to-[--color-agent-ceo]"
+            className="w-px h-8 sm:w-12 sm:h-px bg-gradient-to-b sm:bg-gradient-to-r from-[--color-muted] to-[--color-agent-ceo]"
           />
 
           {/* CEO */}
@@ -93,23 +94,23 @@ export default function AgentsPage() {
           </motion.div>
 
           {/* Branching arrows */}
-          <div className="flex flex-col items-center gap-8">
+          <div className="flex flex-row sm:flex-col items-center gap-8">
             <motion.div
-              initial={{ opacity: 0, scaleX: 0 }}
-              animate={{ opacity: 1, scaleX: 1 }}
+              initial={{ opacity: 0, scaleX: 0, scaleY: 0 }}
+              animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
               transition={{ duration: 0.3, delay: 0.5 }}
-              className="w-12 h-px bg-gradient-to-r from-[--color-agent-ceo] to-[--color-agent-cfo]"
+              className="w-px h-8 sm:w-12 sm:h-px bg-gradient-to-b sm:bg-gradient-to-r from-[--color-agent-ceo] to-[--color-agent-cfo]"
             />
             <motion.div
-              initial={{ opacity: 0, scaleX: 0 }}
-              animate={{ opacity: 1, scaleX: 1 }}
+              initial={{ opacity: 0, scaleX: 0, scaleY: 0 }}
+              animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
               transition={{ duration: 0.3, delay: 0.6 }}
-              className="w-12 h-px bg-gradient-to-r from-[--color-agent-ceo] to-[--color-agent-cmo]"
+              className="w-px h-8 sm:w-12 sm:h-px bg-gradient-to-b sm:bg-gradient-to-r from-[--color-agent-ceo] to-[--color-agent-cmo]"
             />
           </div>
 
           {/* CFO & CMO */}
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-row sm:flex-col items-center gap-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -157,10 +158,10 @@ export default function AgentsPage() {
 
           {/* Arrow to Treasury */}
           <motion.div
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 1, scaleX: 1 }}
+            initial={{ opacity: 0, scaleX: 0, scaleY: 0 }}
+            animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
             transition={{ duration: 0.3, delay: 0.8 }}
-            className="w-12 h-px bg-gradient-to-r from-[--color-agent-cfo] to-[--color-success]"
+            className="w-px h-8 sm:w-12 sm:h-px bg-gradient-to-b sm:bg-gradient-to-r from-[--color-agent-cfo] to-[--color-success]"
           />
 
           {/* Treasury */}
@@ -170,10 +171,10 @@ export default function AgentsPage() {
             transition={{ duration: 0.5, delay: 0.9 }}
             className="flex flex-col items-center gap-2"
           >
-            <div className="w-16 h-16 rounded-2xl bg-[--color-success]/10 border-2 border-[--color-success]/30 flex items-center justify-center text-2xl"
+            <div className="w-16 h-16 rounded-2xl bg-[--color-success]/10 border-2 border-[--color-success]/30 flex items-center justify-center"
               style={{ boxShadow: '0 0 15px rgba(16, 185, 129, 0.2)' }}
             >
-              🏦
+              <Landmark size={28} className="text-[--color-success]" />
             </div>
             <span className="text-xs font-medium text-[--color-success]">
               Treasury Vault

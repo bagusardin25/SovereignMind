@@ -4,7 +4,7 @@
 // Decisions Page — Full decision audit trail
 // ============================================================
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Filter,
@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import DecisionCard from '@/components/decisions/DecisionCard';
+import Skeleton, { SkeletonCard, SkeletonDecision } from '@/components/ui/Skeleton';
 import { mockDecisions } from '@/lib/mock-data';
 import { AGENT_COLORS } from '@/lib/constants';
 import type { AgentRole, DecisionType } from '@/lib/types';
@@ -27,6 +28,12 @@ export default function DecisionsPage() {
   const [filterRole, setFilterRole] = useState<FilterRole>('ALL');
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   const filteredDecisions = useMemo(() => {
     return mockDecisions.filter((d) => {
@@ -57,6 +64,47 @@ export default function DecisionsPage() {
     { value: 'alert', label: 'Alert' },
     { value: 'market_signal', label: 'Market Signal' },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {/* Page Title Skeleton */}
+        <div>
+          <Skeleton width="200px" height="28px" className="mb-2" />
+          <Skeleton width="360px" height="14px" />
+        </div>
+
+        {/* Stats Bar Skeleton */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="glass rounded-2xl p-4 space-y-2">
+              <Skeleton width="80px" height="12px" />
+              <Skeleton width="60px" height="24px" />
+            </div>
+          ))}
+        </div>
+
+        {/* Filters Skeleton */}
+        <div className="glass rounded-2xl p-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <Skeleton width="240px" height="36px" className="rounded-xl" />
+            <div className="flex items-center gap-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} width="72px" height="28px" className="rounded-lg" />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Decision List Skeleton */}
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonDecision key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

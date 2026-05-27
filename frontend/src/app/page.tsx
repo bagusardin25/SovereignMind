@@ -4,6 +4,7 @@
 // Dashboard — Main overview page
 // ============================================================
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Wallet,
@@ -18,6 +19,8 @@ import GlassCard from '@/components/ui/GlassCard';
 import AgentCard from '@/components/agents/AgentCard';
 import AllocationChart from '@/components/treasury/AllocationChart';
 import DecisionCard from '@/components/decisions/DecisionCard';
+import { SkeletonCard, SkeletonMetric } from '@/components/ui/Skeleton';
+import Skeleton from '@/components/ui/Skeleton';
 import {
   mockAgents,
   mockTreasury,
@@ -30,6 +33,74 @@ import Link from 'next/link';
 
 export default function DashboardPage() {
   const health = mockSystemHealth;
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {/* Page Title Skeleton */}
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton width="160px" height="28px" className="mb-2" />
+            <Skeleton width="300px" height="14px" />
+          </div>
+          <Skeleton width="140px" height="14px" />
+        </div>
+
+        {/* Metrics Row Skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonMetric key={i} />
+          ))}
+        </div>
+
+        {/* Agent Status Skeleton */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <Skeleton width="140px" height="20px" />
+            <Skeleton width="80px" height="14px" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        </div>
+
+        {/* Decisions + Treasury Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-3">
+            <div className="flex items-center justify-between mb-4">
+              <Skeleton width="160px" height="20px" />
+              <Skeleton width="80px" height="14px" />
+            </div>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <Skeleton width="160px" height="20px" />
+              <Skeleton width="60px" height="14px" />
+            </div>
+            <div className="glass rounded-2xl p-6 flex flex-col items-center gap-4">
+              <Skeleton width="200px" height="200px" className="rounded-full" />
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2 w-full">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} width="100%" height="14px" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -20,6 +20,7 @@ import AllocationChart from '@/components/treasury/AllocationChart';
 import TransactionList from '@/components/treasury/TransactionList';
 import { mockTreasury, mockTransactions } from '@/lib/mock-data';
 import { formatUSD, formatCompact } from '@/lib/constants';
+import { toast } from '@/components/ui/Toast';
 
 export default function TreasuryPage() {
   const treasury = mockTreasury;
@@ -37,10 +38,18 @@ export default function TreasuryPage() {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          onClick={() => toast('Deposit functionality will be available after contract deployment', 'info')}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[--color-success]/10 border border-[--color-success]/20 text-[--color-success] text-sm font-medium hover:bg-[--color-success]/20 transition-all"
+          style={{ animation: 'subtle-pulse 3s ease-in-out infinite' }}
         >
           <ArrowDownToLine size={16} />
           Deposit
+          <style>{`
+            @keyframes subtle-pulse {
+              0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+              50% { box-shadow: 0 0 12px 2px rgba(16, 185, 129, 0.15); }
+            }
+          `}</style>
         </motion.button>
       </div>
 

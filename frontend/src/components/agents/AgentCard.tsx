@@ -56,6 +56,17 @@ export default function AgentCard({
             : undefined,
       }}
       onClick={onClick}
+      {...(onClick ? {
+        role: 'button' as const,
+        tabIndex: 0,
+        'aria-label': `${agent.role} Agent: ${agent.name}. Status: ${agent.status}`,
+        onKeyDown: (e: React.KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick();
+          }
+        },
+      } : {})}
     >
       {/* Top gradient line */}
       <div
