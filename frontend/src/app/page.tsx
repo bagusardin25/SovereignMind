@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Spline from '@splinetool/react-spline';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
@@ -49,6 +49,15 @@ const faqs = [
 export default function LandingPage() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [isSplineLoaded, setIsSplineLoaded] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const { scrollYProgress } = useScroll();
   const yParallaxText = useTransform(scrollYProgress, [0, 1], [0, 400]);
@@ -56,7 +65,7 @@ export default function LandingPage() {
   return (
     <>
       {/* TopNavBar */}
-      <nav className="absolute top-0 w-full z-50 flex justify-between items-center px-8 md:px-[var(--spacing-margin-page)] py-6 bg-transparent">
+      <nav className={`fixed top-0 w-full z-50 flex justify-between items-center px-8 md:px-[var(--spacing-margin-page)] transition-all duration-300 ${isScrolled ? 'py-4 bg-[#0f141b]/80 backdrop-blur-md border-b border-white/10 shadow-lg' : 'py-6 bg-transparent border-b border-transparent'}`}>
         {/* Left Links */}
         <div className="flex items-center gap-8 w-1/3">
           <Link href="/dashboard" className="bg-[var(--color-primary)] text-[var(--color-on-primary)] font-label-caps text-[12px] px-6 py-2 rounded-full hover:opacity-90 transition-all shadow-[0_0_15px_rgba(207,188,255,0.4)]">
