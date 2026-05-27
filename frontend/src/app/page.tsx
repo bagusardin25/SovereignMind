@@ -126,10 +126,12 @@ export default function LandingPage() {
             <p className="font-body-md text-[16px] text-[var(--color-on-surface)]/70 mb-8 leading-relaxed relative pl-4 border-l border-[var(--color-primary)]/50">
               The first fully on-chain autonomous Venture Guild powered by Somnia Agentic L1 native primitives.
             </p>
-            <Link href="/dashboard" className="w-full">
-              <button className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-label-caps text-[14px] px-8 py-4 rounded-xl hover:opacity-90 hover:scale-[1.02] transition-all shadow-[0_0_20px_rgba(207,188,255,0.4)] flex justify-between items-center group">
-                ENTER DASHBOARD
-                <div className="w-8 h-8 rounded-full bg-black/20 flex items-center justify-center group-hover:bg-black/30 transition-colors">
+            <Link href="/dashboard" className="w-full relative group block">
+              {/* Animated glow ring behind the button */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-500 group-hover:duration-200 animate-pulse"></div>
+              <button className="relative w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-label-caps text-[14px] px-8 py-4 rounded-xl hover:scale-[1.02] transition-all duration-300 shadow-[0_0_20px_rgba(207,188,255,0.3)] hover:shadow-[0_0_40px_rgba(207,188,255,0.6)] flex justify-between items-center group-hover:bg-[#d8c8ff]">
+                <span className="font-bold tracking-widest z-10">ENTER DASHBOARD</span>
+                <div className="w-8 h-8 rounded-full bg-[var(--color-on-primary)]/10 flex items-center justify-center group-hover:bg-[var(--color-on-primary)]/20 group-hover:rotate-45 transition-all duration-300 z-10">
                   <ArrowUpRight size={16} />
                 </div>
               </button>
@@ -169,14 +171,14 @@ export default function LandingPage() {
             <LiveStatsGrid />
 
             {/* Bottom Right: Agent Pills */}
-            <div className="flex flex-col items-end gap-3 mt-auto mb-20">
-              <div className="border border-white/20 rounded-full px-5 py-2 text-[12px] font-body-md text-white/60 hover:bg-white/10 hover:text-white transition-colors cursor-pointer backdrop-blur-sm hover:border-white/40 mr-12 shadow-lg shadow-black">
+            <div className="flex flex-col items-end gap-4 mt-auto pt-16 mb-20">
+              <div className="group border border-white/10 rounded-full px-6 py-2.5 text-[12px] font-body-md text-white/50 hover:bg-[var(--color-agent-ceo)]/10 hover:text-[var(--color-agent-ceo)] hover:border-[var(--color-agent-ceo)]/50 transition-all duration-300 cursor-pointer backdrop-blur-sm mr-16 shadow-lg shadow-black hover:-translate-x-2">
                 CEO_Prime
               </div>
-              <div className="border border-white/20 rounded-full px-5 py-2 text-[12px] font-body-md text-white/60 hover:bg-white/10 hover:text-white transition-colors cursor-pointer backdrop-blur-sm hover:border-white/40 mr-6 shadow-lg shadow-black">
+              <div className="group border border-white/10 rounded-full px-6 py-2.5 text-[12px] font-body-md text-white/50 hover:bg-[var(--color-agent-cfo)]/10 hover:text-[var(--color-agent-cfo)] hover:border-[var(--color-agent-cfo)]/50 transition-all duration-300 cursor-pointer backdrop-blur-sm mr-8 shadow-lg shadow-black hover:-translate-x-2">
                 CFO_Quant
               </div>
-              <div className="border border-white/20 rounded-full px-5 py-2 text-[12px] font-body-md text-white/60 hover:bg-white/10 hover:text-white transition-colors cursor-pointer backdrop-blur-sm hover:border-white/40 shadow-lg shadow-black">
+              <div className="group border border-white/10 rounded-full px-6 py-2.5 text-[12px] font-body-md text-white/50 hover:bg-[var(--color-agent-cmo)]/10 hover:text-[var(--color-agent-cmo)] hover:border-[var(--color-agent-cmo)]/50 transition-all duration-300 cursor-pointer backdrop-blur-sm shadow-lg shadow-black hover:-translate-x-2">
                 CMO_Pulse
               </div>
             </div>
