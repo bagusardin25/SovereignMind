@@ -29,11 +29,12 @@ export default function MetricCard({
   const isNegative = change !== undefined && change < 0;
   const isNeutral = change !== undefined && change === 0;
 
-  const colorToGlowMap: Record<string, 'blue' | 'violet' | 'cyan' | 'green' | 'none'> = {
+  const colorToGlowMap: Record<string, 'blue' | 'violet' | 'cyan' | 'green' | 'primary' | 'none'> = {
     '#3b82f6': 'blue',
     '#8b5cf6': 'violet',
     '#06b6d4': 'cyan',
     '#10b981': 'green',
+    '#cfbcff': 'primary', // Added Web3 primary color
   };
   const glowType = colorToGlowMap[accentColor] || 'none';
 

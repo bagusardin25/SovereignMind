@@ -11,7 +11,7 @@ interface GlassCardProps {
   children: ReactNode;
   className?: string;
   hover?: boolean;
-  glow?: 'blue' | 'violet' | 'cyan' | 'green' | 'none';
+  glow?: 'blue' | 'violet' | 'cyan' | 'green' | 'primary' | 'none';
   padding?: 'sm' | 'md' | 'lg';
   animate?: boolean;
   onClick?: () => void;
@@ -22,6 +22,7 @@ const glowClasses = {
   violet: 'glow-violet',
   cyan: 'glow-cyan',
   green: 'glow-green',
+  primary: 'glow-primary',
   none: '',
 };
 

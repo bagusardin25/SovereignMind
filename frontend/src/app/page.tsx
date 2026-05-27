@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import Spline from '@splinetool/react-spline';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+
+const SplineScene = lazy(() => import('@/components/landing/SplineScene'));
 import {
   ChevronDown,
   ArrowUpRight,
@@ -182,11 +183,16 @@ export default function LandingPage() {
           {/* Central 3D Scene */}
           <div className={`absolute inset-0 z-[5] pointer-events-auto flex items-center justify-center transition-opacity duration-1000 ease-in-out ${isSplineLoaded ? 'opacity-100' : 'opacity-0'}`}>
             <div className="w-full h-full scale-[0.6] -translate-y-16 md:scale-100 md:translate-y-0 transition-transform duration-700 origin-center">
-              <Spline
-                scene="https://prod.spline.design/E8nQAOG1DhoU-x4w/scene.splinecode"
-                className="w-full h-full"
-                onLoad={() => setIsSplineLoaded(true)}
-              />
+              <Suspense fallback={
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--color-primary)]/30 to-[var(--color-tertiary)]/30 animate-pulse" />
+                    <p className="text-sm text-white/40 font-body-md animate-pulse">Loading 3D Scene...</p>
+                  </div>
+                </div>
+              }>
+                <SplineScene onLoad={() => setIsSplineLoaded(true)} />
+              </Suspense>
             </div>
           </div>
 
@@ -526,10 +532,12 @@ export default function LandingPage() {
           {faqs.map((faq, index) => {
             const isOpen = openFaqIndex === index;
             return (
-              <div 
+              <button 
                 key={index}
+                type="button"
                 onClick={() => setOpenFaqIndex(isOpen ? null : index)}
-                className={`border ${isOpen ? 'border-[var(--color-primary)]/30 bg-[var(--color-surface-container)]' : 'border-white/10 bg-transparent hover:border-white/30'} rounded-[30px] p-6 md:p-8 cursor-pointer transition-all duration-300`}
+                aria-expanded={isOpen}
+                className={`w-full text-left border ${isOpen ? 'border-[var(--color-primary)]/30 bg-[var(--color-surface-container)]' : 'border-white/10 bg-transparent hover:border-white/30'} rounded-[30px] p-6 md:p-8 cursor-pointer transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/50`}
               >
                 <div className="flex justify-between items-center w-full">
                   <h3 className="font-body-lg text-[18px] md:text-[22px] text-[var(--color-on-surface)]/90">
@@ -540,6 +548,8 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <div 
+                  role="region"
+                  aria-hidden={!isOpen}
                   className={`grid transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100 mt-6' : 'grid-rows-[0fr] opacity-0 mt-0'}`}
                 >
                   <div className="overflow-hidden">
@@ -548,7 +558,7 @@ export default function LandingPage() {
                     </p>
                   </div>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

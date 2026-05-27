@@ -110,10 +110,17 @@ export default function AgentCard({
 
         {/* Current Task */}
         {agent.currentTask && !compact && (
-          <div className="mb-4 p-3 rounded-xl bg-white/[0.02] border border-[--color-border]">
-            <p className="text-xs text-[--color-muted] mb-1">Current Task</p>
-            <p className="text-sm text-[--color-foreground] leading-relaxed line-clamp-2">
+          <div className="mb-4 p-3 rounded-xl bg-black/40 border border-white/5 relative overflow-hidden group">
+            {isProcessing && (
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" style={{ backgroundImage: `linear-gradient(to right, transparent, ${colors.primary}20, transparent)` }} />
+            )}
+            <p className="text-[10px] text-[--color-muted] mb-1 font-mono uppercase tracking-wider flex items-center gap-2">
+              Current Operation
+              {isProcessing && <span className="w-1.5 h-1.5 rounded-full bg-current animate-ping" style={{ color: colors.primary }} />}
+            </p>
+            <p className="text-sm leading-relaxed line-clamp-2 font-mono mt-1" style={{ color: isProcessing ? colors.secondary : 'var(--color-foreground)' }}>
               {agent.currentTask}
+              {isProcessing && <span className="inline-block w-1.5 h-3.5 ml-1 align-middle bg-current animate-pulse" />}
             </p>
           </div>
         )}

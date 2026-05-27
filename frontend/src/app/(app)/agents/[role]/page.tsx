@@ -4,7 +4,7 @@
 // Agent Detail Page — Individual agent deep-dive
 // ============================================================
 
-import { use } from 'react';
+import { use, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft,
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import GlassCard from '@/components/ui/GlassCard';
+import Skeleton, { SkeletonCard, SkeletonMetric } from '@/components/ui/Skeleton';
 import StatusBadge from '@/components/ui/StatusBadge';
 import DecisionCard from '@/components/decisions/DecisionCard';
 import { mockAgents, mockDecisions, mockActivity } from '@/lib/mock-data';
@@ -49,6 +50,12 @@ export default function AgentDetailPage({
   const colors = AGENT_COLORS[role] || AGENT_COLORS.CEO;
   const agentDecisions = mockDecisions.filter((d) => d.agentRole === role);
   const agentActivity = mockActivity.filter((a) => a.agentRole === role);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (!agent) {
     return (
@@ -58,11 +65,80 @@ export default function AgentDetailPage({
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {/* Back Link Skeleton */}
+        <Skeleton width="120px" height="14px" />
+
+        {/* Agent Header Skeleton */}
+        <div className="glass rounded-2xl overflow-hidden">
+          <Skeleton width="100%" height="6px" />
+          <div className="p-8">
+            <div className="flex items-start gap-6">
+              <Skeleton width="80px" height="80px" className="rounded-2xl flex-shrink-0" />
+              <div className="flex-1 space-y-3">
+                <div className="flex items-center gap-3">
+                  <Skeleton width="160px" height="28px" />
+                  <Skeleton width="64px" height="22px" className="rounded-full" />
+                </div>
+                <Skeleton width="120px" height="14px" />
+                <Skeleton width="80%" height="14px" />
+              </div>
+              <div className="flex-shrink-0 space-y-2">
+                <Skeleton width="60px" height="12px" />
+                <Skeleton width="140px" height="20px" className="rounded" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Grid Skeleton */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonMetric key={i} />
+          ))}
+        </div>
+
+        {/* Objective & Task Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+
+        {/* Decisions & Activity Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-3">
+            <Skeleton width="160px" height="20px" className="mb-4" />
+            {Array.from({ length: 3 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+          <div>
+            <Skeleton width="140px" height="20px" className="mb-4" />
+            <div className="glass rounded-2xl p-6 space-y-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <Skeleton width="8px" height="8px" className="rounded-full mt-1.5" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton width="80%" height="14px" />
+                    <Skeleton width="60%" height="12px" />
+                    <Skeleton width="40%" height="10px" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Back Link */}
       <Link
-        href="/dashboard/agents"
+        href="/agents"
         className="inline-flex items-center gap-2 text-sm text-[--color-muted-foreground] hover:text-[--color-foreground] transition-colors"
       >
         <ArrowLeft size={16} />

@@ -82,6 +82,7 @@ export const mockHoldings: TokenHolding[] = [
     change24h: 5.2,
     allocation: 35.8,
     color: '#8b5cf6',
+    iconUrl: 'https://somnia.network/favicon.ico',
   },
   {
     symbol: 'ETH',
@@ -92,6 +93,7 @@ export const mockHoldings: TokenHolding[] = [
     change24h: -1.3,
     allocation: 19.0,
     color: '#627eea',
+    iconUrl: 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
   },
   {
     symbol: 'USDC',
@@ -102,6 +104,7 @@ export const mockHoldings: TokenHolding[] = [
     change24h: 0.01,
     allocation: 29.0,
     color: '#2775ca',
+    iconUrl: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png',
   },
   {
     symbol: 'WBTC',
@@ -112,6 +115,7 @@ export const mockHoldings: TokenHolding[] = [
     change24h: 2.8,
     allocation: 9.5,
     color: '#f7931a',
+    iconUrl: 'https://cryptologos.cc/logos/wrapped-bitcoin-wbtc-logo.png',
   },
   {
     symbol: 'LINK',
@@ -122,6 +126,7 @@ export const mockHoldings: TokenHolding[] = [
     change24h: -0.7,
     allocation: 6.7,
     color: '#375bd2',
+    iconUrl: 'https://cryptologos.cc/logos/chainlink-link-logo.png',
   },
 ];
 

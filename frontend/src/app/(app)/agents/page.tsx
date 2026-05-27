@@ -4,10 +4,12 @@
 // Agents Overview Page
 // ============================================================
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import AgentCard from '@/components/agents/AgentCard';
 import AgentControlPanel from '@/components/agents/AgentControlPanel';
 import GlassCard from '@/components/ui/GlassCard';
+import Skeleton, { SkeletonCard } from '@/components/ui/Skeleton';
 import { mockAgents } from '@/lib/mock-data';
 import { AGENT_COLORS } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
@@ -15,6 +17,51 @@ import { User, Landmark } from 'lucide-react';
 
 export default function AgentsPage() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {/* Page Title Skeleton */}
+        <div>
+          <Skeleton width="160px" height="28px" className="mb-2" />
+          <Skeleton width="320px" height="14px" />
+        </div>
+
+        {/* Agent Control Panel Skeleton */}
+        <div className="glass rounded-2xl p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <Skeleton width="180px" height="16px" />
+            <Skeleton width="100px" height="36px" className="rounded-xl" />
+          </div>
+          <Skeleton width="100%" height="40px" className="rounded-xl" />
+        </div>
+
+        {/* Agent Grid Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+
+        {/* Architecture Diagram Skeleton */}
+        <div className="glass rounded-2xl p-6">
+          <Skeleton width="200px" height="20px" className="mb-6" />
+          <div className="flex items-center justify-center gap-4 py-6">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} width="64px" height="64px" className="rounded-2xl" />
+            ))}
+          </div>
+          <Skeleton width="100%" height="48px" className="rounded-xl mt-6" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -38,7 +85,7 @@ export default function AgentsPage() {
             key={agent.id}
             agent={agent}
             delay={index * 0.15}
-            onClick={() => router.push(`/dashboard/agents/${agent.role.toLowerCase()}`)}
+            onClick={() => router.push(`/agents/${agent.role.toLowerCase()}`)}
           />
         ))}
       </div>

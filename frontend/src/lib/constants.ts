@@ -79,9 +79,9 @@ export const STATUS_COLORS = {
 // Navigation Items
 export const NAV_ITEMS = [
   { label: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
-  { label: 'Agents', href: '/dashboard/agents', icon: 'Bot' },
-  { label: 'Treasury', href: '/dashboard/treasury', icon: 'Landmark' },
-  { label: 'Decisions', href: '/dashboard/decisions', icon: 'ScrollText' },
+  { label: 'Agents', href: '/agents', icon: 'Bot' },
+  { label: 'Treasury', href: '/treasury', icon: 'Landmark' },
+  { label: 'Decisions', href: '/decisions', icon: 'ScrollText' },
 ] as const;
 
 // Truncate address for display

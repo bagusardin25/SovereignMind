@@ -201,21 +201,24 @@ export default function DecisionCard({ decision, delay = 0 }: DecisionCardProps)
 
               {/* LLM Reasoning */}
               {decision.llmReasoning && (
-                <div className="p-3 rounded-xl bg-white/[0.02] border border-[--color-border]">
-                  <p className="text-xs font-medium text-[--color-muted] mb-1.5">
-                    🧠 LLM Reasoning
+                <div className="p-4 rounded-xl bg-[#0a0a0a] border border-white/5 shadow-inner">
+                  <p className="text-[10px] font-mono uppercase tracking-widest mb-2 flex items-center gap-2" style={{ color: colors.primary }}>
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: colors.primary, boxShadow: `0 0 8px ${colors.primary}` }} />
+                    LLM Inference Log
                   </p>
-                  <p className="text-sm text-[--color-muted-foreground] leading-relaxed italic">
-                    &ldquo;{decision.llmReasoning}&rdquo;
+                  <p className="text-[13px] text-[--color-foreground] leading-relaxed font-mono opacity-90 border-l-2 pl-3" style={{ borderColor: `${colors.primary}40` }}>
+                    {decision.llmReasoning}
                   </p>
                 </div>
               )}
 
               {/* Input Data */}
               {decision.inputData && (
-                <div>
-                  <p className="text-xs font-medium text-[--color-muted] mb-1.5">Input Data</p>
-                  <code className="block text-xs text-[--color-agent-cmo-light] bg-white/[0.03] p-2.5 rounded-lg font-mono">
+                <div className="p-4 rounded-xl bg-[#0a0a0a] border border-white/5 shadow-inner mt-3">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-[--color-muted] mb-2">
+                    Raw Input Payload
+                  </p>
+                  <code className="block text-[11px] leading-relaxed p-3 rounded bg-black/60 font-mono overflow-x-auto whitespace-pre-wrap break-words border border-white/5" style={{ color: colors.secondary }}>
                     {decision.inputData}
                   </code>
                 </div>

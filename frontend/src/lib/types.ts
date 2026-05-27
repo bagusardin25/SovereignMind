@@ -55,6 +55,7 @@ export interface TokenHolding {
   change24h: number; // percentage
   allocation: number; // percentage
   color: string;
+  iconUrl?: string;
 }
 
 export interface TreasuryState {

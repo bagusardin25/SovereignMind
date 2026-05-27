@@ -99,7 +99,10 @@ export default function AllocationChart({
           >
             {hoveredHolding ? (
               <>
-                <p className="text-lg font-bold text-[--color-foreground]">
+                <p className="text-lg font-bold text-[--color-foreground] flex items-center justify-center gap-1.5">
+                  {hoveredHolding.iconUrl && (
+                    <img src={hoveredHolding.iconUrl} alt={hoveredHolding.symbol} className="w-4 h-4 rounded-full" />
+                  )}
                   {hoveredHolding.symbol}
                 </p>
                 <p className="text-xs text-[--color-muted-foreground]">
@@ -132,10 +135,14 @@ export default function AllocationChart({
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
           >
-            <div
-              className="w-3 h-3 rounded-full flex-shrink-0"
-              style={{ backgroundColor: holding.color }}
-            />
+            {holding.iconUrl ? (
+              <img src={holding.iconUrl} alt={holding.symbol} className="w-4 h-4 rounded-full flex-shrink-0" />
+            ) : (
+              <div
+                className="w-3 h-3 rounded-full flex-shrink-0"
+                style={{ backgroundColor: holding.color }}
+              />
+            )}
             <span className="text-sm text-[--color-foreground] font-medium">
               {holding.symbol}
             </span>

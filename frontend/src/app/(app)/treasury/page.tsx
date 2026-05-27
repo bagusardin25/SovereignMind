@@ -4,6 +4,7 @@
 // Treasury Page — Vault overview and management
 // ============================================================
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Wallet,
@@ -15,6 +16,7 @@ import {
   PieChart,
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
+import Skeleton, { SkeletonMetric, SkeletonTable } from '@/components/ui/Skeleton';
 import MetricCard from '@/components/ui/MetricCard';
 import AllocationChart from '@/components/treasury/AllocationChart';
 import TransactionList from '@/components/treasury/TransactionList';
@@ -24,6 +26,63 @@ import { toast } from '@/components/ui/Toast';
 
 export default function TreasuryPage() {
   const treasury = mockTreasury;
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {/* Page Title Skeleton */}
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton width="180px" height="28px" className="mb-2" />
+            <Skeleton width="340px" height="14px" />
+          </div>
+          <Skeleton width="100px" height="40px" className="rounded-xl" />
+        </div>
+
+        {/* Metrics Row Skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonMetric key={i} />
+          ))}
+        </div>
+
+        {/* Holdings Table + Allocation Chart Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <Skeleton width="140px" height="20px" className="mb-4" />
+            <div className="glass rounded-2xl p-6">
+              <SkeletonTable rows={4} />
+            </div>
+          </div>
+          <div>
+            <Skeleton width="160px" height="20px" className="mb-4" />
+            <div className="glass rounded-2xl p-6 flex flex-col items-center gap-4">
+              <Skeleton width="220px" height="220px" className="rounded-full" />
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2 w-full">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} width="100%" height="14px" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Transactions Skeleton */}
+        <div>
+          <Skeleton width="180px" height="20px" className="mb-4" />
+          <div className="glass rounded-2xl p-6">
+            <SkeletonTable rows={5} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -130,12 +189,20 @@ export default function TreasuryPage() {
                     >
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
-                          <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                            style={{ backgroundColor: holding.color }}
-                          >
-                            {holding.symbol.slice(0, 2)}
-                          </div>
+                          {holding.iconUrl ? (
+                            <img
+                              src={holding.iconUrl}
+                              alt={holding.symbol}
+                              className="w-8 h-8 rounded-full flex-shrink-0"
+                            />
+                          ) : (
+                            <div
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                              style={{ backgroundColor: holding.color }}
+                            >
+                              {holding.symbol.slice(0, 2)}
+                            </div>
+                          )}
                           <div>
                             <p className="text-sm font-medium text-[--color-foreground]">
                               {holding.symbol}

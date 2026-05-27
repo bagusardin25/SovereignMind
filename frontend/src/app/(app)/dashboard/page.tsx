@@ -125,21 +125,21 @@ export default function DashboardPage() {
           value={formatUSD(mockTreasury.totalValue)}
           change={mockTreasury.change24h}
           icon={<Wallet size={22} />}
-          accentColor="#3b82f6"
+          accentColor="#cfbcff"
           delay={0}
         />
         <MetricCard
           label="Active Agents"
           value={`${health.agentsOnline}/${health.totalAgents}`}
           icon={<Bot size={22} />}
-          accentColor="#8b5cf6"
+          accentColor="#3b82f6"
           delay={0.1}
         />
         <MetricCard
           label="Decisions Today"
           value={mockDecisions.filter(d => Date.now() - d.timestamp < 86400000).length.toString()}
           icon={<ScrollText size={22} />}
-          accentColor="#06b6d4"
+          accentColor="#8b5cf6"
           delay={0.2}
         />
         <MetricCard
@@ -156,7 +156,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-[--color-foreground]">Agent Status</h2>
           <Link
-            href="/dashboard/agents"
+            href="/agents"
             className="flex items-center gap-1 text-sm text-[--color-agent-ceo] hover:text-[--color-agent-ceo-light] transition-colors"
           >
             View all <ArrowRight size={14} />
@@ -180,7 +180,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-[--color-foreground]">Recent Decisions</h2>
             <Link
-              href="/dashboard/decisions"
+              href="/decisions"
               className="flex items-center gap-1 text-sm text-[--color-agent-ceo] hover:text-[--color-agent-ceo-light] transition-colors"
             >
               View all <ArrowRight size={14} />
@@ -202,7 +202,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-[--color-foreground]">Treasury Allocation</h2>
             <Link
-              href="/dashboard/treasury"
+              href="/treasury"
               className="flex items-center gap-1 text-sm text-[--color-agent-ceo] hover:text-[--color-agent-ceo-light] transition-colors"
             >
               Details <ArrowRight size={14} />
@@ -223,8 +223,8 @@ export default function DashboardPage() {
         <h2 className="text-lg font-semibold text-[--color-foreground] mb-4">Activity Timeline</h2>
         <GlassCard padding="lg">
           <div className="relative">
-            {/* Vertical line */}
-            <div className="absolute left-[19px] top-0 bottom-0 w-px bg-gradient-to-b from-[--color-agent-ceo]/30 via-[--color-agent-cfo]/30 to-[--color-agent-cmo]/30" />
+            {/* Vertical line with glow */}
+            <div className="absolute left-[19px] top-0 bottom-0 w-[2px] bg-gradient-to-b from-[var(--color-primary)]/60 via-[var(--color-agent-cfo)]/30 to-transparent shadow-[0_0_10px_var(--color-primary)]" />
 
             <div className="space-y-1">
               {mockActivity.slice(0, 8).map((event, index) => {
@@ -240,11 +240,12 @@ export default function DashboardPage() {
                     {/* Dot */}
                     <div className="relative z-10 flex-shrink-0">
                       <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-[10px] font-bold border-2"
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-[10px] font-bold border border-white/20 backdrop-blur-md transition-all duration-300 group-hover:scale-110"
                         style={{
-                          backgroundColor: colors.bg,
-                          borderColor: colors.primary,
+                          backgroundColor: `${colors.primary}20`,
                           color: colors.primary,
+                          boxShadow: `0 0 15px ${colors.glow}`,
+                          borderColor: colors.primary,
                         }}
                       >
                         {event.agentRole}
