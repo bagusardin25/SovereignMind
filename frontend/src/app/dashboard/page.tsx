@@ -156,7 +156,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-[--color-foreground]">Agent Status</h2>
           <Link
-            href="/agents"
+            href="/dashboard/agents"
             className="flex items-center gap-1 text-sm text-[--color-agent-ceo] hover:text-[--color-agent-ceo-light] transition-colors"
           >
             View all <ArrowRight size={14} />
@@ -180,7 +180,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-[--color-foreground]">Recent Decisions</h2>
             <Link
-              href="/decisions"
+              href="/dashboard/decisions"
               className="flex items-center gap-1 text-sm text-[--color-agent-ceo] hover:text-[--color-agent-ceo-light] transition-colors"
             >
               View all <ArrowRight size={14} />
@@ -202,7 +202,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-[--color-foreground]">Treasury Allocation</h2>
             <Link
-              href="/treasury"
+              href="/dashboard/treasury"
               className="flex items-center gap-1 text-sm text-[--color-agent-ceo] hover:text-[--color-agent-ceo-light] transition-colors"
             >
               Details <ArrowRight size={14} />

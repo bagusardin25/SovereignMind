@@ -62,7 +62,7 @@ export default function AgentDetailPage({
     <div className="space-y-6">
       {/* Back Link */}
       <Link
-        href="/agents"
+        href="/dashboard/agents"
         className="inline-flex items-center gap-2 text-sm text-[--color-muted-foreground] hover:text-[--color-foreground] transition-colors"
       >
         <ArrowLeft size={16} />

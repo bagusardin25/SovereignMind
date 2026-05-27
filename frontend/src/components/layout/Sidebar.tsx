@@ -126,7 +126,7 @@ export default function Sidebar() {
                       SovereignMind
                     </h1>
                     <p className="text-[10px] text-[--color-muted] whitespace-nowrap">
-                      Autonomous Agent Guild
+                      Autonomous Venture Guild
                     </p>
                   </motion.div>
                 )}

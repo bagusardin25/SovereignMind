@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.2.11",
+    "@splinetool/react-spline": "^4.1.0",
+    "@splinetool/runtime": "^1.12.95",
     "@tanstack/react-query": "^5.100.14",
     "ethers": "^6.16.0",
     "framer-motion": "^12.40.0",

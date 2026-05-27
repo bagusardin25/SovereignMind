@@ -38,7 +38,7 @@ export default function AgentsPage() {
             key={agent.id}
             agent={agent}
             delay={index * 0.15}
-            onClick={() => router.push(`/agents/${agent.role.toLowerCase()}`)}
+            onClick={() => router.push(`/dashboard/agents/${agent.role.toLowerCase()}`)}
           />
         ))}
       </div>
