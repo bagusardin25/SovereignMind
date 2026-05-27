@@ -14,7 +14,7 @@ import Skeleton, { SkeletonCard } from '@/components/ui/Skeleton';
 import { mockAgents } from '@/lib/mock-data';
 import { AGENT_COLORS } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
-import { User, Landmark } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowDown, Brain, LineChart, Megaphone, User, Landmark, Shield, Zap, Search } from 'lucide-react';
 
 export default function AgentsPage() {
   const router = useRouter();
@@ -126,18 +126,14 @@ export default function AgentsPage() {
             <span className="text-xs font-medium text-[--color-muted-foreground]">Owner</span>
           </motion.div>
 
-          {/* Arrow */}
+          {/* Arrow Owner -> CEO */}
           <motion.div
-            initial={{ opacity: 0, scaleX: 0, scaleY: 0 }}
-            animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
-            transition={{ duration: 0.3, delay: 0.2 }}
-            className="w-px h-8 sm:w-12 sm:h-px"
+            className="text-[--color-muted-foreground]"
+            animate={{ opacity: [0.3, 1, 0.3], scale: [0.95, 1.1, 0.95] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <motion.div
-              className="w-full h-full bg-gradient-to-b sm:bg-gradient-to-r from-[--color-muted] to-[--color-agent-ceo]"
-              animate={{ opacity: [0.3, 1, 0.3] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-            />
+            <div className="hidden sm:block"><ArrowRight size={24} /></div>
+            <div className="block sm:hidden"><ArrowDown size={24} /></div>
           </motion.div>
 
           {/* CEO */}
@@ -170,33 +166,15 @@ export default function AgentsPage() {
             </span>
           </motion.div>
 
-          {/* Branching arrows */}
-          <div className="flex flex-row sm:flex-col items-center gap-8">
-            <motion.div
-              initial={{ opacity: 0, scaleX: 0, scaleY: 0 }}
-              animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
-              transition={{ duration: 0.3, delay: 0.5 }}
-              className="w-px h-8 sm:w-12 sm:h-px"
-            >
-              <motion.div
-                className="w-full h-full bg-gradient-to-b sm:bg-gradient-to-r from-[--color-agent-ceo] to-[--color-agent-cfo]"
-                animate={{ opacity: [0.3, 1, 0.3] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut', delay: 0.2 }}
-              />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, scaleX: 0, scaleY: 0 }}
-              animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
-              transition={{ duration: 0.3, delay: 0.6 }}
-              className="w-px h-8 sm:w-12 sm:h-px"
-            >
-              <motion.div
-                className="w-full h-full bg-gradient-to-b sm:bg-gradient-to-r from-[--color-agent-ceo] to-[--color-agent-cmo]"
-                animate={{ opacity: [0.3, 1, 0.3] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
-              />
-            </motion.div>
-          </div>
+          {/* Arrow CEO -> CFO & CMO */}
+          <motion.div
+            className="text-[--color-agent-ceo]"
+            animate={{ opacity: [0.3, 1, 0.3], scale: [0.95, 1.1, 0.95] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
+          >
+            <div className="hidden sm:block"><ArrowRight size={24} /></div>
+            <div className="block sm:hidden"><ArrowDown size={24} /></div>
+          </motion.div>
 
           {/* CFO & CMO */}
           <div className="flex flex-row sm:flex-col items-center gap-4">
@@ -259,18 +237,14 @@ export default function AgentsPage() {
             </motion.div>
           </div>
 
-          {/* Arrow to Treasury */}
+          {/* Arrow CFO/CMO -> Treasury */}
           <motion.div
-            initial={{ opacity: 0, scaleX: 0, scaleY: 0 }}
-            animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
-            transition={{ duration: 0.3, delay: 0.8 }}
-            className="w-px h-8 sm:w-12 sm:h-px"
+            className="text-[--color-agent-cfo]"
+            animate={{ opacity: [0.3, 1, 0.3], scale: [0.95, 1.1, 0.95] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
           >
-            <motion.div
-              className="w-full h-full bg-gradient-to-b sm:bg-gradient-to-r from-[--color-agent-cfo] to-[--color-success]"
-              animate={{ opacity: [0.3, 1, 0.3] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
-            />
+            <div className="hidden sm:block"><ArrowRight size={24} /></div>
+            <div className="block sm:hidden"><ArrowDown size={24} /></div>
           </motion.div>
 
           {/* Treasury */}
