@@ -221,38 +221,118 @@ Add Somnia Testnet to your wallet:
 
 ```
 SovereignMind/
-├── SovereignMind_PRD_v2.0.md     # Product Requirements Document
-├── README.md                      # This file
+├── .env.example                          # Environment variables template
+├── README.md                             # This file
 │
-└── frontend/                      # Next.js 16 Dashboard
+├── contracts/                            # 🔜 Hardhat — Solidity Smart Contracts
+│   ├── contracts/
+│   │   ├── AgentRegistry.sol             # Role-based agent authorization (RBAC)
+│   │   ├── TreasuryVault.sol             # Secure asset management (OpenZeppelin)
+│   │   ├── CEOAgent.sol                  # Orchestrator — LLM Inference Agent
+│   │   ├── CFOAgent.sol                  # Risk & Finance — JSON API + LLM Inference
+│   │   ├── CMOAgent.sol                  # Market Intel — LLM Parse Website + LLM Inference
+│   │   └── interfaces/
+│   │       └── ISomniaAgentRunner.sol    # Somnia createRequest()/handleResponse() interface
+│   ├── scripts/
+│   │   └── deploy.ts                     # Deployment script for Somnia Testnet
+│   ├── test/
+│   │   └── *.test.ts                     # Contract unit tests
+│   └── hardhat.config.ts                 # Hardhat config (Somnia Testnet RPC)
+│
+└── frontend/                             # Next.js 16 Dashboard
+    ├── public/
+    │   ├── logo.png                      # SovereignMind logo
+    │   └── manifest.json                 # PWA manifest
     ├── src/
     │   ├── app/
-    │   │   ├── page.tsx           # Dashboard — main overview
-    │   │   ├── layout.tsx         # Root layout with sidebar
-    │   │   ├── globals.css        # Design system & theme
-    │   │   ├── agents/
-    │   │   │   ├── page.tsx       # Agent listing
-    │   │   │   └── [role]/        # Agent detail (dynamic route)
-    │   │   ├── decisions/
-    │   │   │   └── page.tsx       # Decision log
-    │   │   └── treasury/
-    │   │       └── page.tsx       # Treasury overview
+    │   │   ├── page.tsx                  # Landing page (3D Spline hero + FAQ)
+    │   │   ├── layout.tsx                # Root layout (fonts, Web3Provider)
+    │   │   ├── globals.css               # Design system & CSS theme tokens
+    │   │   ├── favicon.ico               # Favicon
+    │   │   ├── not-found.tsx             # Global 404 page
+    │   │   │
+    │   │   └── (app)/                    # 🔒 Route Group — Sidebar layout
+    │   │       ├── layout.tsx            # App shell (Sidebar + Header)
+    │   │       ├── template.tsx          # Page transition wrapper
+    │   │       ├── error.tsx             # Error boundary
+    │   │       ├── not-found.tsx         # App-level 404
+    │   │       ├── dashboard/
+    │   │       │   └── page.tsx          # Dashboard — metrics, agents, decisions overview
+    │   │       ├── agents/
+    │   │       │   ├── page.tsx          # Agent listing (CEO, CFO, CMO)
+    │   │       │   └── [role]/
+    │   │       │       └── page.tsx      # Agent detail — performance, console, controls
+    │   │       ├── treasury/
+    │   │       │   └── page.tsx          # Treasury — allocation chart, holdings, transactions
+    │   │       ├── decisions/
+    │   │       │   └── page.tsx          # Decision log — chronological history
+    │   │       ├── settings/
+    │   │       │   └── page.tsx          # Settings — network, notifications, preferences
+    │   │       └── docs/                 # Documentation hub
+    │   │           ├── getting-started/  # Quick start guide
+    │   │           ├── dashboard/        # Dashboard docs
+    │   │           ├── agents/           # Agent system docs
+    │   │           ├── treasury/         # Treasury docs
+    │   │           ├── decisions/        # Decision engine docs
+    │   │           └── wallet-setup/     # Wallet connection guide
+    │   │
     │   ├── components/
-    │   │   ├── ui/                # GlassCard, MetricCard, StatusBadge, Skeleton
-    │   │   ├── agents/            # AgentCard
-    │   │   ├── decisions/         # DecisionCard
-    │   │   ├── treasury/          # AllocationChart
-    │   │   └── layout/            # Sidebar, Header
+    │   │   ├── ui/                       # Reusable UI primitives
+    │   │   │   ├── GlassCard.tsx         # Glassmorphism container
+    │   │   │   ├── MetricCard.tsx        # Animated metric display
+    │   │   │   ├── StatusBadge.tsx       # Agent status indicator
+    │   │   │   ├── Skeleton.tsx          # Loading skeleton states
+    │   │   │   ├── Toast.tsx             # Toast notification system
+    │   │   │   ├── NotificationPanel.tsx # Notification dropdown
+    │   │   │   ├── Particles.tsx         # Background particle effects
+    │   │   │   ├── MouseParallax.tsx     # Parallax cursor tracking
+    │   │   │   ├── Breadcrumbs.tsx       # Navigation breadcrumbs
+    │   │   │   └── ErrorBoundary.tsx     # React error boundary
+    │   │   ├── agents/
+    │   │   │   ├── AgentCard.tsx         # Agent overview card
+    │   │   │   ├── AgentControlPanel.tsx # Agent management controls
+    │   │   │   └── LiveAgentConsole.tsx  # Real-time agent log viewer
+    │   │   ├── decisions/
+    │   │   │   └── DecisionCard.tsx      # Decision entry with rationale
+    │   │   ├── treasury/
+    │   │   │   ├── AllocationChart.tsx   # SVG donut allocation chart
+    │   │   │   └── TransactionList.tsx   # Transaction history list
+    │   │   ├── landing/                  # Landing page specific
+    │   │   │   ├── SplineScene.tsx       # 3D Spline scene loader
+    │   │   │   ├── ChainBadge.tsx        # "Somnia Testnet" badge
+    │   │   │   ├── LiveStatsGrid.tsx     # Animated live stats
+    │   │   │   └── ContractAddressStrip.tsx # On-chain address marquee
+    │   │   └── layout/
+    │   │       ├── Sidebar.tsx           # Main sidebar navigation
+    │   │       ├── Header.tsx            # Top header with wallet
+    │   │       └── BottomNav.tsx         # Mobile bottom navigation
+    │   │
     │   ├── lib/
-    │   │   ├── constants.ts       # Chain config, addresses, colors
-    │   │   ├── types.ts           # TypeScript interfaces
-    │   │   ├── mock-data.ts       # Simulated data layer
-    │   │   └── wagmi-config.ts    # wagmi + RainbowKit setup
+    │   │   ├── constants.ts              # Chain config, contract addresses, agent colors
+    │   │   ├── types.ts                  # TypeScript interfaces (Agent, Decision, Treasury, Receipt)
+    │   │   ├── mock-data.ts              # Simulated data layer (replaced by live contracts later)
+    │   │   ├── wagmi-config.ts           # wagmi v2 + RainbowKit chain setup
+    │   │   ├── exportUtils.ts            # Data export utilities
+    │   │   │
+    │   │   └── somnia/                   # 🔜 Somnia Integration Layer
+    │   │       ├── abis/                 # Contract ABIs (auto-generated from Hardhat)
+    │   │       │   ├── AgentRegistry.json
+    │   │       │   ├── CEOAgent.json
+    │   │       │   ├── CFOAgent.json
+    │   │       │   ├── CMOAgent.json
+    │   │       │   └── TreasuryVault.json
+    │   │       ├── contracts.ts          # Contract read/write hooks (wagmi useReadContract)
+    │   │       ├── receipts.ts           # Somnia Receipts API client (fetch execution receipts)
+    │   │       └── agents.ts             # Agent status polling & event listeners
+    │   │
     │   └── providers/
-    │       └── Web3Provider.tsx    # Wallet context provider
+    │       └── Web3Provider.tsx           # wagmi + RainbowKit + QueryClient provider
+    │
     ├── package.json
     └── tsconfig.json
 ```
+
+> **Legend**: 🔜 = Planned for Phase 2-3 (Smart Contract & Integration phase)
 
 ---
 
