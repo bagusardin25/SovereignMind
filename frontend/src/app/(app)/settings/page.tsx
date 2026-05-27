@@ -4,10 +4,10 @@
 // Settings Page
 // ============================================================
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import GlassCard from '@/components/ui/GlassCard';
-import { Save, ShieldAlert, Clock, Bell } from 'lucide-react';
+import { Save, ShieldAlert, Clock, Bell, ChevronDown } from 'lucide-react';
 
 export default function SettingsPage() {
   const [riskThreshold, setRiskThreshold] = useState(75);
@@ -18,6 +18,26 @@ export default function SettingsPage() {
     telegram: true,
     urgentOnly: false
   });
+
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const intervalOptions = [
+    { value: 'hourly', label: 'Hourly' },
+    { value: 'daily', label: 'Daily' },
+    { value: 'weekly', label: 'Weekly' },
+    { value: 'manual', label: 'Manual Only' },
+  ];
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSave = () => {
     // Mock save functionality
@@ -96,17 +116,45 @@ export default function SettingsPage() {
               </div>
             </div>
             
-            <div className="pt-2">
-              <select 
-                value={rebalanceInterval}
-                onChange={(e) => setRebalanceInterval(e.target.value)}
-                className="w-full md:w-1/2 p-3 bg-white/5 border border-[--color-border] rounded-xl text-white outline-none focus:border-[--color-agent-ceo] transition-colors"
+            <div className="pt-2 relative w-full md:w-1/2" ref={dropdownRef}>
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="w-full p-3 bg-white/5 border border-[--color-border] rounded-xl text-left text-white outline-none focus:border-[--color-agent-ceo] hover:bg-white/10 transition-colors flex justify-between items-center shadow-sm"
               >
-                <option value="hourly" className="bg-[#0f141b]">Hourly</option>
-                <option value="daily" className="bg-[#0f141b]">Daily</option>
-                <option value="weekly" className="bg-[#0f141b]">Weekly</option>
-                <option value="manual" className="bg-[#0f141b]">Manual Only</option>
-              </select>
+                <span>{intervalOptions.find(o => o.value === rebalanceInterval)?.label}</span>
+                <ChevronDown size={16} className={`transition-transform duration-200 text-[--color-muted-foreground] ${isDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              <AnimatePresence>
+                {isDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute z-20 w-full mt-2 py-2 glass bg-[#0f141b]/95 border border-[--color-border] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden"
+                  >
+                    {intervalOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => {
+                          setRebalanceInterval(option.value);
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                          rebalanceInterval === option.value 
+                            ? 'bg-[--color-agent-ceo]/20 text-[--color-agent-ceo-light]' 
+                            : 'text-white hover:bg-white/10'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </GlassCard>
         </motion.div>
