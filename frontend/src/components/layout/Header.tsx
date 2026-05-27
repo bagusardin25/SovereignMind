@@ -40,9 +40,9 @@ export default function Header() {
               onClick={() => setIsNotifOpen((prev) => !prev)}
               className="relative p-2 rounded-xl text-[--color-muted-foreground] hover:text-[--color-foreground] hover:bg-white/5 transition-colors"
             >
-              <Bell size={18} />
+              <Bell size={22} className="transition-transform active:scale-95" />
               {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-[--color-agent-ceo] text-[10px] font-bold text-white px-1">
+                <span className="absolute top-0.5 right-0.5 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white px-1 ring-2 ring-[#0a0e1a]">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}

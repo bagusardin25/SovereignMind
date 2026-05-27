@@ -67,7 +67,7 @@ export default function NotificationPanel({ isOpen, onClose }: NotificationPanel
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-semibold text-[--color-foreground]">Notifications</h3>
               {unreadCount > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-[--color-agent-ceo] text-white">
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white ring-1 ring-rose-500/20">
                   {unreadCount}
                 </span>
               )}

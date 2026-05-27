@@ -21,10 +21,10 @@ import {
 import { useState, useEffect } from 'react';
 
 const navItems = [
-  { label: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { label: 'Agents', href: '/agents', icon: Bot },
-  { label: 'Treasury', href: '/treasury', icon: Landmark },
-  { label: 'Decisions', href: '/decisions', icon: ScrollText },
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Agents', href: '/dashboard/agents', icon: Bot },
+  { label: 'Treasury', href: '/dashboard/treasury', icon: Landmark },
+  { label: 'Decisions', href: '/dashboard/decisions', icon: ScrollText },
 ];
 
 export default function Sidebar() {
@@ -148,8 +148,8 @@ export default function Sidebar() {
             <nav className="flex-1 py-4 px-3 space-y-1">
               {navItems.map((item) => {
                 const isActive =
-                  item.href === '/'
-                    ? pathname === '/'
+                  item.href === '/dashboard'
+                    ? pathname === '/dashboard'
                     : pathname.startsWith(item.href);
                 const Icon = item.icon;
 

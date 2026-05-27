@@ -29,13 +29,22 @@ export default function MetricCard({
   const isNegative = change !== undefined && change < 0;
   const isNeutral = change !== undefined && change === 0;
 
+  const colorToGlowMap: Record<string, 'blue' | 'violet' | 'cyan' | 'green' | 'none'> = {
+    '#3b82f6': 'blue',
+    '#8b5cf6': 'violet',
+    '#06b6d4': 'cyan',
+    '#10b981': 'green',
+  };
+  const glowType = colorToGlowMap[accentColor] || 'none';
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay, ease: 'easeOut' }}
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
     >
-      <GlassCard padding="md" animate={false}>
+      <GlassCard padding="md" animate={false} glow={glowType} hover={true} className="h-full">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <p className="text-sm text-[--color-muted-foreground] mb-1">{label}</p>
