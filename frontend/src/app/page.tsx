@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import Spline from '@splinetool/react-spline';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import {
   ChevronDown,
@@ -48,8 +48,10 @@ const faqs = [
 
 export default function LandingPage() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
-
   const [isSplineLoaded, setIsSplineLoaded] = useState(false);
+
+  const { scrollYProgress } = useScroll();
+  const yParallaxText = useTransform(scrollYProgress, [0, 1], [0, 400]);
 
   return (
     <>
@@ -110,12 +112,15 @@ export default function LandingPage() {
 
         {/* Giant Background Text */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[55%] w-full text-center z-0 select-none pointer-events-none flex flex-col items-center justify-center">
-          <h1 className="font-[var(--font-space-grotesk)] text-[80px] md:text-[140px] lg:text-[200px] leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white/40 to-transparent uppercase font-bold">
+          <motion.h1 
+            style={{ y: yParallaxText }}
+            className="font-[var(--font-space-grotesk)] text-[80px] md:text-[140px] lg:text-[200px] leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white/40 to-transparent uppercase font-bold"
+          >
             SOVEREIGN
             <span className="block text-[80px] md:text-[140px] lg:text-[200px] leading-none tracking-[0.1em] md:tracking-[0.2em] text-transparent uppercase mt-[-2%]" style={{ WebkitTextStroke: '1.5px rgba(207,188,255,0.3)' }}>
               MIND
             </span>
-          </h1>
+          </motion.h1>
         </div>
 
         {/* Center Content Wrapper */}
@@ -253,94 +258,112 @@ export default function LandingPage() {
           </Link>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <motion.div 
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={{
+            hidden: { opacity: 0 },
+            show: {
+              opacity: 1,
+              transition: { staggerChildren: 0.2 }
+            }
+          }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+        >
           {/* Agent 1: CEO */}
-          <div className="glass-dark p-8 rounded-2xl relative overflow-hidden group hover:border-[var(--color-agent-ceo)]/50 transition-colors animate-float-2" style={{ animationDelay: '0s' }}>
-            <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-100 transition-opacity">
-              <Brain size={48} className="text-[var(--color-agent-ceo)]" />
-            </div>
-            <div className="font-label-caps text-label-caps text-[var(--color-agent-ceo)] mb-2">AGENT 01</div>
-            <h3 className="font-display-lg text-[32px] mb-6 text-white">CEO_Prime</h3>
-            <p className="font-body-md text-body-md text-[var(--color-on-surface)]/70 mb-8">
-              Responsible for high-level orchestration. Delegates to CFO and CMO via sequential Somnia createRequest() calls and finalizes on-chain execution.
-            </p>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between font-label-caps text-label-caps text-[var(--color-on-surface)]/50 mb-2">
-                  <span>LLM Inference Agent</span>
-                  <span className="text-[var(--color-agent-ceo)]">Active</span>
-                </div>
-                <div className="h-1 w-full bg-black rounded-full overflow-hidden">
-                  <div className="h-full bg-[var(--color-agent-ceo)] w-[100%] rounded-full shadow-[0_0_10px_var(--color-agent-ceo)]"></div>
+          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 0.6 } } }} className="h-full">
+            <div className="h-full glass-dark p-8 rounded-2xl relative overflow-hidden group hover:border-[var(--color-agent-ceo)]/50 transition-colors animate-float-2" style={{ animationDelay: '0s' }}>
+              <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-100 transition-opacity">
+                <Brain size={48} className="text-[var(--color-agent-ceo)]" />
+              </div>
+              <div className="font-label-caps text-label-caps text-[var(--color-agent-ceo)] mb-2">AGENT 01</div>
+              <h3 className="font-display-lg text-[32px] mb-6 text-white">CEO_Prime</h3>
+              <p className="font-body-md text-body-md text-[var(--color-on-surface)]/70 mb-8">
+                Responsible for high-level orchestration. Delegates to CFO and CMO via sequential Somnia createRequest() calls and finalizes on-chain execution.
+              </p>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between font-label-caps text-label-caps text-[var(--color-on-surface)]/50 mb-2">
+                    <span>LLM Inference Agent</span>
+                    <span className="text-[var(--color-agent-ceo)]">Active</span>
+                  </div>
+                  <div className="h-1 w-full bg-black rounded-full overflow-hidden">
+                    <div className="h-full bg-[var(--color-agent-ceo)] w-[100%] rounded-full shadow-[0_0_10px_var(--color-agent-ceo)]"></div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Agent 2: CFO */}
-          <div className="glass-dark p-8 rounded-2xl relative overflow-hidden group hover:border-[var(--color-agent-cfo)]/50 transition-colors animate-float-1" style={{ animationDelay: '1s' }}>
-            <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-100 transition-opacity">
-              <TrendingUp size={48} className="text-[var(--color-agent-cfo)]" />
-            </div>
-            <div className="font-label-caps text-label-caps text-[var(--color-agent-cfo)] mb-2">AGENT 02</div>
-            <h3 className="font-display-lg text-[32px] mb-6 text-white">CFO_Quant</h3>
-            <p className="font-body-md text-body-md text-[var(--color-on-surface)]/70 mb-8">
-              Manages treasury risk via Somnia JSON API Request Agent for live token metrics and LLM Inference for composite risk scoring, executing autonomous rebalancing on-chain.
-            </p>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between font-label-caps text-label-caps text-[var(--color-on-surface)]/50 mb-2">
-                  <span>JSON API Request Agent</span>
-                  <span className="text-[var(--color-agent-cfo)]">Active</span>
+          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 0.6 } } }} className="h-full">
+            <div className="h-full glass-dark p-8 rounded-2xl relative overflow-hidden group hover:border-[var(--color-agent-cfo)]/50 transition-colors animate-float-1" style={{ animationDelay: '1s' }}>
+              <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-100 transition-opacity">
+                <TrendingUp size={48} className="text-[var(--color-agent-cfo)]" />
+              </div>
+              <div className="font-label-caps text-label-caps text-[var(--color-agent-cfo)] mb-2">AGENT 02</div>
+              <h3 className="font-display-lg text-[32px] mb-6 text-white">CFO_Quant</h3>
+              <p className="font-body-md text-body-md text-[var(--color-on-surface)]/70 mb-8">
+                Manages treasury risk via Somnia JSON API Request Agent for live token metrics and LLM Inference for composite risk scoring, executing autonomous rebalancing on-chain.
+              </p>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between font-label-caps text-label-caps text-[var(--color-on-surface)]/50 mb-2">
+                    <span>JSON API Request Agent</span>
+                    <span className="text-[var(--color-agent-cfo)]">Active</span>
+                  </div>
+                  <div className="h-1 w-full bg-black rounded-full overflow-hidden">
+                    <div className="h-full bg-[var(--color-agent-cfo)] w-[100%] rounded-full shadow-[0_0_10px_var(--color-agent-cfo)]"></div>
+                  </div>
                 </div>
-                <div className="h-1 w-full bg-black rounded-full overflow-hidden">
-                  <div className="h-full bg-[var(--color-agent-cfo)] w-[100%] rounded-full shadow-[0_0_10px_var(--color-agent-cfo)]"></div>
+                <div>
+                  <div className="flex justify-between font-label-caps text-label-caps text-[var(--color-on-surface)]/50 mb-2">
+                    <span>LLM Inference Agent</span>
+                    <span className="text-[var(--color-agent-cfo)]">Active</span>
+                  </div>
+                  <div className="h-1 w-full bg-black rounded-full overflow-hidden">
+                    <div className="h-full bg-[var(--color-agent-cfo)]/70 w-[100%] rounded-full shadow-[0_0_10px_var(--color-agent-cfo)]"></div>
+                  </div>
                 </div>
               </div>
-              <div>
-                <div className="flex justify-between font-label-caps text-label-caps text-[var(--color-on-surface)]/50 mb-2">
-                  <span>LLM Inference Agent</span>
-                  <span className="text-[var(--color-agent-cfo)]">Active</span>
-                </div>
-                <div className="h-1 w-full bg-black rounded-full overflow-hidden">
-                  <div className="h-full bg-[var(--color-agent-cfo)]/70 w-[100%] rounded-full shadow-[0_0_10px_var(--color-agent-cfo)]"></div>
-                </div>
-              </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Agent 3: CMO */}
-          <div className="glass-dark p-8 rounded-2xl relative overflow-hidden group hover:border-[var(--color-agent-cmo)]/50 transition-colors animate-float-2" style={{ animationDelay: '2s' }}>
-            <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-100 transition-opacity">
-              <Radar size={48} className="text-[var(--color-agent-cmo)]" />
-            </div>
-            <div className="font-label-caps text-label-caps text-[var(--color-agent-cmo)] mb-2">AGENT 03</div>
-            <h3 className="font-display-lg text-[32px] mb-6 text-white">CMO_Pulse</h3>
-            <p className="font-body-md text-body-md text-[var(--color-on-surface)]/70 mb-8">
-              Scrapes DeFi news using Somnia&apos;s LLM Parse Website Agent and deterministically classifies market sentiment via LLM Inference as bullish, bearish, or neutral.
-            </p>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between font-label-caps text-label-caps text-[var(--color-on-surface)]/50 mb-2">
-                  <span>LLM Parse Website Agent</span>
-                  <span className="text-[var(--color-agent-cmo)]">Active</span>
+          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 0.6 } } }} className="h-full">
+            <div className="h-full glass-dark p-8 rounded-2xl relative overflow-hidden group hover:border-[var(--color-agent-cmo)]/50 transition-colors animate-float-2" style={{ animationDelay: '2s' }}>
+              <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-100 transition-opacity">
+                <Radar size={48} className="text-[var(--color-agent-cmo)]" />
+              </div>
+              <div className="font-label-caps text-label-caps text-[var(--color-agent-cmo)] mb-2">AGENT 03</div>
+              <h3 className="font-display-lg text-[32px] mb-6 text-white">CMO_Pulse</h3>
+              <p className="font-body-md text-body-md text-[var(--color-on-surface)]/70 mb-8">
+                Scrapes DeFi news using Somnia&apos;s LLM Parse Website Agent and deterministically classifies market sentiment via LLM Inference as bullish, bearish, or neutral.
+              </p>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between font-label-caps text-label-caps text-[var(--color-on-surface)]/50 mb-2">
+                    <span>LLM Parse Website Agent</span>
+                    <span className="text-[var(--color-agent-cmo)]">Active</span>
+                  </div>
+                  <div className="h-1 w-full bg-black rounded-full overflow-hidden">
+                    <div className="h-full bg-[var(--color-agent-cmo)] w-[100%] rounded-full shadow-[0_0_10px_var(--color-agent-cmo)]"></div>
+                  </div>
                 </div>
-                <div className="h-1 w-full bg-black rounded-full overflow-hidden">
-                  <div className="h-full bg-[var(--color-agent-cmo)] w-[100%] rounded-full shadow-[0_0_10px_var(--color-agent-cmo)]"></div>
+                <div>
+                  <div className="flex justify-between font-label-caps text-label-caps text-[var(--color-on-surface)]/50 mb-2">
+                    <span>LLM Inference Agent</span>
+                    <span className="text-[var(--color-agent-cmo)]">Active</span>
+                  </div>
+                  <div className="h-1 w-full bg-black rounded-full overflow-hidden">
+                    <div className="h-full bg-[var(--color-agent-cmo)]/70 w-[100%] rounded-full shadow-[0_0_10px_var(--color-agent-cmo)]"></div>
+                  </div>
                 </div>
               </div>
-              <div>
-                <div className="flex justify-between font-label-caps text-label-caps text-[var(--color-on-surface)]/50 mb-2">
-                  <span>LLM Inference Agent</span>
-                  <span className="text-[var(--color-agent-cmo)]">Active</span>
-                </div>
-                <div className="h-1 w-full bg-black rounded-full overflow-hidden">
-                  <div className="h-full bg-[var(--color-agent-cmo)]/70 w-[100%] rounded-full shadow-[0_0_10px_var(--color-agent-cmo)]"></div>
-                </div>
-              </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* About Section — How It Works / On-Chain Receipts */}
@@ -358,55 +381,75 @@ export default function LandingPage() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <motion.div 
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={{
+            hidden: { opacity: 0 },
+            show: {
+              opacity: 1,
+              transition: { staggerChildren: 0.15 }
+            }
+          }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+        >
           {/* Step 1 */}
-          <div className="glass-dark p-8 rounded-2xl relative group hover:border-[var(--color-agent-ceo)]/30 transition-colors">
-            <div className="font-display-lg text-[64px] text-white/5 absolute top-4 right-6 leading-none">01</div>
-            <div className="w-12 h-12 rounded-xl bg-[var(--color-agent-ceo)]/10 border border-[var(--color-agent-ceo)]/20 flex items-center justify-center mb-6">
-              <Rocket size={24} className="text-[var(--color-agent-ceo)]" />
+          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 0.5 } } }} className="h-full">
+            <div className="h-full glass-dark p-8 rounded-2xl relative group hover:border-[var(--color-agent-ceo)]/30 transition-colors">
+              <div className="font-display-lg text-[64px] text-white/5 absolute top-4 right-6 leading-none">01</div>
+              <div className="w-12 h-12 rounded-xl bg-[var(--color-agent-ceo)]/10 border border-[var(--color-agent-ceo)]/20 flex items-center justify-center mb-6">
+                <Rocket size={24} className="text-[var(--color-agent-ceo)]" />
+              </div>
+              <h3 className="font-display-lg text-[20px] text-white mb-3">CEO Initiates Cycle</h3>
+              <p className="font-body-md text-[14px] text-[var(--color-on-surface)]/60 leading-relaxed">
+                CEO_Prime starts a decision cycle and delegates tasks to CFO and CMO via Somnia&apos;s <code className="text-[var(--color-agent-ceo)]/80 text-[12px]">createRequest()</code>.
+              </p>
             </div>
-            <h3 className="font-display-lg text-[20px] text-white mb-3">CEO Initiates Cycle</h3>
-            <p className="font-body-md text-[14px] text-[var(--color-on-surface)]/60 leading-relaxed">
-              CEO_Prime starts a decision cycle and delegates tasks to CFO and CMO via Somnia&apos;s <code className="text-[var(--color-agent-ceo)]/80 text-[12px]">createRequest()</code>.
-            </p>
-          </div>
+          </motion.div>
 
           {/* Step 2 */}
-          <div className="glass-dark p-8 rounded-2xl relative group hover:border-[var(--color-agent-cfo)]/30 transition-colors">
-            <div className="font-display-lg text-[64px] text-white/5 absolute top-4 right-6 leading-none">02</div>
-            <div className="w-12 h-12 rounded-xl bg-[var(--color-agent-cfo)]/10 border border-[var(--color-agent-cfo)]/20 flex items-center justify-center mb-6">
-              <BarChart3 size={24} className="text-[var(--color-agent-cfo)]" />
+          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 0.5 } } }} className="h-full">
+            <div className="h-full glass-dark p-8 rounded-2xl relative group hover:border-[var(--color-agent-cfo)]/30 transition-colors">
+              <div className="font-display-lg text-[64px] text-white/5 absolute top-4 right-6 leading-none">02</div>
+              <div className="w-12 h-12 rounded-xl bg-[var(--color-agent-cfo)]/10 border border-[var(--color-agent-cfo)]/20 flex items-center justify-center mb-6">
+                <BarChart3 size={24} className="text-[var(--color-agent-cfo)]" />
+              </div>
+              <h3 className="font-display-lg text-[20px] text-white mb-3">Agents Analyze Data</h3>
+              <p className="font-body-md text-[14px] text-[var(--color-on-surface)]/60 leading-relaxed">
+                CFO fetches live price data via JSON API Agent. CMO scrapes market sentiment via Parse Website Agent. Both run LLM Inference for analysis.
+              </p>
             </div>
-            <h3 className="font-display-lg text-[20px] text-white mb-3">Agents Analyze Data</h3>
-            <p className="font-body-md text-[14px] text-[var(--color-on-surface)]/60 leading-relaxed">
-              CFO fetches live price data via JSON API Agent. CMO scrapes market sentiment via Parse Website Agent. Both run LLM Inference for analysis.
-            </p>
-          </div>
+          </motion.div>
 
           {/* Step 3 */}
-          <div className="glass-dark p-8 rounded-2xl relative group hover:border-[var(--color-agent-cmo)]/30 transition-colors">
-            <div className="font-display-lg text-[64px] text-white/5 absolute top-4 right-6 leading-none">03</div>
-            <div className="w-12 h-12 rounded-xl bg-[var(--color-agent-cmo)]/10 border border-[var(--color-agent-cmo)]/20 flex items-center justify-center mb-6">
-              <Network size={24} className="text-[var(--color-agent-cmo)]" />
+          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 0.5 } } }} className="h-full">
+            <div className="h-full glass-dark p-8 rounded-2xl relative group hover:border-[var(--color-agent-cmo)]/30 transition-colors">
+              <div className="font-display-lg text-[64px] text-white/5 absolute top-4 right-6 leading-none">03</div>
+              <div className="w-12 h-12 rounded-xl bg-[var(--color-agent-cmo)]/10 border border-[var(--color-agent-cmo)]/20 flex items-center justify-center mb-6">
+                <Network size={24} className="text-[var(--color-agent-cmo)]" />
+              </div>
+              <h3 className="font-display-lg text-[20px] text-white mb-3">BFT Consensus</h3>
+              <p className="font-body-md text-[14px] text-[var(--color-on-surface)]/60 leading-relaxed">
+                All agent compute runs through Somnia&apos;s validator nodes with BFT consensus on deterministic LLM outputs — pinned model weights and synchronized seeds.
+              </p>
             </div>
-            <h3 className="font-display-lg text-[20px] text-white mb-3">BFT Consensus</h3>
-            <p className="font-body-md text-[14px] text-[var(--color-on-surface)]/60 leading-relaxed">
-              All agent compute runs through Somnia&apos;s validator nodes with BFT consensus on deterministic LLM outputs — pinned model weights and synchronized seeds.
-            </p>
-          </div>
+          </motion.div>
 
           {/* Step 4 */}
-          <div className="glass-dark p-8 rounded-2xl relative group hover:border-[var(--color-tertiary)]/30 transition-colors">
-            <div className="font-display-lg text-[64px] text-white/5 absolute top-4 right-6 leading-none">04</div>
-            <div className="w-12 h-12 rounded-xl bg-[var(--color-tertiary)]/10 border border-[var(--color-tertiary)]/20 flex items-center justify-center mb-6">
-              <ShieldCheck size={24} className="text-[var(--color-tertiary)]" />
+          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 0.5 } } }} className="h-full">
+            <div className="h-full glass-dark p-8 rounded-2xl relative group hover:border-[var(--color-tertiary)]/30 transition-colors">
+              <div className="font-display-lg text-[64px] text-white/5 absolute top-4 right-6 leading-none">04</div>
+              <div className="w-12 h-12 rounded-xl bg-[var(--color-tertiary)]/10 border border-[var(--color-tertiary)]/20 flex items-center justify-center mb-6">
+                <ShieldCheck size={24} className="text-[var(--color-tertiary)]" />
+              </div>
+              <h3 className="font-display-lg text-[20px] text-white mb-3">On-Chain Receipt</h3>
+              <p className="font-body-md text-[14px] text-[var(--color-on-surface)]/60 leading-relaxed">
+                Every decision produces a public, auditable execution receipt verifiable via Somnia&apos;s consensus — zero single points of failure, zero off-chain dependencies.
+              </p>
             </div>
-            <h3 className="font-display-lg text-[20px] text-white mb-3">On-Chain Receipt</h3>
-            <p className="font-body-md text-[14px] text-[var(--color-on-surface)]/60 leading-relaxed">
-              Every decision produces a public, auditable execution receipt verifiable via Somnia&apos;s consensus — zero single points of failure, zero off-chain dependencies.
-            </p>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Somnia Agentathon Badge */}
         <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-6 py-8 border-t border-[var(--color-on-surface)]/10">
