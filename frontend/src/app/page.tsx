@@ -127,8 +127,7 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="relative w-full h-screen min-h-[850px] bg-[var(--color-background)] flex items-center justify-center">
-        {/* Background gradient glow behind image */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] bg-gradient-to-tr from-[var(--color-primary)]/20 to-[var(--color-tertiary)]/20 rounded-full blur-[100px] z-0"></div>
+        {/* Background gradient glow removed per user request */}
 
         {/* Giant Background Text */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[55%] w-full text-center z-0 select-none pointer-events-none flex flex-col items-center justify-center">

@@ -7,7 +7,6 @@
 import { use, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
-  ArrowLeft,
   Brain,
   LineChart,
   Megaphone,
@@ -22,6 +21,7 @@ import Link from 'next/link';
 import GlassCard from '@/components/ui/GlassCard';
 import Skeleton, { SkeletonCard, SkeletonMetric } from '@/components/ui/Skeleton';
 import StatusBadge from '@/components/ui/StatusBadge';
+import Breadcrumbs from '@/components/ui/Breadcrumbs';
 import DecisionCard from '@/components/decisions/DecisionCard';
 import { mockAgents, mockDecisions, mockActivity } from '@/lib/mock-data';
 import { AGENT_COLORS, formatRelativeTime } from '@/lib/constants';
@@ -136,14 +136,13 @@ export default function AgentDetailPage({
 
   return (
     <div className="space-y-6">
-      {/* Back Link */}
-      <Link
-        href="/agents"
-        className="inline-flex items-center gap-2 text-sm text-[--color-muted-foreground] hover:text-[--color-foreground] transition-colors"
-      >
-        <ArrowLeft size={16} />
-        Back to Agents
-      </Link>
+      {/* Breadcrumbs */}
+      <Breadcrumbs 
+        items={[
+          { label: 'Agents', href: '/agents' },
+          { label: `${role} Agent` }
+        ]} 
+      />
 
       {/* Agent Header */}
       <motion.div

@@ -14,7 +14,11 @@ import {
   ExternalLink,
   Shield,
   PieChart,
+  Download,
+  Search,
+  Filter,
 } from 'lucide-react';
+import { downloadCSV } from '@/lib/exportUtils';
 import GlassCard from '@/components/ui/GlassCard';
 import Skeleton, { SkeletonMetric, SkeletonTable } from '@/components/ui/Skeleton';
 import MetricCard from '@/components/ui/MetricCard';
@@ -27,6 +31,23 @@ import { toast } from '@/components/ui/Toast';
 export default function TreasuryPage() {
   const treasury = mockTreasury;
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState('All');
+
+  const filteredTransactions = mockTransactions.filter((tx) => {
+    if (filterType !== 'All' && tx.type.toLowerCase() !== filterType.toLowerCase()) {
+      return false;
+    }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      return (
+        tx.token.toLowerCase().includes(q) ||
+        tx.txHash.toLowerCase().includes(q) ||
+        tx.type.toLowerCase().includes(q)
+      );
+    }
+    return true;
+  });
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
@@ -288,11 +309,66 @@ export default function TreasuryPage() {
 
       {/* Recent Transactions */}
       <div>
-        <h2 className="text-lg font-semibold text-[--color-foreground] mb-4">
-          Recent Transactions
-        </h2>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
+          <h2 className="text-lg font-semibold text-[--color-foreground]">
+            Recent Transactions
+          </h2>
+          <button
+            onClick={() => {
+              const headers = ['ID', 'Type', 'Token', 'Amount', 'Value (USD)', 'Hash', 'Timestamp'];
+              const data = filteredTransactions.map((tx) => [
+                tx.id,
+                tx.type,
+                tx.token,
+                tx.amount,
+                tx.value,
+                tx.txHash,
+                new Date(tx.timestamp).toISOString(),
+              ]);
+              downloadCSV('transactions.csv', headers, data);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/5 border border-[--color-border] hover:bg-white/10 text-[--color-foreground] transition-colors"
+          >
+            <Download size={16} className="text-[--color-muted]" />
+            Export CSV
+          </button>
+        </div>
+
+        {/* Filters */}
+        <GlassCard padding="md" className="mb-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="relative flex-1 w-full sm:max-w-xs">
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-[--color-muted]"
+              />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search transactions..."
+                className="w-full pl-10 pr-4 py-2 rounded-xl bg-white/[0.03] border border-[--color-border] text-sm text-[--color-foreground] placeholder:text-[--color-muted] focus:outline-none focus:border-[--color-agent-ceo]/50 transition-all"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Filter size={14} className="text-[--color-muted]" />
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="bg-transparent border border-[--color-border] rounded-lg px-3 py-1.5 text-sm text-[--color-foreground] focus:outline-none focus:border-[--color-agent-ceo]/50 [&>option]:bg-[#0f111a]"
+              >
+                <option value="All">All</option>
+                <option value="Deposit">Deposit</option>
+                <option value="Rebalance">Rebalance</option>
+                <option value="Withdrawal">Withdrawal</option>
+              </select>
+            </div>
+          </div>
+        </GlassCard>
+
         <GlassCard>
-          <TransactionList transactions={mockTransactions} />
+          <TransactionList transactions={filteredTransactions} />
         </GlassCard>
       </div>
     </div>

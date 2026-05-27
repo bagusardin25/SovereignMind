@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import AgentCard from '@/components/agents/AgentCard';
 import AgentControlPanel from '@/components/agents/AgentControlPanel';
+import LiveAgentConsole from '@/components/agents/LiveAgentConsole';
 import GlassCard from '@/components/ui/GlassCard';
 import Skeleton, { SkeletonCard } from '@/components/ui/Skeleton';
 import { mockAgents } from '@/lib/mock-data';
@@ -47,6 +48,19 @@ export default function AgentsPage() {
           {Array.from({ length: 3 }).map((_, i) => (
             <SkeletonCard key={i} />
           ))}
+        </div>
+
+        {/* Live Agent Console Skeleton */}
+        <div className="glass rounded-2xl p-0 overflow-hidden flex flex-col h-[340px]">
+          <div className="h-12 border-b border-white/5 px-4 flex items-center justify-between">
+            <Skeleton width="140px" height="16px" />
+            <Skeleton width="24px" height="24px" className="rounded" />
+          </div>
+          <div className="flex-1 p-4 space-y-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} width={`${Math.random() * 40 + 40}%`} height="12px" />
+            ))}
+          </div>
         </div>
 
         {/* Architecture Diagram Skeleton */}
@@ -90,6 +104,9 @@ export default function AgentsPage() {
         ))}
       </div>
 
+      {/* Live Agent Console */}
+      <LiveAgentConsole />
+
       {/* Agent Architecture Diagram */}
       <GlassCard padding="lg">
         <h3 className="text-lg font-semibold text-[--color-foreground] mb-6">
@@ -114,8 +131,14 @@ export default function AgentsPage() {
             initial={{ opacity: 0, scaleX: 0, scaleY: 0 }}
             animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
             transition={{ duration: 0.3, delay: 0.2 }}
-            className="w-px h-8 sm:w-12 sm:h-px bg-gradient-to-b sm:bg-gradient-to-r from-[--color-muted] to-[--color-agent-ceo]"
-          />
+            className="w-px h-8 sm:w-12 sm:h-px"
+          >
+            <motion.div
+              className="w-full h-full bg-gradient-to-b sm:bg-gradient-to-r from-[--color-muted] to-[--color-agent-ceo]"
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          </motion.div>
 
           {/* CEO */}
           <motion.div
@@ -124,17 +147,24 @@ export default function AgentsPage() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="flex flex-col items-center gap-2"
           >
-            <div
+            <motion.div
               className="w-20 h-20 rounded-2xl flex items-center justify-center text-xl font-bold border-2"
               style={{
                 backgroundColor: AGENT_COLORS.CEO.bg,
                 borderColor: AGENT_COLORS.CEO.primary,
                 color: AGENT_COLORS.CEO.primary,
-                boxShadow: `0 0 20px ${AGENT_COLORS.CEO.glow}`,
               }}
+              animate={{
+                boxShadow: [
+                  `0 0 10px ${AGENT_COLORS.CEO.glow}`,
+                  `0 0 25px ${AGENT_COLORS.CEO.glow}`,
+                  `0 0 10px ${AGENT_COLORS.CEO.glow}`
+                ]
+              }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             >
               CEO
-            </div>
+            </motion.div>
             <span className="text-xs font-medium" style={{ color: AGENT_COLORS.CEO.primary }}>
               Orchestrator
             </span>
@@ -146,14 +176,26 @@ export default function AgentsPage() {
               initial={{ opacity: 0, scaleX: 0, scaleY: 0 }}
               animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
               transition={{ duration: 0.3, delay: 0.5 }}
-              className="w-px h-8 sm:w-12 sm:h-px bg-gradient-to-b sm:bg-gradient-to-r from-[--color-agent-ceo] to-[--color-agent-cfo]"
-            />
+              className="w-px h-8 sm:w-12 sm:h-px"
+            >
+              <motion.div
+                className="w-full h-full bg-gradient-to-b sm:bg-gradient-to-r from-[--color-agent-ceo] to-[--color-agent-cfo]"
+                animate={{ opacity: [0.3, 1, 0.3] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut', delay: 0.2 }}
+              />
+            </motion.div>
             <motion.div
               initial={{ opacity: 0, scaleX: 0, scaleY: 0 }}
               animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
               transition={{ duration: 0.3, delay: 0.6 }}
-              className="w-px h-8 sm:w-12 sm:h-px bg-gradient-to-b sm:bg-gradient-to-r from-[--color-agent-ceo] to-[--color-agent-cmo]"
-            />
+              className="w-px h-8 sm:w-12 sm:h-px"
+            >
+              <motion.div
+                className="w-full h-full bg-gradient-to-b sm:bg-gradient-to-r from-[--color-agent-ceo] to-[--color-agent-cmo]"
+                animate={{ opacity: [0.3, 1, 0.3] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
+              />
+            </motion.div>
           </div>
 
           {/* CFO & CMO */}
@@ -164,17 +206,24 @@ export default function AgentsPage() {
               transition={{ duration: 0.5, delay: 0.6 }}
               className="flex flex-col items-center gap-2"
             >
-              <div
+              <motion.div
                 className="w-16 h-16 rounded-2xl flex items-center justify-center text-sm font-bold border-2"
                 style={{
                   backgroundColor: AGENT_COLORS.CFO.bg,
                   borderColor: AGENT_COLORS.CFO.primary,
                   color: AGENT_COLORS.CFO.primary,
-                  boxShadow: `0 0 15px ${AGENT_COLORS.CFO.glow}`,
                 }}
+                animate={{
+                  boxShadow: [
+                    `0 0 8px ${AGENT_COLORS.CFO.glow}`,
+                    `0 0 20px ${AGENT_COLORS.CFO.glow}`,
+                    `0 0 8px ${AGENT_COLORS.CFO.glow}`
+                  ]
+                }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
               >
                 CFO
-              </div>
+              </motion.div>
               <span className="text-[10px] font-medium" style={{ color: AGENT_COLORS.CFO.primary }}>
                 Risk Analyst
               </span>
@@ -186,17 +235,24 @@ export default function AgentsPage() {
               transition={{ duration: 0.5, delay: 0.7 }}
               className="flex flex-col items-center gap-2"
             >
-              <div
+              <motion.div
                 className="w-16 h-16 rounded-2xl flex items-center justify-center text-sm font-bold border-2"
                 style={{
                   backgroundColor: AGENT_COLORS.CMO.bg,
                   borderColor: AGENT_COLORS.CMO.primary,
                   color: AGENT_COLORS.CMO.primary,
-                  boxShadow: `0 0 15px ${AGENT_COLORS.CMO.glow}`,
                 }}
+                animate={{
+                  boxShadow: [
+                    `0 0 8px ${AGENT_COLORS.CMO.glow}`,
+                    `0 0 20px ${AGENT_COLORS.CMO.glow}`,
+                    `0 0 8px ${AGENT_COLORS.CMO.glow}`
+                  ]
+                }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
               >
                 CMO
-              </div>
+              </motion.div>
               <span className="text-[10px] font-medium" style={{ color: AGENT_COLORS.CMO.primary }}>
                 Market Intel
               </span>
@@ -208,8 +264,14 @@ export default function AgentsPage() {
             initial={{ opacity: 0, scaleX: 0, scaleY: 0 }}
             animate={{ opacity: 1, scaleX: 1, scaleY: 1 }}
             transition={{ duration: 0.3, delay: 0.8 }}
-            className="w-px h-8 sm:w-12 sm:h-px bg-gradient-to-b sm:bg-gradient-to-r from-[--color-agent-cfo] to-[--color-success]"
-          />
+            className="w-px h-8 sm:w-12 sm:h-px"
+          >
+            <motion.div
+              className="w-full h-full bg-gradient-to-b sm:bg-gradient-to-r from-[--color-agent-cfo] to-[--color-success]"
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
+            />
+          </motion.div>
 
           {/* Treasury */}
           <motion.div
@@ -218,11 +280,19 @@ export default function AgentsPage() {
             transition={{ duration: 0.5, delay: 0.9 }}
             className="flex flex-col items-center gap-2"
           >
-            <div className="w-16 h-16 rounded-2xl bg-[--color-success]/10 border-2 border-[--color-success]/30 flex items-center justify-center"
-              style={{ boxShadow: '0 0 15px rgba(16, 185, 129, 0.2)' }}
+            <motion.div 
+              className="w-16 h-16 rounded-2xl bg-[--color-success]/10 border-2 border-[--color-success]/30 flex items-center justify-center"
+              animate={{
+                boxShadow: [
+                  '0 0 8px rgba(16, 185, 129, 0.1)',
+                  '0 0 20px rgba(16, 185, 129, 0.3)',
+                  '0 0 8px rgba(16, 185, 129, 0.1)'
+                ]
+              }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
             >
               <Landmark size={28} className="text-[--color-success]" />
-            </div>
+            </motion.div>
             <span className="text-xs font-medium text-[--color-success]">
               Treasury Vault
             </span>

@@ -12,7 +12,7 @@ interface GlassCardProps {
   className?: string;
   hover?: boolean;
   glow?: 'blue' | 'violet' | 'cyan' | 'green' | 'primary' | 'none';
-  padding?: 'sm' | 'md' | 'lg';
+  padding?: 'none' | 'sm' | 'md' | 'lg';
   animate?: boolean;
   onClick?: () => void;
 }
@@ -27,6 +27,7 @@ const glowClasses = {
 };
 
 const paddingClasses = {
+  none: 'p-0',
   sm: 'p-4',
   md: 'p-6',
   lg: 'p-8',

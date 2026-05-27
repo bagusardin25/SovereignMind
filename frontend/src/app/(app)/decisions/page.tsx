@@ -13,7 +13,9 @@ import {
   Brain,
   LineChart,
   Megaphone,
+  Download,
 } from 'lucide-react';
+import { downloadCSV } from '@/lib/exportUtils';
 import GlassCard from '@/components/ui/GlassCard';
 import DecisionCard from '@/components/decisions/DecisionCard';
 import Skeleton, { SkeletonCard, SkeletonDecision } from '@/components/ui/Skeleton';
@@ -109,11 +111,32 @@ export default function DecisionsPage() {
   return (
     <div className="space-y-6">
       {/* Page Title */}
-      <div>
-        <h1 className="text-2xl font-bold gradient-text-primary">Decision Log</h1>
-        <p className="text-sm text-[--color-muted-foreground] mt-1">
-          Complete audit trail of all autonomous decisions — powered by Somnia Receipts API
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold gradient-text-primary">Decision Log</h1>
+          <p className="text-sm text-[--color-muted-foreground] mt-1">
+            Complete audit trail of all autonomous decisions — powered by Somnia Receipts API
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            const headers = ['ID', 'Role', 'Type', 'Title', 'Outcome', 'Confidence', 'Timestamp'];
+            const data = filteredDecisions.map((d) => [
+              d.id,
+              d.agentRole,
+              d.type,
+              d.title,
+              d.outcome,
+              `${d.confidenceScore}%`,
+              new Date(d.timestamp).toISOString(),
+            ]);
+            downloadCSV('decisions.csv', headers, data);
+          }}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-white/5 border border-[--color-border] hover:bg-white/10 text-[--color-foreground] transition-colors"
+        >
+          <Download size={16} className="text-[--color-muted]" />
+          Export CSV
+        </button>
       </div>
 
       {/* Stats Bar */}

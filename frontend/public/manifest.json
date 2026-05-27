@@ -1,0 +1,8 @@
+{
+  "name": "SovereignMind",
+  "short_name": "SM",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f141b",
+  "theme_color": "#cfbcff"
+}

@@ -12,6 +12,7 @@ import {
   Bot,
   Landmark,
   ScrollText,
+  Settings,
   ChevronLeft,
   ChevronRight,
   Zap,
@@ -25,6 +26,7 @@ const navItems = [
   { label: 'Agents', href: '/agents', icon: Bot },
   { label: 'Treasury', href: '/treasury', icon: Landmark },
   { label: 'Decisions', href: '/decisions', icon: ScrollText },
+  { label: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export default function Sidebar() {
