@@ -184,8 +184,8 @@ export default function SettingsPage() {
                 </div>
                 <div className="relative">
                   <input type="checkbox" className="sr-only" checked={notifications.email} onChange={(e) => setNotifications({...notifications, email: e.target.checked})} />
-                  <div className={`block w-10 h-6 rounded-full transition-colors ${notifications.email ? 'bg-[--color-agent-cmo]' : 'bg-white/20'}`}></div>
-                  <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${notifications.email ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                  <div className={`block w-10 h-6 rounded-full transition-colors ${notifications.email ? 'bg-[--color-agent-cmo]' : 'bg-gray-600'}`}></div>
+                  <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform ${notifications.email ? 'translate-x-4' : 'translate-x-0'}`}></div>
                 </div>
               </label>
 
@@ -196,8 +196,8 @@ export default function SettingsPage() {
                 </div>
                 <div className="relative">
                   <input type="checkbox" className="sr-only" checked={notifications.slack} onChange={(e) => setNotifications({...notifications, slack: e.target.checked})} />
-                  <div className={`block w-10 h-6 rounded-full transition-colors ${notifications.slack ? 'bg-[--color-agent-cmo]' : 'bg-white/20'}`}></div>
-                  <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${notifications.slack ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                  <div className={`block w-10 h-6 rounded-full transition-colors ${notifications.slack ? 'bg-[--color-agent-cmo]' : 'bg-gray-600'}`}></div>
+                  <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform ${notifications.slack ? 'translate-x-4' : 'translate-x-0'}`}></div>
                 </div>
               </label>
 
@@ -208,8 +208,8 @@ export default function SettingsPage() {
                 </div>
                 <div className="relative">
                   <input type="checkbox" className="sr-only" checked={notifications.telegram} onChange={(e) => setNotifications({...notifications, telegram: e.target.checked})} />
-                  <div className={`block w-10 h-6 rounded-full transition-colors ${notifications.telegram ? 'bg-[--color-agent-cmo]' : 'bg-white/20'}`}></div>
-                  <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${notifications.telegram ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                  <div className={`block w-10 h-6 rounded-full transition-colors ${notifications.telegram ? 'bg-[--color-agent-cmo]' : 'bg-gray-600'}`}></div>
+                  <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform ${notifications.telegram ? 'translate-x-4' : 'translate-x-0'}`}></div>
                 </div>
               </label>
               
@@ -221,8 +221,8 @@ export default function SettingsPage() {
                   </div>
                   <div className="relative">
                     <input type="checkbox" className="sr-only" checked={notifications.urgentOnly} onChange={(e) => setNotifications({...notifications, urgentOnly: e.target.checked})} />
-                    <div className={`block w-10 h-6 rounded-full transition-colors ${notifications.urgentOnly ? 'bg-red-500' : 'bg-white/20'}`}></div>
-                    <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${notifications.urgentOnly ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                    <div className={`block w-10 h-6 rounded-full transition-colors ${notifications.urgentOnly ? 'bg-red-500' : 'bg-gray-600'}`}></div>
+                    <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform ${notifications.urgentOnly ? 'translate-x-4' : 'translate-x-0'}`}></div>
                   </div>
                 </label>
               </div>
