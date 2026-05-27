@@ -19,7 +19,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 h-16 glass border-b border-[--color-border] flex items-center justify-between px-6">
+      <header className="sticky top-0 z-30 h-16 glass bg-black/20 shadow-md flex items-center justify-between px-6">
         {/* Left: Network Status */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[--color-success]/10 border border-[--color-success]/20">
@@ -54,14 +54,96 @@ export default function Header() {
           </div>
 
           {/* Wallet Connect */}
-          <ConnectButton
-            chainStatus="icon"
-            showBalance={false}
-            accountStatus={{
-              smallScreen: 'avatar',
-              largeScreen: 'full',
+          <ConnectButton.Custom>
+            {({
+              account,
+              chain,
+              openAccountModal,
+              openChainModal,
+              openConnectModal,
+              authenticationStatus,
+              mounted,
+            }) => {
+              const ready = mounted && authenticationStatus !== 'loading';
+              const connected =
+                ready &&
+                account &&
+                chain &&
+                (!authenticationStatus ||
+                  authenticationStatus === 'authenticated');
+
+              return (
+                <div
+                  {...(!ready && {
+                    'aria-hidden': true,
+                    style: {
+                      opacity: 0,
+                      pointerEvents: 'none',
+                      userSelect: 'none',
+                    },
+                  })}
+                >
+                  {(() => {
+                    if (!connected) {
+                      return (
+                        <button 
+                          onClick={openConnectModal} 
+                          type="button"
+                          className="px-4 py-2 rounded-xl font-bold text-sm bg-gradient-to-r from-[--color-primary] to-[--color-secondary] text-[#0f141b] shadow-[0_0_15px_rgba(207,188,255,0.4)] hover:shadow-[0_0_25px_rgba(207,188,255,0.6)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+                        >
+                          Connect Wallet
+                        </button>
+                      );
+                    }
+
+                    if (chain.unsupported) {
+                      return (
+                        <button 
+                          onClick={openChainModal} 
+                          type="button"
+                          className="px-4 py-2 rounded-xl font-bold text-sm bg-rose-500/20 text-rose-400 border border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.2)] hover:bg-rose-500/30 transition-all duration-300"
+                        >
+                          Wrong Network
+                        </button>
+                      );
+                    }
+
+                    return (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={openChainModal}
+                          className="hidden sm:flex items-center justify-center p-2 rounded-xl glass border border-white/10 hover:bg-white/5 transition-all duration-300"
+                          type="button"
+                        >
+                          {chain.hasIcon && (
+                            <div className="w-5 h-5 overflow-hidden rounded-full">
+                              {chain.iconUrl && (
+                                <img
+                                  alt={chain.name ?? 'Chain icon'}
+                                  src={chain.iconUrl}
+                                  className="w-full h-full object-cover"
+                                />
+                              )}
+                            </div>
+                          )}
+                        </button>
+
+                        <button 
+                          onClick={openAccountModal} 
+                          type="button"
+                          className="flex items-center gap-2 px-4 py-2 rounded-xl glass border border-white/10 hover:border-[--color-primary]/50 hover:bg-white/5 transition-all duration-300 shadow-[0_4px_15px_rgba(0,0,0,0.2)]"
+                        >
+                          <span className="text-sm font-medium gradient-text-primary">
+                            {account.displayName}
+                          </span>
+                        </button>
+                      </div>
+                    );
+                  })()}
+                </div>
+              );
             }}
-          />
+          </ConnectButton.Custom>
         </div>
       </header>
 
