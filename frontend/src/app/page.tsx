@@ -65,12 +65,22 @@ export default function LandingPage() {
   return (
     <>
       {/* TopNavBar */}
-      <nav className={`fixed top-0 w-full z-50 flex justify-between items-center px-8 md:px-[var(--spacing-margin-page)] transition-all duration-300 ${isScrolled ? 'py-4 bg-[#0f141b]/80 backdrop-blur-md border-b border-white/10 shadow-lg' : 'py-6 bg-transparent border-b border-transparent'}`}>
-        {/* Left Links */}
-        <div className="flex items-center gap-8 w-1/3">
-          <Link href="/dashboard" className="bg-[var(--color-primary)] text-[var(--color-on-primary)] font-label-caps text-[12px] px-6 py-2 rounded-full hover:opacity-90 transition-all shadow-[0_0_15px_rgba(207,188,255,0.4)]">
+      <nav className={`fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-[var(--spacing-margin-page)] transition-all duration-300 ${isScrolled ? 'py-3 md:py-4 bg-[#0f141b]/90 backdrop-blur-md border-b border-white/10 shadow-lg' : 'py-5 md:py-6 bg-transparent border-b border-transparent'}`}>
+        
+        {/* Left Section (Logo on Mobile, Links on Desktop) */}
+        <div className="flex items-center gap-2 md:gap-8 flex-1 md:flex-none md:w-1/3 min-w-0">
+          {/* Mobile Logo (hidden on desktop) */}
+          <Link href="/" className="md:hidden font-display-lg text-[18px] sm:text-[20px] tracking-tight flex items-center min-w-0">
+            <span className="text-white font-bold truncate">Sovereign</span>
+            <span className="text-white/50 font-light truncate">Mind</span>
+          </Link>
+
+          {/* Desktop Platform Button */}
+          <Link href="/dashboard" className="hidden md:inline-block bg-[var(--color-primary)] text-[var(--color-on-primary)] font-label-caps text-[12px] px-6 py-2 rounded-full hover:opacity-90 transition-all shadow-[0_0_15px_rgba(207,188,255,0.4)] whitespace-nowrap">
             Platform +
           </Link>
+          
+          {/* Desktop Nav Links */}
           <div className="hidden md:flex gap-6 font-body-md text-[13px] text-[var(--color-on-surface)]/60">
             <Link href="#features" className="hover:text-white transition-colors">Features</Link>
             <Link href="#about" className="hover:text-white transition-colors">About</Link>
@@ -78,8 +88,8 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Center Logo */}
-        <div className="w-1/3 flex justify-center">
+        {/* Center Logo (Desktop Only) */}
+        <div className="hidden md:flex justify-center w-1/3 min-w-0">
           <Link href="/" className="font-display-lg text-[28px] tracking-tight flex items-center">
             <span className="text-white font-bold">Sovereign</span>
             <span className="text-white/50 font-light">Mind</span>
@@ -87,7 +97,7 @@ export default function LandingPage() {
         </div>
 
         {/* Right Links */}
-        <div className="w-1/3 flex justify-end items-center gap-3 md:gap-4 font-body-md text-[13px] text-[var(--color-on-surface)]/80">
+        <div className="flex justify-end items-center gap-2 md:gap-4 font-body-md text-[13px] text-[var(--color-on-surface)]/80 md:w-1/3 min-w-0">
           <Link
             href="https://docs.somnia.network"
             target="_blank"
@@ -104,12 +114,12 @@ export default function LandingPage() {
           >
             GitHub
           </Link>
-          <ChainBadge className="hidden sm:inline-flex" />
+          <ChainBadge className="hidden lg:inline-flex" />
           <ConnectButton
             accountStatus={{ smallScreen: 'avatar', largeScreen: 'address' }}
             chainStatus="none"
             showBalance={false}
-            label="Connect Wallet"
+            label="Connect"
           />
         </div>
       </nav>
@@ -170,12 +180,14 @@ export default function LandingPage() {
           </div>
 
           {/* Central 3D Scene */}
-          <div className={`absolute inset-0 z-[5] pointer-events-auto transition-opacity duration-1000 ease-in-out ${isSplineLoaded ? 'opacity-100' : 'opacity-0'}`}>
-            <Spline
-              scene="https://prod.spline.design/E8nQAOG1DhoU-x4w/scene.splinecode"
-              className="w-full h-full"
-              onLoad={() => setIsSplineLoaded(true)}
-            />
+          <div className={`absolute inset-0 z-[5] pointer-events-auto flex items-center justify-center transition-opacity duration-1000 ease-in-out ${isSplineLoaded ? 'opacity-100' : 'opacity-0'}`}>
+            <div className="w-full h-full scale-[0.6] -translate-y-16 md:scale-100 md:translate-y-0 transition-transform duration-700 origin-center">
+              <Spline
+                scene="https://prod.spline.design/E8nQAOG1DhoU-x4w/scene.splinecode"
+                className="w-full h-full"
+                onLoad={() => setIsSplineLoaded(true)}
+              />
+            </div>
           </div>
 
           {/* Right Side Content */}
@@ -200,20 +212,38 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Mobile-only Content blocks since they were hidden on desktop */}
-        <div className="md:hidden absolute bottom-32 left-0 w-full px-6 flex justify-between items-end z-20 pointer-events-auto">
-          <div className="flex flex-col items-start max-w-[55%] gap-2">
-             <ChainBadge />
-             <h2 className="font-display-lg text-[32px] text-white leading-none">3 Agents</h2>
-             <p className="font-body-md text-[11px] text-white/50 leading-tight">
-               Autonomous AI Venture Guild · Live on Somnia
-             </p>
+        {/* Mobile-only Content blocks */}
+        <div className="md:hidden absolute bottom-28 left-0 w-full px-5 flex flex-col gap-6 z-20 pointer-events-auto">
+          {/* Top section: Title and Badges */}
+          <div className="flex justify-between items-end w-full">
+            <div className="flex flex-col items-start max-w-[60%] gap-3">
+               <ChainBadge />
+               <div>
+                 <h2 className="font-display-lg text-[28px] text-white leading-none mb-1">3 AI Agents</h2>
+                 <p className="font-body-md text-[12px] text-white/60 leading-relaxed">
+                   Autonomous Venture Guild on Somnia L1.
+                 </p>
+               </div>
+            </div>
+            
+            {/* Agent Pills */}
+            <div className="flex flex-col items-end gap-2">
+              <div className="border border-[var(--color-agent-ceo)]/30 bg-[var(--color-agent-ceo)]/10 text-[var(--color-agent-ceo)] rounded-full px-4 py-1 text-[10px] font-bold backdrop-blur-md">CEO_Prime</div>
+              <div className="border border-[var(--color-agent-cfo)]/30 bg-[var(--color-agent-cfo)]/10 text-[var(--color-agent-cfo)] rounded-full px-4 py-1 text-[10px] font-bold backdrop-blur-md">CFO_Quant</div>
+              <div className="border border-[var(--color-agent-cmo)]/30 bg-[var(--color-agent-cmo)]/10 text-[var(--color-agent-cmo)] rounded-full px-4 py-1 text-[10px] font-bold backdrop-blur-md">CMO_Pulse</div>
+            </div>
           </div>
-          <div className="flex flex-col items-end gap-2">
-            <div className="border border-white/20 rounded-full px-4 py-1 text-[10px] text-white/60 backdrop-blur-sm">CEO_Prime</div>
-            <div className="border border-white/20 rounded-full px-4 py-1 text-[10px] text-white/60 backdrop-blur-sm">CFO_Quant</div>
-            <div className="border border-white/20 rounded-full px-4 py-1 text-[10px] text-white/60 backdrop-blur-sm">CMO_Pulse</div>
-          </div>
+
+          {/* CTA Button for Mobile */}
+          <Link href="/dashboard" className="w-full relative group block mt-2">
+            <div className="absolute -inset-1 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] rounded-xl blur opacity-30 animate-pulse"></div>
+            <button className="relative w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-label-caps text-[13px] px-6 py-3.5 rounded-xl transition-all flex justify-between items-center shadow-[0_0_20px_rgba(207,188,255,0.3)]">
+              <span className="font-bold tracking-widest">ENTER DASHBOARD</span>
+              <div className="w-7 h-7 rounded-full bg-[var(--color-on-primary)]/10 flex items-center justify-center">
+                <ArrowUpRight size={14} />
+              </div>
+            </button>
+          </Link>
         </div>
 
         {/* Overlapping Marquees */}
