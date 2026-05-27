@@ -96,7 +96,7 @@ export default function Sidebar() {
       <AnimatePresence>
         {(isMobile ? mobileOpen : true) && (
           <motion.aside
-            className={`fixed left-0 top-0 h-full z-50 flex flex-col glass border-r border-[--color-border] ${
+            className={`fixed left-0 top-0 h-full z-50 flex flex-col glass bg-black/20 ${
               isMobile ? 'shadow-2xl' : ''
             }`}
             initial={isMobile ? { x: -280 } : false}
@@ -108,7 +108,7 @@ export default function Sidebar() {
             transition={{ duration: 0.3, ease: 'easeInOut' }}
           >
             {/* Logo */}
-            <div className="flex items-center gap-3 px-5 h-16 border-b border-[--color-border]">
+            <div className="flex items-center gap-3 px-5 h-16">
               <div className="relative flex-shrink-0">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[--color-agent-ceo] via-[--color-agent-cfo] to-[--color-agent-cmo] flex items-center justify-center">
                   <Zap size={16} className="text-white" />
@@ -186,7 +186,7 @@ export default function Sidebar() {
 
             {/* Collapse Toggle — Desktop only */}
             {!isMobile && (
-              <div className="p-3 border-t border-[--color-border]">
+              <div className="p-3">
                 <button
                   onClick={() => setCollapsed(!collapsed)}
                   className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[--color-muted-foreground] hover:text-[--color-foreground] hover:bg-white/5 transition-colors"
