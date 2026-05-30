@@ -138,7 +138,7 @@ body {
 }
 
 .marquee-slanted { 
-  transform: rotate(-5deg) scale(1.1); 
+  transform: rotate(-1.5deg) scale(1.05); 
   white-space: nowrap; 
   overflow: hidden; 
   position: relative; 
@@ -146,8 +146,8 @@ body {
 }
 
 .marquee-slanted-reverse { 
-  transform: rotate(5deg) scale(1.1); 
-  margin-top: -40px; 
+  transform: rotate(1.5deg) scale(1.05); 
+  margin-top: -15px; 
   z-index: 10; 
   white-space: nowrap; 
   overflow: hidden; 

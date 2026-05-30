@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, Suspense, lazy } from 'react';
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
-const SplineScene = lazy(() => import('@/components/landing/SplineScene'));
 import {
   ChevronDown,
   ArrowUpRight,
@@ -49,7 +49,6 @@ const faqs = [
 
 export default function LandingPage() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
-  const [isSplineLoaded, setIsSplineLoaded] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -126,156 +125,69 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative w-full h-screen min-h-[850px] bg-[var(--color-background)] flex items-center justify-center">
-        {/* Background gradient glow removed per user request */}
-
-        {/* Giant Background Text */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[55%] w-full text-center z-0 select-none pointer-events-none flex flex-col items-center justify-center">
-          <motion.h1 
-            style={{ y: yParallaxText }}
-            className="font-[var(--font-space-grotesk)] text-[80px] md:text-[140px] lg:text-[200px] leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white/40 to-transparent uppercase font-bold"
-          >
-            SOVEREIGN
-            <span className="block text-[80px] md:text-[140px] lg:text-[200px] leading-none tracking-[0.1em] md:tracking-[0.2em] text-transparent uppercase mt-[-2%]" style={{ WebkitTextStroke: '1.5px rgba(207,188,255,0.3)' }}>
-              MIND
-            </span>
-          </motion.h1>
+      <section className="relative w-full h-screen min-h-[850px] bg-[var(--color-background)] flex items-center justify-center overflow-hidden">
+        
+        {/* 3D Isometric Grid Background */}
+        <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none opacity-80">
+          <div className="absolute w-[300vw] h-[300vh]" style={{
+            backgroundImage: `
+              linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px)
+            `,
+            backgroundSize: '100px 100px',
+            transform: 'rotateX(60deg) rotateZ(-45deg) translateY(-10%)',
+            transformOrigin: 'center center',
+          }}>
+          </div>
+          {/* Radial fade to hide hard edges */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,var(--color-background)_75%)]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[var(--color-background)]/80 via-transparent to-[var(--color-background)]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-background)] via-transparent to-transparent" />
         </div>
 
         {/* Center Content Wrapper */}
-        <div className="container mx-auto px-6 relative z-10 w-full h-full flex items-center justify-between pointer-events-none">
+        <div className="container mx-auto px-6 lg:px-12 relative z-10 w-full h-full flex items-center justify-center mt-10">
           
-          {/* Left Side Content */}
-          <div className="hidden md:flex flex-col items-start justify-center w-1/4 pt-20 pointer-events-auto">
-            <p className="font-body-md text-[16px] text-[var(--color-on-surface)]/70 mb-8 leading-relaxed relative pl-4 border-l border-[var(--color-primary)]/50">
-              The first fully on-chain autonomous Venture Guild powered by Somnia Agentic L1 native primitives.
-            </p>
-            <Link href="/dashboard" className="w-full relative group block">
-              {/* Animated glow ring behind the button */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-500 group-hover:duration-200 animate-pulse"></div>
-              <button className="relative w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-label-caps text-[14px] px-8 py-4 rounded-xl hover:scale-[1.02] transition-all duration-300 shadow-[0_0_20px_rgba(207,188,255,0.3)] hover:shadow-[0_0_40px_rgba(207,188,255,0.6)] flex justify-between items-center group-hover:bg-[#d8c8ff]">
-                <span className="font-bold tracking-widest z-10">ENTER DASHBOARD</span>
-                <div className="w-8 h-8 rounded-full bg-[var(--color-on-primary)]/10 flex items-center justify-center group-hover:bg-[var(--color-on-primary)]/20 group-hover:rotate-45 transition-all duration-300 z-10">
-                  <ArrowUpRight size={16} />
-                </div>
-              </button>
-            </Link>
-            <a
-              href={`${SOMNIA_TESTNET.blockExplorers.default.url}/address/${CONTRACT_ADDRESSES.agentRegistry}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full mt-3 group"
-            >
-              <button className="w-full bg-transparent border border-white/15 hover:border-white/40 text-white/80 hover:text-white font-label-caps text-[12px] px-8 py-3 rounded-xl transition-all flex justify-between items-center">
-                <span className="inline-flex items-center gap-2">
-                  <FileCode2 size={14} className="text-[var(--color-primary)]" />
-                  VIEW CONTRACT
-                </span>
-                <ArrowUpRight
-                  size={14}
-                  className="text-white/50 group-hover:text-white transition-colors"
-                />
-              </button>
-            </a>
-          </div>
+          <div className="flex flex-col md:flex-row w-full justify-between items-center gap-16 max-w-7xl">
+            
+            {/* Left Side Content */}
+            <div className="flex flex-col items-start justify-center w-full md:w-[50%] z-20">
+              
+              <h1 className="text-white text-5xl md:text-[64px] lg:text-[76px] font-extrabold italic mb-6 leading-[1.05] tracking-tight drop-shadow-lg">
+                Autonomous Venture Guild,<br/>
+                <span className="text-white">Now On-Chain</span>
+              </h1>
+              
+              <p className="font-body-md text-[16px] md:text-[18px] text-[#a0a0a0] italic mb-10 leading-relaxed max-w-[450px] font-light">
+                The first fully on-chain autonomous Venture Guild powered by Somnia L1 primitives. Monitor AI executive decisions and track algorithmic consensus without human intervention.
+              </p>
+              
+              <Link href="/dashboard" className="w-full sm:w-auto block group">
+                <button className="relative w-full sm:w-auto bg-[var(--color-primary)] text-[var(--color-on-primary)] font-label-caps text-[14px] px-8 py-4 rounded-xl hover:scale-[1.03] transition-all duration-300 shadow-[0_0_20px_rgba(207,188,255,0.3)] hover:shadow-[0_0_40px_rgba(207,188,255,0.6)] flex justify-center items-center gap-3">
+                  <span className="font-extrabold tracking-wide uppercase">Enter Dashboard</span>
+                  <div className="w-8 h-8 rounded-full bg-[var(--color-on-primary)]/10 flex items-center justify-center group-hover:bg-[var(--color-on-primary)]/20 group-hover:rotate-45 transition-all duration-300 z-10">
+                    <ArrowUpRight size={16} />
+                  </div>
+                </button>
+              </Link>
+            </div>
 
-          {/* Central 3D Scene */}
-          <div className={`absolute inset-0 z-[5] pointer-events-auto flex items-center justify-center transition-opacity duration-1000 ease-in-out ${isSplineLoaded ? 'opacity-100' : 'opacity-0'}`}>
-            <div className="w-full h-full scale-[0.6] -translate-y-16 md:scale-100 md:translate-y-0 transition-transform duration-700 origin-center">
-              <Suspense fallback={
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--color-primary)]/30 to-[var(--color-tertiary)]/30 animate-pulse" />
-                    <p className="text-sm text-white/40 font-body-md animate-pulse">Loading 3D Scene...</p>
+            {/* Right Side Content */}
+            <div className="hidden md:flex flex-col justify-center items-end w-full md:w-[50%] h-full z-20">
+              <div className="relative transform scale-[1.15] xl:scale-[1.25] origin-right transition-transform duration-700 hover:scale-[1.3] mr-4">
+                {/* Glowing orb matching the primary theme */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-[var(--color-primary)]/20 rounded-full blur-[100px] -z-10 animate-pulse"></div>
+                
+                {/* Visual Representation (Interactive Chart) */}
+                <div className="glass-dark border border-white/10 rounded-3xl p-4 bg-[var(--color-surface-container-low)]/80 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-primary)]/10 to-transparent opacity-50 z-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="relative z-10">
+                    <LiveStatsGrid />
                   </div>
                 </div>
-              }>
-                <SplineScene onLoad={() => setIsSplineLoaded(true)} />
-              </Suspense>
-            </div>
-          </div>
-
-          {/* Right Side Content */}
-          <div className="hidden md:flex flex-col justify-between items-end w-1/4 h-full py-32 pointer-events-auto">
-
-            {/* Top Right: Live Stats */}
-            <LiveStatsGrid />
-
-            {/* Bottom Right: Agent Pills */}
-            <div className="flex flex-col items-end gap-4 mt-auto pt-16 mb-20">
-              <div className="group border border-white/10 rounded-full px-6 py-2.5 text-[12px] font-body-md text-white/50 hover:bg-[var(--color-agent-ceo)]/10 hover:text-[var(--color-agent-ceo)] hover:border-[var(--color-agent-ceo)]/50 transition-all duration-300 cursor-pointer backdrop-blur-sm mr-16 shadow-lg shadow-black hover:-translate-x-2">
-                CEO_Prime
-              </div>
-              <div className="group border border-white/10 rounded-full px-6 py-2.5 text-[12px] font-body-md text-white/50 hover:bg-[var(--color-agent-cfo)]/10 hover:text-[var(--color-agent-cfo)] hover:border-[var(--color-agent-cfo)]/50 transition-all duration-300 cursor-pointer backdrop-blur-sm mr-8 shadow-lg shadow-black hover:-translate-x-2">
-                CFO_Quant
-              </div>
-              <div className="group border border-white/10 rounded-full px-6 py-2.5 text-[12px] font-body-md text-white/50 hover:bg-[var(--color-agent-cmo)]/10 hover:text-[var(--color-agent-cmo)] hover:border-[var(--color-agent-cmo)]/50 transition-all duration-300 cursor-pointer backdrop-blur-sm shadow-lg shadow-black hover:-translate-x-2">
-                CMO_Pulse
               </div>
             </div>
 
-          </div>
-        </div>
-
-        {/* Mobile-only Content blocks */}
-        <div className="md:hidden absolute bottom-28 left-0 w-full px-5 flex flex-col gap-6 z-20 pointer-events-auto">
-          {/* Top section: Title and Badges */}
-          <div className="flex justify-between items-end w-full">
-            <div className="flex flex-col items-start max-w-[60%] gap-3">
-               <ChainBadge />
-               <div>
-                 <h2 className="font-display-lg text-[28px] text-white leading-none mb-1">3 AI Agents</h2>
-                 <p className="font-body-md text-[12px] text-white/60 leading-relaxed">
-                   Autonomous Venture Guild on Somnia L1.
-                 </p>
-               </div>
-            </div>
-            
-            {/* Agent Pills */}
-            <div className="flex flex-col items-end gap-2">
-              <div className="border border-[var(--color-agent-ceo)]/30 bg-[var(--color-agent-ceo)]/10 text-[var(--color-agent-ceo)] rounded-full px-4 py-1 text-[10px] font-bold backdrop-blur-md">CEO_Prime</div>
-              <div className="border border-[var(--color-agent-cfo)]/30 bg-[var(--color-agent-cfo)]/10 text-[var(--color-agent-cfo)] rounded-full px-4 py-1 text-[10px] font-bold backdrop-blur-md">CFO_Quant</div>
-              <div className="border border-[var(--color-agent-cmo)]/30 bg-[var(--color-agent-cmo)]/10 text-[var(--color-agent-cmo)] rounded-full px-4 py-1 text-[10px] font-bold backdrop-blur-md">CMO_Pulse</div>
-            </div>
-          </div>
-
-          {/* CTA Button for Mobile */}
-          <Link href="/dashboard" className="w-full relative group block mt-2">
-            <div className="absolute -inset-1 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] rounded-xl blur opacity-30 animate-pulse"></div>
-            <button className="relative w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] font-label-caps text-[13px] px-6 py-3.5 rounded-xl transition-all flex justify-between items-center shadow-[0_0_20px_rgba(207,188,255,0.3)]">
-              <span className="font-bold tracking-widest">ENTER DASHBOARD</span>
-              <div className="w-7 h-7 rounded-full bg-[var(--color-on-primary)]/10 flex items-center justify-center">
-                <ArrowUpRight size={14} />
-              </div>
-            </button>
-          </Link>
-        </div>
-
-        {/* Overlapping Marquees */}
-        <div className="absolute bottom-[-40px] md:bottom-[-20px] w-full z-30">
-          <div className="marquee-slanted bg-[var(--color-surface-container-low)]/80 backdrop-blur-lg border-y border-white/5 py-5 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
-            <div className="marquee-content font-display-lg text-[28px] text-white/80 flex gap-16 items-center uppercase tracking-wider">
-              <span>SOMNIA NATIVE AGENTS</span> <span className="text-[var(--color-primary)] opacity-50">✦</span>
-              <span>ON-CHAIN RECEIPTS</span> <span className="text-[var(--color-primary)] opacity-50">✦</span>
-              <span>AI EXECUTIVE SUITE</span> <span className="text-[var(--color-primary)] opacity-50">✦</span>
-              <span>DETERMINISTIC LLM INFERENCE</span> <span className="text-[var(--color-primary)] opacity-50">✦</span>
-              <span>SOMNIA NATIVE AGENTS</span> <span className="text-[var(--color-primary)] opacity-50">✦</span>
-              <span>ON-CHAIN RECEIPTS</span> <span className="text-[var(--color-primary)] opacity-50">✦</span>
-              <span>AI EXECUTIVE SUITE</span> <span className="text-[var(--color-primary)] opacity-50">✦</span>
-              <span>DETERMINISTIC LLM INFERENCE</span> <span className="text-[var(--color-primary)] opacity-50">✦</span>
-            </div>
-          </div>
-          <div className="marquee-slanted-reverse bg-[var(--color-background)]/80 backdrop-blur-lg border-y border-[var(--color-primary)]/20 py-4 mt-[-40px] shadow-[0_0_50px_rgba(0,0,0,0.5)]">
-            <div className="marquee-content-reverse font-display-lg text-[24px] text-white/50 flex gap-16 items-center uppercase tracking-wider">
-              <span>NO HUMAN INTERVENTION</span> <span className="text-[var(--color-primary)] opacity-30">✦</span>
-              <span>PROTOCOL OWNED LIQUIDITY</span> <span className="text-[var(--color-primary)] opacity-30">✦</span>
-              <span>JSON API REQUESTS</span> <span className="text-[var(--color-primary)] opacity-30">✦</span>
-              <span>BFT CONSENSUS</span> <span className="text-[var(--color-primary)] opacity-30">✦</span>
-              <span>NO HUMAN INTERVENTION</span> <span className="text-[var(--color-primary)] opacity-30">✦</span>
-              <span>PROTOCOL OWNED LIQUIDITY</span> <span className="text-[var(--color-primary)] opacity-30">✦</span>
-              <span>JSON API REQUESTS</span> <span className="text-[var(--color-primary)] opacity-30">✦</span>
-              <span>BFT CONSENSUS</span> <span className="text-[var(--color-primary)] opacity-30">✦</span>
-            </div>
           </div>
         </div>
       </section>
@@ -317,8 +229,9 @@ export default function LandingPage() {
         >
           {/* Agent 1: CEO */}
           <motion.div variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 0.6 } } }} className="h-full">
-            <div className="h-full glass-dark p-8 rounded-2xl relative overflow-hidden group hover:border-[var(--color-agent-ceo)]/50 transition-colors animate-float-2" style={{ animationDelay: '0s' }}>
-              <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-100 transition-opacity">
+            <div className="h-full glass-dark p-8 rounded-3xl relative overflow-hidden group border border-white/5 hover:border-[var(--color-agent-ceo)]/50 transition-all duration-500 hover:-translate-y-3 shadow-lg hover:shadow-[0_20px_40px_rgba(255,180,171,0.1)] animate-float-2" style={{ animationDelay: '0s' }}>
+              <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-agent-ceo)]/0 to-[var(--color-agent-ceo)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-100 transition-opacity duration-500 group-hover:scale-110">
                 <Brain size={48} className="text-[var(--color-agent-ceo)]" />
               </div>
               <div className="font-label-caps text-label-caps text-[var(--color-agent-ceo)] mb-2">AGENT 01</div>
@@ -342,8 +255,9 @@ export default function LandingPage() {
 
           {/* Agent 2: CFO */}
           <motion.div variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 0.6 } } }} className="h-full">
-            <div className="h-full glass-dark p-8 rounded-2xl relative overflow-hidden group hover:border-[var(--color-agent-cfo)]/50 transition-colors animate-float-1" style={{ animationDelay: '1s' }}>
-              <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-100 transition-opacity">
+            <div className="h-full glass-dark p-8 rounded-3xl relative overflow-hidden group border border-white/5 hover:border-[var(--color-agent-cfo)]/50 transition-all duration-500 hover:-translate-y-3 shadow-lg hover:shadow-[0_20px_40px_rgba(82,210,146,0.1)] animate-float-1" style={{ animationDelay: '1s' }}>
+              <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-agent-cfo)]/0 to-[var(--color-agent-cfo)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-100 transition-opacity duration-500 group-hover:scale-110">
                 <TrendingUp size={48} className="text-[var(--color-agent-cfo)]" />
               </div>
               <div className="font-label-caps text-label-caps text-[var(--color-agent-cfo)] mb-2">AGENT 02</div>
@@ -376,8 +290,9 @@ export default function LandingPage() {
 
           {/* Agent 3: CMO */}
           <motion.div variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 0.6 } } }} className="h-full">
-            <div className="h-full glass-dark p-8 rounded-2xl relative overflow-hidden group hover:border-[var(--color-agent-cmo)]/50 transition-colors animate-float-2" style={{ animationDelay: '2s' }}>
-              <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-100 transition-opacity">
+            <div className="h-full glass-dark p-8 rounded-3xl relative overflow-hidden group border border-white/5 hover:border-[var(--color-agent-cmo)]/50 transition-all duration-500 hover:-translate-y-3 shadow-lg hover:shadow-[0_20px_40px_rgba(111,194,255,0.1)] animate-float-2" style={{ animationDelay: '2s' }}>
+              <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-agent-cmo)]/0 to-[var(--color-agent-cmo)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-100 transition-opacity duration-500 group-hover:scale-110">
                 <Radar size={48} className="text-[var(--color-agent-cmo)]" />
               </div>
               <div className="font-label-caps text-label-caps text-[var(--color-agent-cmo)] mb-2">AGENT 03</div>
@@ -536,14 +451,14 @@ export default function LandingPage() {
                 type="button"
                 onClick={() => setOpenFaqIndex(isOpen ? null : index)}
                 aria-expanded={isOpen}
-                className={`w-full text-left border ${isOpen ? 'border-[var(--color-primary)]/30 bg-[var(--color-surface-container)]' : 'border-white/10 bg-transparent hover:border-white/30'} rounded-[30px] p-6 md:p-8 cursor-pointer transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/50`}
+                className={`w-full text-left border ${isOpen ? 'border-[var(--color-primary)]/50 bg-[var(--color-primary)]/5 shadow-[0_0_30px_rgba(207,188,255,0.1)]' : 'border-white/10 bg-[var(--color-surface-container)]/30 hover:bg-[var(--color-surface-container)]/80 hover:border-white/30 hover:-translate-y-1'} rounded-[24px] p-6 md:p-8 cursor-pointer transition-all duration-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/50`}
               >
                 <div className="flex justify-between items-center w-full">
-                  <h3 className="font-body-lg text-[18px] md:text-[22px] text-[var(--color-on-surface)]/90">
+                  <h3 className={`font-body-lg text-[18px] md:text-[22px] transition-colors duration-300 ${isOpen ? 'text-[var(--color-primary)]' : 'text-white'}`}>
                     {faq.q}
                   </h3>
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-transform duration-300 flex-shrink-0 ml-4 ${isOpen ? 'bg-[var(--color-primary)] rotate-180' : 'bg-transparent border border-white/10'}`}>
-                    <ChevronDown size={20} className="text-white" />
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 flex-shrink-0 ml-4 ${isOpen ? 'bg-[var(--color-primary)] rotate-180 shadow-[0_0_15px_rgba(207,188,255,0.4)]' : 'bg-white/5 border border-white/10'}`}>
+                    <ChevronDown size={20} className={isOpen ? 'text-[var(--color-background)]' : 'text-white'} />
                   </div>
                 </div>
                 <div 
@@ -564,8 +479,18 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-[var(--color-background)] w-full border-t border-[var(--color-on-surface)]/10 grid grid-cols-1 md:grid-cols-2 gap-[var(--spacing-gutter)] px-[var(--spacing-margin-page)] py-[var(--spacing-section-gap)] max-w-7xl mx-auto z-10 relative">
-        <div className="flex flex-col gap-6">
+      <footer className="relative bg-[var(--color-background)] w-full border-t border-[var(--color-on-surface)]/10 px-[var(--spacing-margin-page)] py-[var(--spacing-section-gap)] z-10 overflow-hidden">
+        {/* Giant Marquee Background in Footer */}
+        <div className="absolute top-1/2 -translate-y-1/2 left-0 w-full pointer-events-none select-none overflow-hidden opacity-5 z-0 flex whitespace-nowrap">
+          <div className="animate-[marquee_60s_linear_infinite] flex gap-16 items-center">
+            <span className="font-display-lg text-[15vw] font-extrabold tracking-tighter">SOVEREIGN MIND</span>
+            <span className="font-display-lg text-[15vw] font-extrabold tracking-tighter">SOVEREIGN MIND</span>
+            <span className="font-display-lg text-[15vw] font-extrabold tracking-tighter">SOVEREIGN MIND</span>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-[var(--spacing-gutter)] relative z-10">
+          <div className="flex flex-col gap-6">
           <span className="font-display-lg text-display-lg text-[var(--color-on-surface)] text-[32px] leading-none">SovereignMind</span>
           <p className="font-body-md text-[13px] text-[var(--color-on-surface)]/40 max-w-sm leading-relaxed">
             Autonomous On-Chain Agentic Venture Guild — built for the Somnia Agentathon 2026.
@@ -581,6 +506,7 @@ export default function LandingPage() {
           <Link href="https://agents.somnia.network" target="_blank" rel="noopener noreferrer" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">Agent Dashboard</Link>
           <Link href="https://github.com/bagusardin25/SovereignMind" target="_blank" rel="noopener noreferrer" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">GitHub</Link>
           <Link href="/dashboard" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">Terminal</Link>
+        </div>
         </div>
       </footer>
     </>
