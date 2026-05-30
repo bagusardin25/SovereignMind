@@ -18,10 +18,14 @@ import {
   ShieldCheck,
   Trophy,
   FileCode2,
+  Wallet,
 } from 'lucide-react';
 import ChainBadge from '@/components/landing/ChainBadge';
 import LiveStatsGrid from '@/components/landing/LiveStatsGrid';
 import ContractAddressStrip from '@/components/landing/ContractAddressStrip';
+import FeatureAgentCard from '@/components/landing/FeatureAgentCard';
+import MouseParallax from '@/components/ui/MouseParallax';
+import Particles from '@/components/ui/Particles';
 import { CONTRACT_ADDRESSES, SOMNIA_TESTNET } from '@/lib/constants';
 
 const faqs = [
@@ -48,7 +52,7 @@ const faqs = [
 ];
 
 export default function LandingPage() {
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -76,15 +80,37 @@ export default function LandingPage() {
           </Link>
 
           {/* Desktop Platform Button */}
-          <Link href="/dashboard" className="hidden md:inline-block bg-[var(--color-primary)] text-[var(--color-on-primary)] font-label-caps text-[12px] px-6 py-2 rounded-full hover:opacity-90 transition-all shadow-[0_0_15px_rgba(207,188,255,0.4)] whitespace-nowrap">
-            Platform +
+          <Link 
+            href="/dashboard" 
+            className="hidden md:flex items-center gap-1.5 bg-[var(--color-primary)]/10 hover:bg-[var(--color-primary)] text-[var(--color-primary)] hover:text-[var(--color-on-primary)] font-label-caps text-[11px] tracking-wider uppercase px-5 py-2.5 rounded-xl border border-[var(--color-primary)]/30 hover:border-[var(--color-primary)] transition-all duration-300 shadow-[0_0_15px_rgba(207,188,255,0.1)] hover:shadow-[0_0_25px_rgba(207,188,255,0.5)] whitespace-nowrap group relative overflow-hidden"
+          >
+            <span className="relative z-10 flex items-center gap-1.5 font-extrabold">
+              Launch App
+              <ArrowUpRight size={13} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
           </Link>
           
           {/* Desktop Nav Links */}
           <div className="hidden md:flex gap-6 font-body-md text-[13px] text-[var(--color-on-surface)]/60">
-            <Link href="#features" className="hover:text-white transition-colors">Features</Link>
-            <Link href="#about" className="hover:text-white transition-colors">About</Link>
-            <Link href="#faqs" className="hover:text-white transition-colors">FAQs</Link>
+            <Link href="#features" className="hover:text-white transition-colors group/nav py-1 relative">
+              <span className="relative">
+                Features
+                <span className="absolute bottom-[-2px] left-0 w-0 h-[1.5px] bg-[var(--color-primary)] group-hover/nav:w-full transition-all duration-300" />
+              </span>
+            </Link>
+            <Link href="#about" className="hover:text-white transition-colors group/nav py-1 relative">
+              <span className="relative">
+                About
+                <span className="absolute bottom-[-2px] left-0 w-0 h-[1.5px] bg-[var(--color-primary)] group-hover/nav:w-full transition-all duration-300" />
+              </span>
+            </Link>
+            <Link href="#faqs" className="hover:text-white transition-colors group/nav py-1 relative">
+              <span className="relative">
+                FAQs
+                <span className="absolute bottom-[-2px] left-0 w-0 h-[1.5px] bg-[var(--color-primary)] group-hover/nav:w-full transition-all duration-300" />
+              </span>
+            </Link>
           </div>
         </div>
 
@@ -114,18 +140,107 @@ export default function LandingPage() {
           >
             GitHub
           </Link>
-          <ChainBadge className="hidden lg:inline-flex" />
-          <ConnectButton
-            accountStatus={{ smallScreen: 'avatar', largeScreen: 'address' }}
-            chainStatus="none"
-            showBalance={false}
-            label="Connect"
-          />
+          <div className="hidden lg:block">
+            <ChainBadge />
+          </div>
+          <ConnectButton.Custom>
+            {({
+              account,
+              chain,
+              openAccountModal,
+              openChainModal,
+              openConnectModal,
+              authenticationStatus,
+              mounted,
+            }) => {
+              const ready = mounted && authenticationStatus !== 'loading';
+              const connected =
+                ready &&
+                account &&
+                chain &&
+                (!authenticationStatus ||
+                  authenticationStatus === 'authenticated');
+
+              return (
+                <div
+                  {...(!ready && {
+                    'aria-hidden': true,
+                    style: {
+                      opacity: 0,
+                      pointerEvents: 'none',
+                      userSelect: 'none',
+                    },
+                  })}
+                >
+                  {(() => {
+                    if (!connected) {
+                      return (
+                        <button
+                          onClick={openConnectModal}
+                          type="button"
+                          className="flex items-center gap-2 bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:bg-[var(--color-primary)]/90 font-label-caps text-[11px] tracking-wider uppercase px-5 py-2.5 rounded-xl shadow-[0_0_15px_rgba(207,188,255,0.3)] hover:shadow-[0_0_25px_rgba(207,188,255,0.6)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 relative group overflow-hidden cursor-pointer whitespace-nowrap"
+                        >
+                          <Wallet size={13} className="transition-transform group-hover:scale-110" />
+                          <span className="font-extrabold relative z-10">Connect Wallet</span>
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
+                        </button>
+                      );
+                    }
+
+                    if (chain.unsupported) {
+                      return (
+                        <button
+                          onClick={openChainModal}
+                          type="button"
+                          className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-extrabold font-label-caps text-[11px] tracking-wider uppercase bg-rose-500/10 text-rose-400 border border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.15)] hover:bg-rose-500/20 active:scale-[0.98] transition-all duration-300 cursor-pointer whitespace-nowrap"
+                        >
+                          Wrong Network
+                        </button>
+                      );
+                    }
+
+                    return (
+                      <div className="flex items-center gap-2">
+                        {chain.hasIcon && chain.iconUrl && (
+                          <button
+                            onClick={openChainModal}
+                            className="hidden sm:flex items-center justify-center p-2 rounded-xl bg-white/5 border border-white/10 hover:border-[var(--color-primary)]/30 hover:bg-white/10 transition-all duration-300 cursor-pointer"
+                            type="button"
+                          >
+                            <div className="w-4 h-4 overflow-hidden rounded-full">
+                              <img
+                                alt={chain.name ?? 'Chain icon'}
+                                src={chain.iconUrl}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          </button>
+                        )}
+
+                        <button
+                          onClick={openAccountModal}
+                          type="button"
+                          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:border-[var(--color-primary)]/50 hover:bg-white/10 transition-all duration-300 shadow-[0_4px_15px_rgba(0,0,0,0.2)] hover:shadow-[0_0_20px_rgba(207,188,255,0.25)] active:scale-[0.98] cursor-pointer whitespace-nowrap"
+                        >
+                          <span className="text-[11px] font-extrabold font-label-caps tracking-wider text-white">
+                            {account.displayName}
+                          </span>
+                        </button>
+                      </div>
+                    );
+                  })()}
+                </div>
+              );
+            }}
+          </ConnectButton.Custom>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative w-full h-screen min-h-[850px] bg-[var(--color-background)] flex items-center justify-center overflow-hidden">
+      <section className="relative w-full min-h-screen md:h-screen md:min-h-[850px] bg-[var(--color-background)] flex items-center justify-center overflow-hidden">
+        
+        {/* Interactive Plexus Particle Background */}
+        <Particles color="rgba(207, 188, 255, 0.2)" quantity={60} lineDistance={130} className="absolute inset-0 z-0 pointer-events-none" />
         
         {/* 3D Isometric Grid Background */}
         <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none opacity-80">
@@ -146,45 +261,55 @@ export default function LandingPage() {
         </div>
 
         {/* Center Content Wrapper */}
-        <div className="container mx-auto px-6 lg:px-12 relative z-10 w-full h-full flex items-center justify-center mt-10">
+        <div className="container mx-auto px-6 lg:px-12 relative z-10 w-full h-full flex flex-col justify-start md:justify-center pt-28 pb-12 md:pt-0 md:pb-0 mt-8 md:mt-0">
           
-          <div className="flex flex-col md:flex-row w-full justify-between items-center gap-16 max-w-7xl">
+          <div className="flex flex-col md:flex-row w-full justify-between items-center gap-12 md:gap-16 max-w-7xl w-full">
             
             {/* Left Side Content */}
-            <div className="flex flex-col items-start justify-center w-full md:w-[50%] z-20">
+            <div className="flex flex-col items-center md:items-start justify-center w-full md:w-[55%] lg:w-[60%] z-20 text-center md:text-left">
               
-              <h1 className="text-white text-5xl md:text-[64px] lg:text-[76px] font-extrabold italic mb-6 leading-[1.05] tracking-tight drop-shadow-lg">
-                Autonomous Venture Guild,<br/>
+              <h1 className="text-white text-[36px] sm:text-[46px] md:text-[54px] lg:text-[64px] xl:text-[72px] font-extrabold italic mb-6 leading-[1.05] tracking-tight drop-shadow-lg max-w-[650px] lg:max-w-[750px]">
+                Autonomous Venture Guild,<br className="hidden sm:block" />
                 <span className="text-white">Now On-Chain</span>
               </h1>
               
-              <p className="font-body-md text-[16px] md:text-[18px] text-[#a0a0a0] italic mb-10 leading-relaxed max-w-[450px] font-light">
+              <p className="font-body-md text-[15px] md:text-[18px] text-[#dee2ec] italic mb-10 leading-relaxed max-w-[450px] font-light">
                 The first fully on-chain autonomous Venture Guild powered by Somnia L1 primitives. Monitor AI executive decisions and track algorithmic consensus without human intervention.
               </p>
               
-              <Link href="/dashboard" className="w-full sm:w-auto block group">
-                <button className="relative w-full sm:w-auto bg-[var(--color-primary)] text-[var(--color-on-primary)] font-label-caps text-[14px] px-8 py-4 rounded-xl hover:scale-[1.03] transition-all duration-300 shadow-[0_0_20px_rgba(207,188,255,0.3)] hover:shadow-[0_0_40px_rgba(207,188,255,0.6)] flex justify-center items-center gap-3">
-                  <span className="font-extrabold tracking-wide uppercase">Enter Dashboard</span>
-                  <div className="w-8 h-8 rounded-full bg-[var(--color-on-primary)]/10 flex items-center justify-center group-hover:bg-[var(--color-on-primary)]/20 group-hover:rotate-45 transition-all duration-300 z-10">
-                    <ArrowUpRight size={16} />
-                  </div>
-                </button>
-              </Link>
+              <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-4 justify-center md:justify-start">
+                <Link href="/dashboard" className="w-full sm:w-auto block group">
+                  <button className="relative w-full sm:w-auto bg-[var(--color-primary)] text-[var(--color-on-primary)] font-label-caps text-[14px] px-8 py-4 rounded-xl hover:scale-[1.03] transition-all duration-300 shadow-[0_0_20px_rgba(207,188,255,0.3)] hover:shadow-[0_0_40px_rgba(207,188,255,0.6)] flex justify-center items-center gap-3">
+                    <span className="font-extrabold tracking-wide uppercase">Enter Dashboard</span>
+                    <div className="w-8 h-8 rounded-full bg-[var(--color-on-primary)]/10 flex items-center justify-center group-hover:bg-[var(--color-on-primary)]/20 group-hover:rotate-45 transition-all duration-300 z-10">
+                      <ArrowUpRight size={16} />
+                    </div>
+                  </button>
+                </Link>
+                <Link href="https://github.com/bagusardin25/SovereignMind" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto block group">
+                  <button className="w-full sm:w-auto bg-transparent border border-white/20 text-white font-label-caps text-[14px] px-8 py-4 rounded-xl hover:bg-white/5 transition-all duration-300 flex justify-center items-center gap-2">
+                    <FileCode2 size={16} />
+                    <span className="font-bold tracking-wide uppercase">View Code</span>
+                  </button>
+                </Link>
+              </div>
             </div>
 
             {/* Right Side Content */}
-            <div className="hidden md:flex flex-col justify-center items-end w-full md:w-[50%] h-full z-20">
-              <div className="relative transform scale-[1.15] xl:scale-[1.25] origin-right transition-transform duration-700 hover:scale-[1.3] mr-4">
+            <div className="flex flex-col justify-center items-center md:items-end w-full md:w-[45%] lg:w-[40%] z-20 mt-8 md:mt-0 relative">
+              <div className="relative transform scale-[0.85] sm:scale-95 md:scale-[1.02] lg:scale-[1.05] xl:scale-[1.1] origin-center md:origin-right transition-transform duration-700 hover:scale-[0.9] sm:hover:scale-[1.0] md:hover:scale-[1.08] lg:hover:scale-[1.12] md:mr-4 w-full max-w-[380px] md:max-w-none mx-auto md:mx-0">
                 {/* Glowing orb matching the primary theme */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] bg-[var(--color-primary)]/20 rounded-full blur-[100px] -z-10 animate-pulse"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] md:w-[350px] h-[250px] md:h-[350px] bg-[var(--color-primary)]/20 rounded-full blur-[80px] md:blur-[100px] -z-10 animate-pulse"></div>
                 
                 {/* Visual Representation (Interactive Chart) */}
-                <div className="glass-dark border border-white/10 rounded-3xl p-4 bg-[var(--color-surface-container-low)]/80 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-primary)]/10 to-transparent opacity-50 z-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <div className="relative z-10">
-                    <LiveStatsGrid />
+                <MouseParallax depth={8}>
+                  <div className="glass-dark border border-white/10 rounded-3xl p-4 bg-[var(--color-surface-container-low)]/80 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-primary)]/10 to-transparent opacity-50 z-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="relative z-10 w-full overflow-hidden">
+                      <LiveStatsGrid />
+                    </div>
                   </div>
-                </div>
+                </MouseParallax>
               </div>
             </div>
 
@@ -203,7 +328,7 @@ export default function LandingPage() {
         >
           <div>
             <h2 className="font-display-lg text-display-lg md:text-[80px] leading-none mb-4 glow-text text-white">THE CORE AGENTS</h2>
-            <p className="font-body-lg text-body-lg text-[var(--color-on-surface)]/60 max-w-2xl">
+            <p className="font-body-lg text-body-lg text-[var(--color-on-surface)]/80 max-w-2xl">
               Three distinct Solidity contracts executing deterministic LLM inferences via Somnia&apos;s native on-chain agents.
             </p>
           </div>
@@ -227,101 +352,44 @@ export default function LandingPage() {
           }}
           className="grid grid-cols-1 md:grid-cols-3 gap-8"
         >
-          {/* Agent 1: CEO */}
-          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 0.6 } } }} className="h-full">
-            <div className="h-full glass-dark p-8 rounded-3xl relative overflow-hidden group border border-white/5 hover:border-[var(--color-agent-ceo)]/50 transition-all duration-500 hover:-translate-y-3 shadow-lg hover:shadow-[0_20px_40px_rgba(255,180,171,0.1)] animate-float-2" style={{ animationDelay: '0s' }}>
-              <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-agent-ceo)]/0 to-[var(--color-agent-ceo)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-100 transition-opacity duration-500 group-hover:scale-110">
-                <Brain size={48} className="text-[var(--color-agent-ceo)]" />
-              </div>
-              <div className="font-label-caps text-label-caps text-[var(--color-agent-ceo)] mb-2">AGENT 01</div>
-              <h3 className="font-display-lg text-[32px] mb-6 text-white">CEO_Prime</h3>
-              <p className="font-body-md text-body-md text-[var(--color-on-surface)]/70 mb-8">
-                Responsible for high-level orchestration. Delegates to CFO and CMO via sequential Somnia createRequest() calls and finalizes on-chain execution.
-              </p>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between font-label-caps text-label-caps text-[var(--color-on-surface)]/50 mb-2">
-                    <span>LLM Inference Agent</span>
-                    <span className="text-[var(--color-agent-ceo)]">Active</span>
-                  </div>
-                  <div className="h-1 w-full bg-black rounded-full overflow-hidden">
-                    <div className="h-full bg-[var(--color-agent-ceo)] w-[100%] rounded-full shadow-[0_0_10px_var(--color-agent-ceo)]"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Agent 2: CFO */}
-          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 0.6 } } }} className="h-full">
-            <div className="h-full glass-dark p-8 rounded-3xl relative overflow-hidden group border border-white/5 hover:border-[var(--color-agent-cfo)]/50 transition-all duration-500 hover:-translate-y-3 shadow-lg hover:shadow-[0_20px_40px_rgba(82,210,146,0.1)] animate-float-1" style={{ animationDelay: '1s' }}>
-              <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-agent-cfo)]/0 to-[var(--color-agent-cfo)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-100 transition-opacity duration-500 group-hover:scale-110">
-                <TrendingUp size={48} className="text-[var(--color-agent-cfo)]" />
-              </div>
-              <div className="font-label-caps text-label-caps text-[var(--color-agent-cfo)] mb-2">AGENT 02</div>
-              <h3 className="font-display-lg text-[32px] mb-6 text-white">CFO_Quant</h3>
-              <p className="font-body-md text-body-md text-[var(--color-on-surface)]/70 mb-8">
-                Manages treasury risk via Somnia JSON API Request Agent for live token metrics and LLM Inference for composite risk scoring, executing autonomous rebalancing on-chain.
-              </p>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between font-label-caps text-label-caps text-[var(--color-on-surface)]/50 mb-2">
-                    <span>JSON API Request Agent</span>
-                    <span className="text-[var(--color-agent-cfo)]">Active</span>
-                  </div>
-                  <div className="h-1 w-full bg-black rounded-full overflow-hidden">
-                    <div className="h-full bg-[var(--color-agent-cfo)] w-[100%] rounded-full shadow-[0_0_10px_var(--color-agent-cfo)]"></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between font-label-caps text-label-caps text-[var(--color-on-surface)]/50 mb-2">
-                    <span>LLM Inference Agent</span>
-                    <span className="text-[var(--color-agent-cfo)]">Active</span>
-                  </div>
-                  <div className="h-1 w-full bg-black rounded-full overflow-hidden">
-                    <div className="h-full bg-[var(--color-agent-cfo)]/70 w-[100%] rounded-full shadow-[0_0_10px_var(--color-agent-cfo)]"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Agent 3: CMO */}
-          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 0.6 } } }} className="h-full">
-            <div className="h-full glass-dark p-8 rounded-3xl relative overflow-hidden group border border-white/5 hover:border-[var(--color-agent-cmo)]/50 transition-all duration-500 hover:-translate-y-3 shadow-lg hover:shadow-[0_20px_40px_rgba(111,194,255,0.1)] animate-float-2" style={{ animationDelay: '2s' }}>
-              <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-agent-cmo)]/0 to-[var(--color-agent-cmo)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-100 transition-opacity duration-500 group-hover:scale-110">
-                <Radar size={48} className="text-[var(--color-agent-cmo)]" />
-              </div>
-              <div className="font-label-caps text-label-caps text-[var(--color-agent-cmo)] mb-2">AGENT 03</div>
-              <h3 className="font-display-lg text-[32px] mb-6 text-white">CMO_Pulse</h3>
-              <p className="font-body-md text-body-md text-[var(--color-on-surface)]/70 mb-8">
-                Scrapes DeFi news using Somnia&apos;s LLM Parse Website Agent and deterministically classifies market sentiment via LLM Inference as bullish, bearish, or neutral.
-              </p>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between font-label-caps text-label-caps text-[var(--color-on-surface)]/50 mb-2">
-                    <span>LLM Parse Website Agent</span>
-                    <span className="text-[var(--color-agent-cmo)]">Active</span>
-                  </div>
-                  <div className="h-1 w-full bg-black rounded-full overflow-hidden">
-                    <div className="h-full bg-[var(--color-agent-cmo)] w-[100%] rounded-full shadow-[0_0_10px_var(--color-agent-cmo)]"></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between font-label-caps text-label-caps text-[var(--color-on-surface)]/50 mb-2">
-                    <span>LLM Inference Agent</span>
-                    <span className="text-[var(--color-agent-cmo)]">Active</span>
-                  </div>
-                  <div className="h-1 w-full bg-black rounded-full overflow-hidden">
-                    <div className="h-full bg-[var(--color-agent-cmo)]/70 w-[100%] rounded-full shadow-[0_0_10px_var(--color-agent-cmo)]"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+          <FeatureAgentCard 
+            id="AGENT 01"
+            title="CEO_Prime"
+            description="Responsible for high-level orchestration. Delegates to CFO and CMO via sequential Somnia createRequest() calls and finalizes on-chain execution."
+            colorVar="--color-agent-ceo"
+            delay="0s"
+            icon={<Brain size={48} className="text-[var(--color-agent-ceo)]" />}
+            animationClass="animate-float-2"
+            features={[
+              { name: "LLM Inference Agent", progressClass: "w-[100%]" }
+            ]}
+          />
+          <FeatureAgentCard 
+            id="AGENT 02"
+            title="CFO_Quant"
+            description="Manages treasury risk via Somnia JSON API Request Agent for live token metrics and LLM Inference for composite risk scoring, executing autonomous rebalancing on-chain."
+            colorVar="--color-agent-cfo"
+            delay="1s"
+            icon={<TrendingUp size={48} className="text-[var(--color-agent-cfo)]" />}
+            animationClass="animate-float-1"
+            features={[
+              { name: "JSON API Request Agent", progressClass: "w-[100%]" },
+              { name: "LLM Inference Agent", progressClass: "w-[100%]" }
+            ]}
+          />
+          <FeatureAgentCard 
+            id="AGENT 03"
+            title="CMO_Pulse"
+            description="Scrapes DeFi news using Somnia's LLM Parse Website Agent and deterministically classifies market sentiment via LLM Inference as bullish, bearish, or neutral."
+            colorVar="--color-agent-cmo"
+            delay="2s"
+            icon={<Radar size={48} className="text-[var(--color-agent-cmo)]" />}
+            animationClass="animate-float-2"
+            features={[
+              { name: "LLM Parse Website Agent", progressClass: "w-[100%]" },
+              { name: "LLM Inference Agent", progressClass: "w-[100%]" }
+            ]}
+          />
         </motion.div>
       </section>
 
@@ -335,7 +403,7 @@ export default function LandingPage() {
           className="mb-16 md:mb-24"
         >
           <h2 className="font-display-lg text-display-lg md:text-[80px] leading-none mb-4 glow-text text-white">HOW IT WORKS</h2>
-          <p className="font-body-lg text-body-lg text-[var(--color-on-surface)]/60 max-w-2xl">
+          <p className="font-body-lg text-body-lg text-[var(--color-on-surface)]/80 max-w-2xl">
             Fully transparent, trustless treasury management — every decision verifiable on-chain.
           </p>
         </motion.div>
