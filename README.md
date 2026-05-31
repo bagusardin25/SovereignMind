@@ -21,6 +21,10 @@
   <a href="#-team">Team</a>
 </p>
 
+<p align="center">
+  🌐 <strong>Live Demo:</strong> <a href="https://sovereignmind-app.vercel.app">sovereignmind-app.vercel.app</a>
+</p>
+
 ---
 
 ## 📖 Overview
@@ -46,6 +50,13 @@ Every decision produces a **public execution receipt** verifiable via Somnia's c
 │         wagmi v2 + RainbowKit + ethers.js v6               │
 └────────────────────────┬────────────────────────────────────┘
                          │ Read contract state / events
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│              Orchestrator (Node.js + Express)               │
+│  Scheduler · Auto-funding · Sequential Cycle Engine         │
+│         ethers.js v6 · node-cron · Winston Logging         │
+└────────────────────────┬────────────────────────────────────┘
+                         │ Write transactions / trigger cycles
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                  Somnia Testnet (EVM-Compatible)             │
@@ -118,6 +129,13 @@ Contract                    Somnia Agent Runner              Contract
 - **Agent Monitor** — Detailed view per agent: status, current task, performance metrics, uptime
 - **Decision Log** — Chronological history of all autonomous decisions with rationale and confidence scores
 - **Treasury View** — Portfolio breakdown, allocation chart, holding details, rebalancing history
+- **Settings** — Risk thresholds, rebalance interval, notifications, and on-chain contract interactions
+
+### 🔄 Agent Orchestration Backend
+- Automated decision cycles every 15 minutes via cron scheduler
+- Sequential step engine: Fund → Fetch Prices → Analyze Risk → Scan Market → CEO Decision
+- Auto-funding: monitors agent contract balances, tops up when below threshold
+- Health API with endpoints for monitoring, triggering, and controlling cycles
 
 ### 🔐 Fully Transparent & Trustless
 - Every decision produces a verifiable **on-chain execution receipt**
@@ -129,21 +147,22 @@ Contract                    Somnia Agent Runner              Contract
 ## ⚙️ Tech Stack
 
 | Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Smart Contracts** | Solidity 0.8.x | Agent logic, treasury management, access control |
+|-------|-----------|---------| 
+| **Smart Contracts** | Solidity 0.8.28 | Agent logic, treasury management, access control |
 | **Contract Tooling** | Hardhat + TypeScript | Development, testing, deployment |
+| **Contract Security** | OpenZeppelin 5.1 | AccessControl, ReentrancyGuard, Pausable, SafeERC20 |
 | **Somnia Integration** | `createRequest()` / `handleResponse()` | Native agent primitives |
-| **Frontend** | Next.js 16 + TypeScript | Dashboard & monitoring UI |
+| **Frontend** | Next.js 16 + React 19 + TypeScript | Dashboard & monitoring UI |
 | **Styling** | Tailwind CSS v4 | Responsive design system |
-| **Animations** | Framer Motion | Smooth UI transitions |
+| **Animations** | Framer Motion | Smooth UI transitions & page animations |
 | **Wallet** | wagmi v2 + RainbowKit + viem | Web3 wallet connection |
+| **Data Fetching** | @tanstack/react-query | Caching & state management |
 | **Icons** | Lucide React | Consistent icon set |
+| **Orchestrator** | Node.js + Express + ethers.js v6 | Agent cycle automation & health API |
+| **Scheduling** | node-cron | Automated decision cycle triggers |
+| **Logging** | Winston | Structured logging (console + file) |
 | **Blockchain** | Somnia Testnet (Chain ID: 50312) | EVM-compatible L1 with native agent compute |
-| **Deployment** | Vercel | Frontend hosting (zero-config) |
-
-### Why No Backend Server?
-
-SovereignMind's architecture eliminates traditional backend infrastructure entirely. All agent logic runs on-chain via Somnia's validator nodes. The frontend reads directly from contract state and Somnia's Receipts API — no middleware required.
+| **Deployment** | Vercel (frontend) · Railway (orchestrator) | Hosting |
 
 ---
 
@@ -163,15 +182,24 @@ SovereignMind's architecture eliminates traditional backend infrastructure entir
 git clone https://github.com/bagusardin25/SovereignMind.git
 cd SovereignMind
 
-# Install frontend dependencies
+# ── Frontend ──
 cd frontend
 npm install
-
-# Run the development server
 npm run dev
-```
+# Open http://localhost:3000
 
-Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
+# ── Orchestrator (separate terminal) ──
+cd orchestrator
+npm install
+npm run dev
+# Health API at http://localhost:3001
+
+# ── Smart Contracts (for development) ──
+cd contracts
+npm install
+npx hardhat compile
+npx hardhat test
+```
 
 ### Somnia Testnet Configuration
 
@@ -185,6 +213,16 @@ Add Somnia Testnet to your wallet:
 | Currency Symbol | `STT` |
 | Block Explorer | `https://shannon.somnia.network` |
 
+### Deployed Contract Addresses
+
+| Contract | Address | Status |
+|----------|---------|--------|
+| AgentRegistry | `0x9B4f52744EE60A763d1a1966eCD91e04E668d2d6` | ✅ Deployed |
+| TreasuryVault | `0x269B22DFF373Bb3aC9c564141edbfe9De3903a40` | ✅ Deployed |
+| CFOAgent | `0x21e908dc15cb5Dbd659f107DC0058Fe2D762E385` | ✅ Deployed |
+| CMOAgent | `0xd110592795615D78776c52b0a5B254d5eb7B6662` | ✅ Deployed |
+| CEOAgent | — | ⏳ Pending |
+
 ---
 
 ## 📍 Development Roadmap
@@ -192,25 +230,37 @@ Add Somnia Testnet to your wallet:
 ### Phase 1: Foundation ✅ *Completed*
 - [x] Project registration for Somnia Agentathon 2026
 - [x] PRD v2.0 — Full architecture redesign for Somnia-native
-- [x] Frontend dashboard with 4 main pages (Dashboard, Agents, Treasury, Decisions)
-- [x] UI component library (GlassCard, MetricCard, StatusBadge, AgentCard, etc.)
-- [x] Wallet integration (wagmi + RainbowKit, Somnia Testnet config)
+- [x] Frontend dashboard with 6 main pages (Dashboard, Agents, Treasury, Decisions, Settings, Docs)
+- [x] Landing page with 3D hero orb, feature agents, live stats, FAQ, contract address strip
+- [x] UI component library (GlassCard, MetricCard, StatusBadge, AgentCard, Toast, etc.)
+- [x] Wallet integration (wagmi v2 + RainbowKit, Somnia Testnet config)
 - [x] TypeScript type system for agents, decisions, treasury, receipts
 - [x] Mock data layer demonstrating full UX flow
+- [x] Responsive design with mobile bottom navigation
 
-### Phase 2: Smart Contracts 🔄 *In Progress*
-- [ ] `AgentRegistry.sol` — Role-based agent authorization
-- [ ] `TreasuryVault.sol` — Secure asset management with OpenZeppelin
-- [ ] `CFOAgent.sol` — First `createRequest()` to JSON API Agent
-- [ ] `handleResponse()` callback — End-to-end request flow
-- [ ] `CEOAgent.sol` — Orchestration with LLM Inference Agent
-- [ ] `CMOAgent.sol` — Market intel via LLM Parse Website Agent
+### Phase 2: Smart Contracts ✅ *Completed*
+- [x] `AgentRegistry.sol` — Role-based agent authorization with OpenZeppelin AccessControl
+- [x] `TreasuryVault.sol` — Secure asset management with ReentrancyGuard + Pausable
+- [x] `CFOAgent.sol` — `createRequest()` to JSON API Agent + LLM Inference for risk scoring
+- [x] `CMOAgent.sol` — Market intel via LLM Parse Website Agent + sentiment analysis
+- [x] `CEOAgent.sol` — Full orchestration with decision cycle phases (IDLE → ANALYZING → EXECUTING)
+- [x] `ISomniaAgentRunner.sol` — Interface for Somnia Agent Runner primitives
+- [x] `MockAgentRunner.sol` — Mock contract for local testing
+- [x] `handleResponse()` callback — End-to-end request flow implemented
+- [x] Unit tests — AgentRegistry, TreasuryVault, AgentIntegration test suites
+- [x] Deployment scripts — Full deploy + resume deploy for Somnia Testnet
+- [x] ABI copy script — Auto-copy compiled ABIs to frontend
 
-### Phase 3: Integration & Polish 📋 *Planned*
-- [ ] Deploy all contracts to Somnia Testnet
-- [ ] Connect frontend to live contracts (replace mock data)
+### Phase 3: Integration & Polish 🔄 *In Progress*
+- [x] Deploy AgentRegistry, TreasuryVault, CFOAgent, CMOAgent to Somnia Testnet
+- [ ] Deploy CEOAgent to Somnia Testnet
+- [x] Frontend wagmi hooks for all contracts (7 hook files, read + write)
+- [x] Contract addresses & ABIs integrated into frontend
+- [x] Settings page with live on-chain contract interaction panel
+- [x] Orchestrator backend — automated cycle engine, health API, auto-funding
+- [ ] Connect remaining frontend pages to live contracts (replace mock data)
 - [ ] Integrate Somnia Receipts API for real-time decision display
-- [ ] Deploy frontend to Vercel
+- [ ] Deploy frontend to Vercel ✅ ([sovereignmind-app.vercel.app](https://sovereignmind-app.vercel.app))
 - [ ] Full autonomous loop: CEO → CFO → CMO → Decision → Execute
 - [ ] End-to-end testing (48h autonomous run)
 - [ ] Demo video (2-5 minutes)
@@ -224,36 +274,66 @@ SovereignMind/
 ├── .env.example                          # Environment variables template
 ├── README.md                             # This file
 │
-├── contracts/                            # 🔜 Hardhat — Solidity Smart Contracts
+├── contracts/                            # Hardhat — Solidity Smart Contracts
 │   ├── contracts/
 │   │   ├── AgentRegistry.sol             # Role-based agent authorization (RBAC)
 │   │   ├── TreasuryVault.sol             # Secure asset management (OpenZeppelin)
 │   │   ├── CEOAgent.sol                  # Orchestrator — LLM Inference Agent
 │   │   ├── CFOAgent.sol                  # Risk & Finance — JSON API + LLM Inference
 │   │   ├── CMOAgent.sol                  # Market Intel — LLM Parse Website + LLM Inference
-│   │   └── interfaces/
-│   │       └── ISomniaAgentRunner.sol    # Somnia createRequest()/handleResponse() interface
+│   │   ├── interfaces/
+│   │   │   └── ISomniaAgentRunner.sol    # Somnia createRequest()/handleResponse() interface
+│   │   └── mocks/
+│   │       └── MockAgentRunner.sol       # Mock Agent Runner for local testing
 │   ├── scripts/
-│   │   └── deploy.ts                     # Deployment script for Somnia Testnet
+│   │   ├── deploy.ts                     # Full deployment script for Somnia Testnet
+│   │   ├── deploy-resume.ts              # Resume deployment (deploy CEOAgent + configure roles)
+│   │   ├── copy-abis.ts                  # Copy compiled ABIs to frontend
+│   │   └── check-gas.ts                  # Check wallet balance & estimate gas costs
 │   ├── test/
-│   │   └── *.test.ts                     # Contract unit tests
-│   └── hardhat.config.ts                 # Hardhat config (Somnia Testnet RPC)
+│   │   ├── AgentRegistry.test.ts         # AgentRegistry unit tests
+│   │   ├── TreasuryVault.test.ts         # TreasuryVault unit tests
+│   │   └── AgentIntegration.test.ts      # Cross-contract integration tests
+│   ├── hardhat.config.ts                 # Hardhat config (Solidity 0.8.28, optimizer, viaIR)
+│   ├── package.json
+│   └── tsconfig.json
 │
-└── frontend/                             # Next.js 16 Dashboard
+├── orchestrator/                         # Node.js — Agent Cycle Automation Backend
+│   ├── src/
+│   │   ├── index.ts                      # Entry point — Express server + scheduler bootstrap
+│   │   ├── orchestrator.ts               # Sequential cycle engine (fund → fetch → analyze → decide)
+│   │   ├── scheduler.ts                  # Cron-based cycle trigger (every 15 min)
+│   │   ├── health.ts                     # Express health API (/health, /status, /trigger, /stop)
+│   │   ├── config.ts                     # Environment config & contract addresses
+│   │   ├── logger.ts                     # Winston structured logging
+│   │   ├── types.ts                      # TypeScript interfaces
+│   │   └── services/
+│   │       ├── contracts.ts              # ethers.js v6 contract instances
+│   │       ├── ceo.service.ts            # CEO decision cycle service
+│   │       ├── cfo.service.ts            # CFO price fetching & risk analysis
+│   │       ├── cmo.service.ts            # CMO market scanning & sentiment
+│   │       ├── funding.service.ts        # Agent auto-funding & balance monitoring
+│   │       └── events.service.ts         # Contract event listening & waiting
+│   ├── railway.json                      # Railway deployment config
+│   ├── package.json
+│   └── tsconfig.json
+│
+└── frontend/                             # Next.js 16 — Dashboard & Monitoring UI
     ├── public/
-    │   ├── logo.png                      # SovereignMind logo
+    │   ├── 3d_coin_chart.png             # Hero section 3D asset
+    │   ├── logo.png                      # SovereignMind logo (PNG)
+    │   ├── logo.jpg                      # SovereignMind logo (JPG)
     │   └── manifest.json                 # PWA manifest
     ├── src/
     │   ├── app/
-    │   │   ├── page.tsx                  # Landing page (3D Spline hero + FAQ)
+    │   │   ├── page.tsx                  # Landing page (3D hero orb + FAQ)
     │   │   ├── layout.tsx                # Root layout (fonts, Web3Provider)
     │   │   ├── globals.css               # Design system & CSS theme tokens
-    │   │   ├── favicon.ico               # Favicon
     │   │   ├── not-found.tsx             # Global 404 page
     │   │   │
     │   │   └── (app)/                    # 🔒 Route Group — Sidebar layout
     │   │       ├── layout.tsx            # App shell (Sidebar + Header)
-    │   │       ├── template.tsx          # Page transition wrapper
+    │   │       ├── template.tsx          # Page transition wrapper (Framer Motion)
     │   │       ├── error.tsx             # Error boundary
     │   │       ├── not-found.tsx         # App-level 404
     │   │       ├── dashboard/
@@ -267,14 +347,14 @@ SovereignMind/
     │   │       ├── decisions/
     │   │       │   └── page.tsx          # Decision log — chronological history
     │   │       ├── settings/
-    │   │       │   └── page.tsx          # Settings — network, notifications, preferences
+    │   │       │   └── page.tsx          # Settings — risk, notifications, contract actions
     │   │       └── docs/                 # Documentation hub
-    │   │           ├── getting-started/  # Quick start guide
-    │   │           ├── dashboard/        # Dashboard docs
-    │   │           ├── agents/           # Agent system docs
-    │   │           ├── treasury/         # Treasury docs
-    │   │           ├── decisions/        # Decision engine docs
-    │   │           └── wallet-setup/     # Wallet connection guide
+    │   │           ├── getting-started/
+    │   │           ├── dashboard/
+    │   │           ├── agents/
+    │   │           ├── treasury/
+    │   │           ├── decisions/
+    │   │           └── wallet-setup/
     │   │
     │   ├── components/
     │   │   ├── ui/                       # Reusable UI primitives
@@ -298,32 +378,42 @@ SovereignMind/
     │   │   │   ├── AllocationChart.tsx   # SVG donut allocation chart
     │   │   │   └── TransactionList.tsx   # Transaction history list
     │   │   ├── landing/                  # Landing page specific
-    │   │   │   ├── SplineScene.tsx       # 3D Spline scene loader
+    │   │   │   ├── HeroOrb.tsx           # 3D animated hero orb
+    │   │   │   ├── FeatureAgentCard.tsx  # Agent feature showcase card
     │   │   │   ├── ChainBadge.tsx        # "Somnia Testnet" badge
     │   │   │   ├── LiveStatsGrid.tsx     # Animated live stats
     │   │   │   └── ContractAddressStrip.tsx # On-chain address marquee
     │   │   └── layout/
     │   │       ├── Sidebar.tsx           # Main sidebar navigation
-    │   │       ├── Header.tsx            # Top header with wallet
+    │   │       ├── Header.tsx            # Top header with wallet & notifications
     │   │       └── BottomNav.tsx         # Mobile bottom navigation
+    │   │
+    │   ├── hooks/                        # Custom React Hooks
+    │   │   ├── useAgentRegistry.ts       # Read hooks for AgentRegistry contract
+    │   │   ├── useCEOAgent.ts            # Read hooks for CEOAgent contract
+    │   │   ├── useCFOAgent.ts            # Read hooks for CFOAgent contract
+    │   │   ├── useCMOAgent.ts            # Read hooks for CMOAgent contract
+    │   │   ├── useTreasuryVault.ts       # Read hooks for TreasuryVault contract
+    │   │   ├── useContractActions.ts     # Write hooks for all contracts
+    │   │   └── useOrchestrator.ts        # Orchestrator backend API hook
     │   │
     │   ├── lib/
     │   │   ├── constants.ts              # Chain config, contract addresses, agent colors
-    │   │   ├── types.ts                  # TypeScript interfaces (Agent, Decision, Treasury, Receipt)
-    │   │   ├── mock-data.ts              # Simulated data layer (replaced by live contracts later)
+    │   │   ├── types.ts                  # TypeScript interfaces (Agent, Decision, Treasury)
+    │   │   ├── mock-data.ts              # Simulated data layer for development
     │   │   ├── wagmi-config.ts           # wagmi v2 + RainbowKit chain setup
     │   │   ├── exportUtils.ts            # Data export utilities
+    │   │   ├── orchestrator.ts           # Orchestrator backend API client
     │   │   │
-    │   │   └── somnia/                   # 🔜 Somnia Integration Layer
+    │   │   └── somnia/                   # Somnia Integration Layer
     │   │       ├── abis/                 # Contract ABIs (auto-generated from Hardhat)
     │   │       │   ├── AgentRegistry.json
     │   │       │   ├── CEOAgent.json
     │   │       │   ├── CFOAgent.json
     │   │       │   ├── CMOAgent.json
     │   │       │   └── TreasuryVault.json
-    │   │       ├── contracts.ts          # Contract read/write hooks (wagmi useReadContract)
-    │   │       ├── receipts.ts           # Somnia Receipts API client (fetch execution receipts)
-    │   │       └── agents.ts             # Agent status polling & event listeners
+    │   │       ├── contracts.ts          # Contract config (addresses + ABIs)
+    │   │       └── deployed-addresses.json # Deployed contract addresses
     │   │
     │   └── providers/
     │       └── Web3Provider.tsx           # wagmi + RainbowKit + QueryClient provider
@@ -332,14 +422,13 @@ SovereignMind/
     └── tsconfig.json
 ```
 
-> **Legend**: 🔜 = Planned for Phase 2-3 (Smart Contract & Integration phase)
-
 ---
 
 ## 🔗 Key Links
 
 | Resource | Link |
 |----------|------|
+| **Live Demo** | [sovereignmind-app.vercel.app](https://sovereignmind-app.vercel.app) |
 | Somnia Docs | [docs.somnia.network](https://docs.somnia.network) |
 | Somnia Testnet RPC | `https://dream-rpc.somnia.network` |
 | Somnia Block Explorer | [shannon.somnia.network](https://shannon.somnia.network) |
