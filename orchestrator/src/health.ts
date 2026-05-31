@@ -1,0 +1,126 @@
+// ============================================================
+// SovereignMind — Health & Status HTTP Server
+// ============================================================
+
+import express from 'express';
+import { config } from './config';
+import { logger } from './logger';
+import { Orchestrator } from './orchestrator';
+import { Scheduler } from './scheduler';
+import { FundingService } from './services/funding.service';
+import type { HealthResponse, OrchestratorStatus } from './types';
+
+export class HealthServer {
+  private app: express.Application;
+  private orchestrator: Orchestrator;
+  private scheduler: Scheduler;
+  private funding: FundingService;
+  private startedAt = Date.now();
+
+  constructor(
+    orchestrator: Orchestrator,
+    scheduler: Scheduler,
+    funding: FundingService
+  ) {
+    this.orchestrator = orchestrator;
+    this.scheduler = scheduler;
+    this.funding = funding;
+    this.app = express();
+    this.app.use(express.json());
+    this.setupRoutes();
+  }
+
+  private setupRoutes(): void {
+    // Health check
+    this.app.get('/health', async (_req, res) => {
+      const status = this.orchestrator.isRunning ? 'healthy' : 'healthy';
+      const response: HealthResponse = {
+        status,
+        uptime: Date.now() - this.startedAt,
+        orchestrator: this.getStatus(),
+        timestamp: new Date().toISOString(),
+      };
+      res.json(response);
+    });
+
+    // Detailed status
+    this.app.get('/status', async (_req, res) => {
+      try {
+        const balances = await this.funding.getBalanceReport();
+        res.json({
+          ...this.getStatus(),
+          balances,
+          scheduler: {
+            isActive: this.scheduler.isActive,
+            nextCycleAt: this.scheduler.nextCycleAt,
+            intervalMinutes: config.cycleIntervalMinutes,
+          },
+        });
+      } catch (error) {
+        res.status(500).json({ error: String(error) });
+      }
+    });
+
+    // Manual trigger
+    this.app.post('/trigger', async (_req, res) => {
+      if (this.orchestrator.isRunning) {
+        res.status(409).json({ error: 'Cycle already in progress' });
+        return;
+      }
+
+      res.json({ message: 'Cycle triggered', cycleId: this.orchestrator.cycleCount + 1 });
+
+      // Run asynchronously
+      this.orchestrator.runCycle().catch((err) => {
+        logger.error('Manual trigger failed:', err);
+      });
+    });
+
+    // Stop scheduler
+    this.app.post('/stop', (_req, res) => {
+      this.scheduler.stop();
+      res.json({ message: 'Scheduler stopped' });
+    });
+
+    // Resume scheduler
+    this.app.post('/resume', async (_req, res) => {
+      await this.scheduler.resume();
+      res.json({ message: 'Scheduler resumed' });
+    });
+
+    // Balance report
+    this.app.get('/balances', async (_req, res) => {
+      try {
+        const report = await this.funding.getBalanceReport();
+        res.json(report);
+      } catch (error) {
+        res.status(500).json({ error: String(error) });
+      }
+    });
+  }
+
+  private getStatus(): OrchestratorStatus {
+    return {
+      isRunning: this.orchestrator.isRunning,
+      currentStep: this.orchestrator.currentStep,
+      cycleCount: this.orchestrator.cycleCount,
+      lastCycle: this.orchestrator.lastCycle,
+      nextCycleAt: this.scheduler.nextCycleAt,
+      uptime: this.orchestrator.uptime,
+      balances: null,
+    };
+  }
+
+  listen(port?: number): void {
+    const p = port || config.healthPort;
+    this.app.listen(p, () => {
+      logger.info(`📊 Health server listening on http://localhost:${p}`);
+      logger.info(`   GET  /health   — Health check`);
+      logger.info(`   GET  /status   — Detailed status`);
+      logger.info(`   GET  /balances — Contract balances`);
+      logger.info(`   POST /trigger  — Manual cycle trigger`);
+      logger.info(`   POST /stop     — Stop scheduler`);
+      logger.info(`   POST /resume   — Resume scheduler`);
+    });
+  }
+}
