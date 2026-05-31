@@ -6,7 +6,9 @@
 
 import { useState } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
 import { Activity, Bell } from 'lucide-react';
+import { useAgentCount } from '@/hooks/useAgentRegistry';
 import { mockSystemHealth, mockActivity } from '@/lib/mock-data';
 import NotificationPanel from '@/components/ui/NotificationPanel';
 import { ToastContainer } from '@/components/ui/Toast';
@@ -14,6 +16,8 @@ import { ToastContainer } from '@/components/ui/Toast';
 export default function Header() {
   const health = mockSystemHealth;
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const { isConnected } = useAccount();
+  const { data: onChainAgentCount } = useAgentCount();
 
   const unreadCount = mockActivity.length;
 
@@ -29,6 +33,11 @@ export default function Header() {
           <div className="hidden sm:flex items-center gap-2 text-xs text-[--color-muted-foreground]">
             <Activity size={14} />
             <span>Latency: {health.networkLatency}ms</span>
+            {isConnected && onChainAgentCount != null && (
+              <span className="ml-2 px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[10px]">
+                Agents: {Number(onChainAgentCount as bigint)}
+              </span>
+            )}
           </div>
         </div>
 

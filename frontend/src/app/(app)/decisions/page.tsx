@@ -5,6 +5,8 @@
 // ============================================================
 
 import { useState, useMemo, useEffect } from 'react';
+import { useAccount } from 'wagmi';
+import { useTotalDecisions } from '@/hooks/useAgentRegistry';
 import { motion } from 'framer-motion';
 import {
   Filter,
@@ -31,6 +33,10 @@ export default function DecisionsPage() {
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const { isConnected } = useAccount();
+  const { data: onChainTotal } = useTotalDecisions();
+
+  const totalDecisionCount = isConnected && onChainTotal ? Number(onChainTotal) : mockDecisions.length;
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 800);
@@ -142,7 +148,7 @@ export default function DecisionsPage() {
       {/* Stats Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Total Decisions', value: mockDecisions.length, color: '#3b82f6' },
+          { label: 'Total Decisions', value: totalDecisionCount, color: '#3b82f6' },
           {
             label: 'Executed',
             value: mockDecisions.filter((d) => d.outcome === 'executed').length,

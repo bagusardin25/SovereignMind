@@ -5,6 +5,7 @@
 // ============================================================
 
 import { use, useState, useEffect } from 'react';
+import { useAccount } from 'wagmi';
 import { motion } from 'framer-motion';
 import {
   Brain,
@@ -24,7 +25,7 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import Breadcrumbs from '@/components/ui/Breadcrumbs';
 import DecisionCard from '@/components/decisions/DecisionCard';
 import { mockAgents, mockDecisions, mockActivity } from '@/lib/mock-data';
-import { AGENT_COLORS, formatRelativeTime } from '@/lib/constants';
+import { AGENT_COLORS, formatRelativeTime, CONTRACT_ADDRESSES } from '@/lib/constants';
 import type { AgentRole } from '@/lib/types';
 
 const roleIcons: Record<AgentRole, React.ReactNode> = {
@@ -51,6 +52,17 @@ export default function AgentDetailPage({
   const agentDecisions = mockDecisions.filter((d) => d.agentRole === role);
   const agentActivity = mockActivity.filter((a) => a.agentRole === role);
   const [isLoading, setIsLoading] = useState(true);
+  const { isConnected } = useAccount();
+
+  // Use real contract address if wallet connected
+  const roleAddressMap: Record<string, string> = {
+    CEO: CONTRACT_ADDRESSES.ceoAgent,
+    CFO: CONTRACT_ADDRESSES.cfoAgent,
+    CMO: CONTRACT_ADDRESSES.cmoAgent,
+  };
+  const contractAddr = isConnected && roleAddressMap[role] 
+    ? roleAddressMap[role] 
+    : agent?.contractAddress || '';
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
@@ -189,7 +201,7 @@ export default function AgentDetailPage({
             <div className="flex-shrink-0 text-right">
               <p className="text-xs text-[--color-muted] mb-1">Contract</p>
               <code className="text-xs font-mono text-[--color-agent-cmo-light] bg-white/[0.03] px-2 py-1 rounded">
-                {agent.contractAddress.slice(0, 10)}...{agent.contractAddress.slice(-8)}
+                {contractAddr.slice(0, 10)}...{contractAddr.slice(-8)}
               </code>
             </div>
           </div>

@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAccount } from 'wagmi';
 import { Terminal, Activity, Play, Square } from 'lucide-react';
 import { mockActivity } from '@/lib/mock-data';
 import { AGENT_COLORS } from '@/lib/constants';
@@ -38,6 +39,7 @@ export default function LiveAgentConsole() {
   const [logs, setLogs] = useState<ActivityEvent[]>([]);
   const [isLive, setIsLive] = useState(true);
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
+  const { isConnected } = useAccount();
 
   // Initialize with some recent events
   useEffect(() => {
@@ -76,7 +78,7 @@ export default function LiveAgentConsole() {
           <div className="flex items-center gap-1.5 ml-4 px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
             <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
             <span className="text-[10px] font-medium text-[--color-muted-foreground]">
-              {isLive ? 'CONNECTED' : 'PAUSED'}
+              {isLive ? (isConnected ? 'ON-CHAIN' : 'CONNECTED') : 'PAUSED'}
             </span>
           </div>
         </div>

@@ -2,16 +2,26 @@ import { ethers } from "hardhat";
 import * as fs from "fs";
 import * as path from "path";
 
+/**
+ * Resume deployment — Deploys CEOAgent and configures roles.
+ * Uses already-deployed contract addresses from the first deployment attempt.
+ */
 async function main() {
   const [deployer] = await ethers.getSigners();
-  console.log("Deploying contracts with account:", deployer.address);
+  console.log("Resuming deployment with account:", deployer.address);
   console.log(
     "Account balance:",
     ethers.formatEther(await ethers.provider.getBalance(deployer.address)),
     "STT"
   );
 
-  // Configuration from env
+  // Already deployed addresses from previous run
+  const registryAddress = "0x9B4f52744EE60A763d1a1966eCD91e04E668d2d6";
+  const treasuryAddress = "0x269B22DFF373Bb3aC9c564141edbfe9De3903a40";
+  const cfoAddress = "0x21e908dc15cb5Dbd659f107DC0058Fe2D762E385";
+  const cmoAddress = "0xd110592795615D78776c52b0a5B254d5eb7B6662";
+
+  // Agent Runner config
   const AGENT_RUNNER_ADDRESS =
     process.env.AGENT_RUNNER_ADDRESS || ethers.ZeroAddress;
   const JSON_API_AGENT_ID = BigInt(process.env.JSON_API_AGENT_ID || "1");
@@ -23,65 +33,18 @@ async function main() {
   );
 
   console.log("\n═══════════════════════════════════════");
-  console.log("  SovereignMind Contract Deployment");
+  console.log("  SovereignMind — Resume Deployment");
   console.log("═══════════════════════════════════════\n");
+  console.log("Using existing contracts:");
+  console.log("   AgentRegistry:", registryAddress);
+  console.log("   TreasuryVault:", treasuryAddress);
+  console.log("   CFOAgent:", cfoAddress);
+  console.log("   CMOAgent:", cmoAddress);
 
   // ═══════════════════════════════════════
-  //  1. Deploy AgentRegistry
+  //  1. Deploy CEOAgent
   // ═══════════════════════════════════════
-  console.log("1/6 Deploying AgentRegistry...");
-  const Registry = await ethers.getContractFactory("AgentRegistry");
-  const registry = await Registry.deploy();
-  await registry.waitForDeployment();
-  const registryAddress = await registry.getAddress();
-  console.log("   ✅ AgentRegistry:", registryAddress);
-
-  // ═══════════════════════════════════════
-  //  2. Deploy TreasuryVault
-  // ═══════════════════════════════════════
-  console.log("2/6 Deploying TreasuryVault...");
-  const Treasury = await ethers.getContractFactory("TreasuryVault");
-  const treasury = await Treasury.deploy(registryAddress);
-  await treasury.waitForDeployment();
-  const treasuryAddress = await treasury.getAddress();
-  console.log("   ✅ TreasuryVault:", treasuryAddress);
-
-  // ═══════════════════════════════════════
-  //  3. Deploy CFOAgent
-  // ═══════════════════════════════════════
-  console.log("3/6 Deploying CFOAgent...");
-  const CFO = await ethers.getContractFactory("CFOAgent");
-  const cfo = await CFO.deploy(
-    registryAddress,
-    AGENT_RUNNER_ADDRESS,
-    treasuryAddress,
-    JSON_API_AGENT_ID,
-    LLM_INFERENCE_AGENT_ID
-  );
-  await cfo.waitForDeployment();
-  const cfoAddress = await cfo.getAddress();
-  console.log("   ✅ CFOAgent:", cfoAddress);
-
-  // ═══════════════════════════════════════
-  //  4. Deploy CMOAgent
-  // ═══════════════════════════════════════
-  console.log("4/6 Deploying CMOAgent...");
-  const CMO = await ethers.getContractFactory("CMOAgent");
-  const cmo = await CMO.deploy(
-    registryAddress,
-    AGENT_RUNNER_ADDRESS,
-    treasuryAddress,
-    LLM_PARSE_WEBSITE_AGENT_ID,
-    LLM_INFERENCE_AGENT_ID
-  );
-  await cmo.waitForDeployment();
-  const cmoAddress = await cmo.getAddress();
-  console.log("   ✅ CMOAgent:", cmoAddress);
-
-  // ═══════════════════════════════════════
-  //  5. Deploy CEOAgent
-  // ═══════════════════════════════════════
-  console.log("5/6 Deploying CEOAgent...");
+  console.log("\n1/3 Deploying CEOAgent...");
   const CEO = await ethers.getContractFactory("CEOAgent");
   const ceo = await CEO.deploy(
     registryAddress,
@@ -96,9 +59,11 @@ async function main() {
   console.log("   ✅ CEOAgent:", ceoAddress);
 
   // ═══════════════════════════════════════
-  //  6. Configure Roles
+  //  2. Configure Roles
   // ═══════════════════════════════════════
-  console.log("6/6 Configuring roles...");
+  console.log("2/3 Configuring roles...");
+  const registry = await ethers.getContractAt("AgentRegistry", registryAddress);
+
   const CEO_ROLE = ethers.keccak256(ethers.toUtf8Bytes("CEO_ROLE"));
   const CFO_ROLE = ethers.keccak256(ethers.toUtf8Bytes("CFO_ROLE"));
   const CMO_ROLE = ethers.keccak256(ethers.toUtf8Bytes("CMO_ROLE"));
@@ -120,8 +85,10 @@ async function main() {
   console.log("   ✅ CFO granted treasury access");
 
   // ═══════════════════════════════════════
-  //  Save Deployed Addresses
+  //  3. Save Deployed Addresses
   // ═══════════════════════════════════════
+  console.log("3/3 Saving addresses...");
+
   const addresses = {
     network: "somnia_testnet",
     chainId: 50312,
@@ -168,12 +135,12 @@ async function main() {
   console.log("\n═══════════════════════════════════════");
   console.log("  Deployment Complete! 🚀");
   console.log("═══════════════════════════════════════");
-  console.log("\nUpdate your frontend .env.local with:");
-  console.log(`NEXT_PUBLIC_AGENT_REGISTRY_ADDRESS=${registryAddress}`);
-  console.log(`NEXT_PUBLIC_TREASURY_VAULT_ADDRESS=${treasuryAddress}`);
-  console.log(`NEXT_PUBLIC_CEO_AGENT_ADDRESS=${ceoAddress}`);
-  console.log(`NEXT_PUBLIC_CFO_AGENT_ADDRESS=${cfoAddress}`);
-  console.log(`NEXT_PUBLIC_CMO_AGENT_ADDRESS=${cmoAddress}`);
+  console.log("\nAll contract addresses:");
+  console.log(`  AgentRegistry:  ${registryAddress}`);
+  console.log(`  TreasuryVault:  ${treasuryAddress}`);
+  console.log(`  CEOAgent:       ${ceoAddress}`);
+  console.log(`  CFOAgent:       ${cfoAddress}`);
+  console.log(`  CMOAgent:       ${cmoAddress}`);
 }
 
 main()

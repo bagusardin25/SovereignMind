@@ -26,16 +26,12 @@ export const SOMNIA_TESTNET = {
 } as const;
 
 // Somnia Agent Runner Address (Testnet)
-export const AGENT_RUNNER_ADDRESS = '0x0000000000000000000000000000000000000000'; // TBD
+import deployedAddresses from './somnia/deployed-addresses.json';
 
-// Contract Addresses (will be updated after deployment)
-export const CONTRACT_ADDRESSES = {
-  ceoAgent: '0x0000000000000000000000000000000000000001',
-  cfoAgent: '0x0000000000000000000000000000000000000002',
-  cmoAgent: '0x0000000000000000000000000000000000000003',
-  treasuryVault: '0x0000000000000000000000000000000000000004',
-  agentRegistry: '0x0000000000000000000000000000000000000005',
-} as const;
+export const AGENT_RUNNER_ADDRESS = deployedAddresses.config.agentRunnerAddress;
+
+// Contract Addresses (loaded from deployment output)
+export const CONTRACT_ADDRESSES = deployedAddresses.contracts;
 
 // Somnia Receipts API
 export const RECEIPTS_API_BASE = 'https://receipts.net.somnia.host';

@@ -4,7 +4,9 @@
 // Agents Overview Page
 // ============================================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useAccount } from 'wagmi';
+import { useAgentCount, useTotalDecisions } from '@/hooks/useAgentRegistry';
 import { motion } from 'framer-motion';
 import AgentCard from '@/components/agents/AgentCard';
 import AgentControlPanel from '@/components/agents/AgentControlPanel';
@@ -19,6 +21,19 @@ import { ArrowLeft, ArrowRight, ArrowDown, Brain, LineChart, Megaphone, User, La
 export default function AgentsPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const { isConnected } = useAccount();
+  const { data: onChainAgentCount } = useAgentCount();
+  const { data: onChainTotalDec } = useTotalDecisions();
+
+  // Hybrid: overlay on-chain stats onto mock agents
+  const agents = useMemo(() => {
+    if (!isConnected || !onChainTotalDec) return mockAgents;
+    const totalDec = Number(onChainTotalDec);
+    return mockAgents.map(agent => ({
+      ...agent,
+      decisionsCount: totalDec > 0 ? Math.round(totalDec / 3) : agent.decisionsCount,
+    }));
+  }, [isConnected, onChainTotalDec]);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
@@ -94,7 +109,7 @@ export default function AgentsPage() {
 
       {/* Agent Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {mockAgents.map((agent, index) => (
+        {agents.map((agent, index) => (
           <AgentCard
             key={agent.id}
             agent={agent}

@@ -8,6 +8,10 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, Activity } from 'lucide-react';
+import { useAccount } from 'wagmi';
+import { formatEther } from 'viem';
+import { useTreasuryBalance } from '@/hooks/useTreasuryVault';
+import { useTotalDecisions, useAgentCount } from '@/hooks/useAgentRegistry';
 import { mockTreasury, mockDecisions, mockAgents, mockSystemHealth } from '@/lib/mock-data';
 import { formatCompact, formatRelativeTime } from '@/lib/constants';
 
@@ -27,20 +31,47 @@ const accentMap: Record<Stat['accent'], string> = {
 };
 
 export default function LiveStatsGrid() {
-  // Derive stats from mock data so the numbers feel grounded.
+  // Wallet connection state
+  const { isConnected } = useAccount();
+
+  // On-chain data hooks
+  const { data: onChainBalance } = useTreasuryBalance();
+  const { data: onChainDecisions } = useTotalDecisions();
+  const { data: onChainAgentCount } = useAgentCount();
+
+  // Derive stats: use on-chain values when connected & available, mock otherwise.
   const stats = useMemo<Stat[]>(() => {
-    const tvl = mockTreasury.totalValue;
-    const decisions = mockDecisions.length + mockAgents.reduce((sum, a) => sum + a.decisionsCount, 0);
+    // Treasury TVL — on-chain balance (native token in wei) or mock
+    const tvl =
+      isConnected && onChainBalance != null
+        ? Number(formatEther(onChainBalance as bigint))
+        : mockTreasury.totalValue;
+
+    // Decision count — on-chain total or mock aggregate
+    const decisions =
+      isConnected && onChainDecisions != null
+        ? Number(onChainDecisions as bigint)
+        : mockDecisions.length + mockAgents.reduce((sum, a) => sum + a.decisionsCount, 0);
+
+    // Agent count — on-chain or mock
+    const agentCount =
+      isConnected && onChainAgentCount != null
+        ? Number(onChainAgentCount as bigint)
+        : mockSystemHealth.totalAgents;
+
     const uptime =
       mockAgents.reduce((sum, a) => sum + a.uptime, 0) / Math.max(mockAgents.length, 1);
-    const activeAgents = `${mockSystemHealth.agentsOnline}/${mockSystemHealth.totalAgents}`;
+    const activeAgents =
+      isConnected && onChainAgentCount != null
+        ? `${agentCount}/${agentCount}`
+        : `${mockSystemHealth.agentsOnline}/${mockSystemHealth.totalAgents}`;
 
     return [
       {
         label: 'Treasury TVL',
         value: `$${formatCompact(tvl)}`,
-        delta: `+${mockTreasury.change24h.toFixed(2)}%`,
-        deltaPositive: mockTreasury.change24h >= 0,
+        delta: isConnected && onChainBalance != null ? 'on-chain' : `+${mockTreasury.change24h.toFixed(2)}%`,
+        deltaPositive: true,
         accent: 'primary',
       },
       {
@@ -60,12 +91,12 @@ export default function LiveStatsGrid() {
       {
         label: 'Active Agents',
         value: activeAgents,
-        delta: 'live',
+        delta: isConnected && onChainAgentCount != null ? 'on-chain' : 'live',
         deltaPositive: true,
         accent: 'cmo',
       },
     ];
-  }, []);
+  }, [isConnected, onChainBalance, onChainDecisions, onChainAgentCount]);
 
   // Pulsing "last decision" indicator — re-renders every 30s so the
   // relative time string ("12m ago") stays fresh while the page is open.

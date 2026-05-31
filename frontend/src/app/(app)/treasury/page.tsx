@@ -4,7 +4,10 @@
 // Treasury Page — Vault overview and management
 // ============================================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useAccount } from 'wagmi';
+import { formatEther } from 'viem';
+import { useTreasuryBalance, useTreasuryTotalDeposited, useTreasuryTotalOperations } from '@/hooks/useTreasuryVault';
 import { motion } from 'framer-motion';
 import {
   Wallet,
@@ -29,10 +32,27 @@ import { formatUSD, formatCompact } from '@/lib/constants';
 import { toast } from '@/components/ui/Toast';
 
 export default function TreasuryPage() {
-  const treasury = mockTreasury;
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('All');
+  const { isConnected } = useAccount();
+  const { data: onChainBalance } = useTreasuryBalance();
+  const { data: onChainDeposited } = useTreasuryTotalDeposited();
+  const { data: onChainOps } = useTreasuryTotalOperations();
+
+  // Hybrid treasury data
+  const treasury = useMemo(() => {
+    if (isConnected && onChainBalance) {
+      const balanceSTT = parseFloat(formatEther(onChainBalance as bigint));
+      return {
+        ...mockTreasury,
+        totalValue: balanceSTT > 0 ? balanceSTT : mockTreasury.totalValue,
+      };
+    }
+    return mockTreasury;
+  }, [isConnected, onChainBalance]);
+
+  const totalOperations = isConnected && onChainOps ? Number(onChainOps) : mockTransactions.length;
 
   const filteredTransactions = mockTransactions.filter((tx) => {
     if (filterType !== 'All' && tx.type.toLowerCase() !== filterType.toLowerCase()) {
@@ -137,7 +157,7 @@ export default function TreasuryPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           label="Total Value"
-          value={formatUSD(treasury.totalValue)}
+          value={isConnected && onChainBalance ? `${parseFloat(formatEther(onChainBalance as bigint)).toFixed(4)} STT` : formatUSD(treasury.totalValue)}
           change={treasury.change24h}
           icon={<Wallet size={22} />}
           accentColor="#3b82f6"
@@ -162,7 +182,7 @@ export default function TreasuryPage() {
         />
         <MetricCard
           label="Transactions"
-          value={mockTransactions.length.toString()}
+          value={totalOperations.toString()}
           icon={<TrendingUp size={22} />}
           accentColor="#06b6d4"
           delay={0.3}

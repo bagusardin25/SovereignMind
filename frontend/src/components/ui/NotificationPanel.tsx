@@ -6,6 +6,7 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAccount } from 'wagmi';
 import { Check, Inbox } from 'lucide-react';
 import { mockActivity } from '@/lib/mock-data';
 import { AGENT_COLORS, formatRelativeTime } from '@/lib/constants';
@@ -19,6 +20,7 @@ interface NotificationPanelProps {
 export default function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const { isConnected } = useAccount();
 
   // Close on click outside
   useEffect(() => {
@@ -69,6 +71,11 @@ export default function NotificationPanel({ isOpen, onClose }: NotificationPanel
               {unreadCount > 0 && (
                 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white ring-1 ring-rose-500/20">
                   {unreadCount}
+                </span>
+              )}
+              {isConnected && (
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  ● Somnia
                 </span>
               )}
             </div>

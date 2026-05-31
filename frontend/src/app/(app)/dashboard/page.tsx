@@ -4,7 +4,13 @@
 // Dashboard — Main overview page
 // ============================================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useAccount } from 'wagmi';
+import { formatEther } from 'viem';
+import { useAgentCount, useTotalDecisions } from '@/hooks/useAgentRegistry';
+import { useTreasuryBalance } from '@/hooks/useTreasuryVault';
+import { useCFORiskScore } from '@/hooks/useCFOAgent';
+import { useCMOAggregatedSentiment } from '@/hooks/useCMOAgent';
 import { motion } from 'framer-motion';
 import {
   Wallet,
@@ -32,8 +38,38 @@ import { formatUSD, AGENT_COLORS } from '@/lib/constants';
 import Link from 'next/link';
 
 export default function DashboardPage() {
-  const health = mockSystemHealth;
   const [isLoading, setIsLoading] = useState(true);
+
+  // On-chain data hooks
+  const { isConnected } = useAccount();
+  const { data: onChainAgentCount } = useAgentCount();
+  const { data: onChainTotalDecisions } = useTotalDecisions();
+  const { data: onChainBalance } = useTreasuryBalance();
+  const { data: onChainRiskScore } = useCFORiskScore();
+  const { data: onChainSentiment } = useCMOAggregatedSentiment();
+
+  // Hybrid data: merge on-chain with mock fallback
+  const health = useMemo(() => {
+    if (!isConnected) return mockSystemHealth;
+    return {
+      ...mockSystemHealth,
+      agentsOnline: onChainAgentCount ? Number(onChainAgentCount) : mockSystemHealth.agentsOnline,
+    };
+  }, [isConnected, onChainAgentCount]);
+
+  const treasuryValue = useMemo(() => {
+    if (isConnected && onChainBalance) {
+      return parseFloat(formatEther(onChainBalance as bigint));
+    }
+    return mockTreasury.totalValue;
+  }, [isConnected, onChainBalance]);
+
+  const totalDecisions = useMemo(() => {
+    if (isConnected && onChainTotalDecisions) {
+      return Number(onChainTotalDecisions);
+    }
+    return mockDecisions.filter(d => Date.now() - d.timestamp < 86400000).length;
+  }, [isConnected, onChainTotalDecisions]);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
@@ -122,8 +158,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           label="Treasury Value"
-          value={formatUSD(mockTreasury.totalValue)}
-          change={mockTreasury.change24h}
+          value={isConnected && onChainBalance ? `${treasuryValue.toFixed(4)} STT` : formatUSD(mockTreasury.totalValue)}
+          change={isConnected ? undefined : mockTreasury.change24h}
           icon={<Wallet size={22} />}
           accentColor="#cfbcff"
           delay={0}
@@ -136,8 +172,8 @@ export default function DashboardPage() {
           delay={0.1}
         />
         <MetricCard
-          label="Decisions Today"
-          value={mockDecisions.filter(d => Date.now() - d.timestamp < 86400000).length.toString()}
+          label="Total Decisions"
+          value={totalDecisions.toString()}
           icon={<ScrollText size={22} />}
           accentColor="#8b5cf6"
           delay={0.2}
