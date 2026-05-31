@@ -11,6 +11,7 @@ import { useAgentCount, useTotalDecisions } from '@/hooks/useAgentRegistry';
 import { useTreasuryBalance } from '@/hooks/useTreasuryVault';
 import { useCFORiskScore } from '@/hooks/useCFOAgent';
 import { useCMOAggregatedSentiment } from '@/hooks/useCMOAgent';
+import { useOrchestrator } from '@/hooks/useOrchestrator';
 import { motion } from 'framer-motion';
 import {
   Wallet,
@@ -19,6 +20,8 @@ import {
   ShieldCheck,
   ArrowRight,
   Clock,
+  Play,
+  Loader2,
 } from 'lucide-react';
 import MetricCard from '@/components/ui/MetricCard';
 import GlassCard from '@/components/ui/GlassCard';
@@ -48,14 +51,29 @@ export default function DashboardPage() {
   const { data: onChainRiskScore } = useCFORiskScore();
   const { data: onChainSentiment } = useCMOAggregatedSentiment();
 
+  // Live orchestrator backend (Express health API)
+  const orchestrator = useOrchestrator();
+  const orch = orchestrator.status;
+
   // Hybrid data: merge on-chain with mock fallback
   const health = useMemo(() => {
-    if (!isConnected) return mockSystemHealth;
+    const base = !isConnected
+      ? mockSystemHealth
+      : {
+          ...mockSystemHealth,
+          agentsOnline: onChainAgentCount ? Number(onChainAgentCount) : mockSystemHealth.agentsOnline,
+        };
+    if (!orchestrator.isOnline || !orch) return base;
+    const agentsOnline = orch.balances
+      ? orch.balances.agents.filter((a) => !a.belowMinimum).length
+      : base.agentsOnline;
     return {
-      ...mockSystemHealth,
-      agentsOnline: onChainAgentCount ? Number(onChainAgentCount) : mockSystemHealth.agentsOnline,
+      ...base,
+      status: orch.currentStep === 'ERROR' ? ('degraded' as const) : ('healthy' as const),
+      agentsOnline,
+      lastCycleTimestamp: orch.lastCycle ? new Date(orch.lastCycle.completedAt).getTime() : base.lastCycleTimestamp,
     };
-  }, [isConnected, onChainAgentCount]);
+  }, [isConnected, onChainAgentCount, orchestrator.isOnline, orch]);
 
   const treasuryValue = useMemo(() => {
     if (isConnected && onChainBalance) {
@@ -148,9 +166,29 @@ export default function DashboardPage() {
             Real-time overview of your autonomous agent guild
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-[--color-muted-foreground]">
-          <Clock size={14} />
-          <span>Last cycle: {Math.round((Date.now() - health.lastCycleTimestamp) / 60000)}m ago</span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 text-xs text-[--color-muted-foreground]">
+            <span
+              className={`w-2 h-2 rounded-full ${orchestrator.isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`}
+            />
+            <span>{orchestrator.isOnline ? 'Orchestrator live' : 'Orchestrator offline'}</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-[--color-muted-foreground]">
+            <Clock size={14} />
+            <span>Last cycle: {Math.round((Date.now() - health.lastCycleTimestamp) / 60000)}m ago</span>
+          </div>
+          <button
+            onClick={() => orchestrator.trigger.mutate()}
+            disabled={!orchestrator.isOnline || orchestrator.trigger.isPending || orch?.isRunning}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[--color-agent-ceo]/15 text-[--color-agent-ceo] border border-[--color-agent-ceo]/30 hover:bg-[--color-agent-ceo]/25 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {orchestrator.trigger.isPending || orch?.isRunning ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Play size={14} />
+            )}
+            {orch?.isRunning ? 'Running…' : 'Run Cycle'}
+          </button>
         </div>
       </div>
 
