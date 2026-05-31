@@ -50,8 +50,8 @@ export const config = {
     'https://www.coingecko.com/en/coins/somnia'
   ),
 
-  // Health
-  healthPort: parseInt(optional('HEALTH_PORT', '3001')),
+  // Health — Railway injects PORT; fall back to HEALTH_PORT for local dev
+  healthPort: parseInt(optional('PORT', optional('HEALTH_PORT', '3001'))),
 
   // Run mode
   runOnce: process.argv.includes('--once'),
