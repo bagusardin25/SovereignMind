@@ -4,10 +4,9 @@
 // Treasury Page — Vault overview and management
 // ============================================================
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import { formatEther } from 'viem';
-import { useTreasuryBalance, useTreasuryTotalDeposited, useTreasuryTotalOperations } from '@/hooks/useTreasuryVault';
+import { useTreasuryData } from '@/hooks/useTreasuryData';
 import { motion } from 'framer-motion';
 import {
   Wallet,
@@ -27,7 +26,6 @@ import Skeleton, { SkeletonMetric, SkeletonTable } from '@/components/ui/Skeleto
 import MetricCard from '@/components/ui/MetricCard';
 import AllocationChart from '@/components/treasury/AllocationChart';
 import TransactionList from '@/components/treasury/TransactionList';
-import { mockTreasury, mockTransactions } from '@/lib/mock-data';
 import { formatUSD, formatCompact } from '@/lib/constants';
 import { toast } from '@/components/ui/Toast';
 
@@ -36,25 +34,11 @@ export default function TreasuryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('All');
   const { isConnected } = useAccount();
-  const { data: onChainBalance } = useTreasuryBalance();
-  const { data: onChainDeposited } = useTreasuryTotalDeposited();
-  const { data: onChainOps } = useTreasuryTotalOperations();
 
-  // Hybrid treasury data
-  const treasury = useMemo(() => {
-    if (isConnected && onChainBalance) {
-      const balanceSTT = parseFloat(formatEther(onChainBalance as bigint));
-      return {
-        ...mockTreasury,
-        totalValue: balanceSTT > 0 ? balanceSTT : mockTreasury.totalValue,
-      };
-    }
-    return mockTreasury;
-  }, [isConnected, onChainBalance]);
+  // Composite on-chain treasury data
+  const { treasury, transactions, totalOperations } = useTreasuryData();
 
-  const totalOperations = isConnected && onChainOps ? Number(onChainOps) : mockTransactions.length;
-
-  const filteredTransactions = mockTransactions.filter((tx) => {
+  const filteredTransactions = transactions.filter((tx) => {
     if (filterType !== 'All' && tx.type.toLowerCase() !== filterType.toLowerCase()) {
       return false;
     }
@@ -138,7 +122,7 @@ export default function TreasuryPage() {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => toast('Deposit functionality will be available after contract deployment', 'info')}
+          onClick={() => toast('Connect wallet and use the Settings page to deposit STT to treasury', 'info')}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[--color-success]/10 border border-[--color-success]/20 text-[--color-success] text-sm font-medium hover:bg-[--color-success]/20 transition-all"
           style={{ animation: 'subtle-pulse 3s ease-in-out infinite' }}
         >
@@ -157,7 +141,7 @@ export default function TreasuryPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           label="Total Value"
-          value={isConnected && onChainBalance ? `${parseFloat(formatEther(onChainBalance as bigint)).toFixed(4)} STT` : formatUSD(treasury.totalValue)}
+          value={`${treasury.totalValue.toFixed(4)} STT`}
           change={treasury.change24h}
           icon={<Wallet size={22} />}
           accentColor="#3b82f6"

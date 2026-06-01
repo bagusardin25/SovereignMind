@@ -18,6 +18,7 @@ export interface AgentInfo {
   registeredAt: bigint;
   decisionsCount: bigint;
   successCount: bigint;
+  lastActionTimestamp: bigint;
 }
 
 // ----- Read Hooks -----

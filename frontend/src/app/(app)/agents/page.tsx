@@ -4,16 +4,15 @@
 // Agents Overview Page
 // ============================================================
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import { useAgentCount, useTotalDecisions } from '@/hooks/useAgentRegistry';
+import { useAgentData } from '@/hooks/useAgentData';
 import { motion } from 'framer-motion';
 import AgentCard from '@/components/agents/AgentCard';
 import AgentControlPanel from '@/components/agents/AgentControlPanel';
 import LiveAgentConsole from '@/components/agents/LiveAgentConsole';
 import GlassCard from '@/components/ui/GlassCard';
 import Skeleton, { SkeletonCard } from '@/components/ui/Skeleton';
-import { mockAgents } from '@/lib/mock-data';
 import { AGENT_COLORS } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, ArrowDown, Brain, LineChart, Megaphone, User, Landmark, Shield, Zap, Search } from 'lucide-react';
@@ -22,18 +21,7 @@ export default function AgentsPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const { isConnected } = useAccount();
-  const { data: onChainAgentCount } = useAgentCount();
-  const { data: onChainTotalDec } = useTotalDecisions();
-
-  // Hybrid: overlay on-chain stats onto mock agents
-  const agents = useMemo(() => {
-    if (!isConnected || !onChainTotalDec) return mockAgents;
-    const totalDec = Number(onChainTotalDec);
-    return mockAgents.map(agent => ({
-      ...agent,
-      decisionsCount: totalDec > 0 ? Math.round(totalDec / 3) : agent.decisionsCount,
-    }));
-  }, [isConnected, onChainTotalDec]);
+  const { agents } = useAgentData();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
@@ -104,7 +92,7 @@ export default function AgentsPage() {
 
       {/* Agent Control Panel */}
       <AgentControlPanel
-        currentObjective={mockAgents[0].objective}
+        currentObjective={agents[0]?.objective || 'Autonomous multi-agent coordination'}
       />
 
       {/* Agent Grid */}

@@ -6,6 +6,8 @@
 
 import { use, useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
+import { useAgentData } from '@/hooks/useAgentData';
+import { useDecisionData } from '@/hooks/useDecisionData';
 import { motion } from 'framer-motion';
 import {
   Brain,
@@ -24,7 +26,6 @@ import Skeleton, { SkeletonCard, SkeletonMetric } from '@/components/ui/Skeleton
 import StatusBadge from '@/components/ui/StatusBadge';
 import Breadcrumbs from '@/components/ui/Breadcrumbs';
 import DecisionCard from '@/components/decisions/DecisionCard';
-import { mockAgents, mockDecisions, mockActivity } from '@/lib/mock-data';
 import { AGENT_COLORS, formatRelativeTime, CONTRACT_ADDRESSES } from '@/lib/constants';
 import type { AgentRole } from '@/lib/types';
 
@@ -47,22 +48,24 @@ export default function AgentDetailPage({
 }) {
   const { role: roleParam } = use(params);
   const role = roleParam.toUpperCase() as AgentRole;
-  const agent = mockAgents.find((a) => a.role === role);
+  const { agents } = useAgentData();
+  const { decisions: allDecisions } = useDecisionData(20);
+  const agent = agents.find((a) => a.role === role);
   const colors = AGENT_COLORS[role] || AGENT_COLORS.CEO;
-  const agentDecisions = mockDecisions.filter((d) => d.agentRole === role);
-  const agentActivity = mockActivity.filter((a) => a.agentRole === role);
+  const agentDecisions = allDecisions.filter((d) => d.agentRole === role);
+  // Derive activity from decisions for this agent
+  const agentActivity = agentDecisions.map((d) => ({
+    id: d.id,
+    agentRole: d.agentRole,
+    action: d.title,
+    description: d.rationale.length > 120 ? `${d.rationale.slice(0, 120)}...` : d.rationale,
+    timestamp: d.timestamp,
+  }));
   const [isLoading, setIsLoading] = useState(true);
   const { isConnected } = useAccount();
 
-  // Use real contract address if wallet connected
-  const roleAddressMap: Record<string, string> = {
-    CEO: CONTRACT_ADDRESSES.ceoAgent,
-    CFO: CONTRACT_ADDRESSES.cfoAgent,
-    CMO: CONTRACT_ADDRESSES.cmoAgent,
-  };
-  const contractAddr = isConnected && roleAddressMap[role] 
-    ? roleAddressMap[role] 
-    : agent?.contractAddress || '';
+  // Use real contract address
+  const contractAddr = agent?.contractAddress || '';
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);

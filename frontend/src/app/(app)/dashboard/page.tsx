@@ -4,13 +4,11 @@
 // Dashboard — Main overview page
 // ============================================================
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import { formatEther } from 'viem';
-import { useAgentCount, useTotalDecisions } from '@/hooks/useAgentRegistry';
-import { useTreasuryBalance } from '@/hooks/useTreasuryVault';
-import { useCFORiskScore } from '@/hooks/useCFOAgent';
-import { useCMOAggregatedSentiment } from '@/hooks/useCMOAgent';
+import { useAgentData } from '@/hooks/useAgentData';
+import { useDecisionData } from '@/hooks/useDecisionData';
+import { useTreasuryData } from '@/hooks/useTreasuryData';
 import { useOrchestrator } from '@/hooks/useOrchestrator';
 import { motion } from 'framer-motion';
 import {
@@ -30,64 +28,21 @@ import AllocationChart from '@/components/treasury/AllocationChart';
 import DecisionCard from '@/components/decisions/DecisionCard';
 import { SkeletonCard, SkeletonMetric } from '@/components/ui/Skeleton';
 import Skeleton from '@/components/ui/Skeleton';
-import {
-  mockAgents,
-  mockTreasury,
-  mockDecisions,
-  mockActivity,
-  mockSystemHealth,
-} from '@/lib/mock-data';
-import { formatUSD, AGENT_COLORS } from '@/lib/constants';
+import { AGENT_COLORS } from '@/lib/constants';
 import Link from 'next/link';
 
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
-
-  // On-chain data hooks
   const { isConnected } = useAccount();
-  const { data: onChainAgentCount } = useAgentCount();
-  const { data: onChainTotalDecisions } = useTotalDecisions();
-  const { data: onChainBalance } = useTreasuryBalance();
-  const { data: onChainRiskScore } = useCFORiskScore();
-  const { data: onChainSentiment } = useCMOAggregatedSentiment();
+
+  // Composite on-chain data hooks
+  const { agents, totalDecisions, systemHealth: health } = useAgentData();
+  const { decisions } = useDecisionData(10);
+  const { treasury } = useTreasuryData();
 
   // Live orchestrator backend (Express health API)
   const orchestrator = useOrchestrator();
   const orch = orchestrator.status;
-
-  // Hybrid data: merge on-chain with mock fallback
-  const health = useMemo(() => {
-    const base = !isConnected
-      ? mockSystemHealth
-      : {
-          ...mockSystemHealth,
-          agentsOnline: onChainAgentCount ? Number(onChainAgentCount) : mockSystemHealth.agentsOnline,
-        };
-    if (!orchestrator.isOnline || !orch) return base;
-    const agentsOnline = orch.balances
-      ? orch.balances.agents.filter((a) => !a.belowMinimum).length
-      : base.agentsOnline;
-    return {
-      ...base,
-      status: orch.currentStep === 'ERROR' ? ('degraded' as const) : ('healthy' as const),
-      agentsOnline,
-      lastCycleTimestamp: orch.lastCycle ? new Date(orch.lastCycle.completedAt).getTime() : base.lastCycleTimestamp,
-    };
-  }, [isConnected, onChainAgentCount, orchestrator.isOnline, orch]);
-
-  const treasuryValue = useMemo(() => {
-    if (isConnected && onChainBalance) {
-      return parseFloat(formatEther(onChainBalance as bigint));
-    }
-    return mockTreasury.totalValue;
-  }, [isConnected, onChainBalance]);
-
-  const totalDecisions = useMemo(() => {
-    if (isConnected && onChainTotalDecisions) {
-      return Number(onChainTotalDecisions);
-    }
-    return mockDecisions.filter(d => Date.now() - d.timestamp < 86400000).length;
-  }, [isConnected, onChainTotalDecisions]);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
@@ -196,8 +151,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           label="Treasury Value"
-          value={isConnected && onChainBalance ? `${treasuryValue.toFixed(4)} STT` : formatUSD(mockTreasury.totalValue)}
-          change={isConnected ? undefined : mockTreasury.change24h}
+          value={`${treasury.totalValue.toFixed(4)} STT`}
+          change={treasury.change24h || undefined}
           icon={<Wallet size={22} />}
           accentColor="#cfbcff"
           delay={0}
@@ -237,7 +192,7 @@ export default function DashboardPage() {
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {mockAgents.map((agent, index) => (
+          {agents.map((agent, index) => (
             <AgentCard
               key={agent.id}
               agent={agent}
@@ -261,13 +216,19 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div className="space-y-3">
-            {mockDecisions.slice(0, 4).map((decision, index) => (
+            {decisions.length > 0 ? decisions.slice(0, 4).map((decision, index) => (
               <DecisionCard
                 key={decision.id}
                 decision={decision}
                 delay={index * 0.08}
               />
-            ))}
+            )) : (
+              <GlassCard>
+                <div className="text-center py-6 text-[--color-muted-foreground] text-sm">
+                  No decisions yet. Trigger a decision cycle to see live data.
+                </div>
+              </GlassCard>
+            )}
           </div>
         </div>
 
@@ -284,8 +245,8 @@ export default function DashboardPage() {
           </div>
           <GlassCard>
             <AllocationChart
-              holdings={mockTreasury.holdings}
-              totalValue={mockTreasury.totalValue}
+              holdings={treasury.holdings}
+              totalValue={treasury.totalValue}
               size={200}
             />
           </GlassCard>
@@ -301,11 +262,11 @@ export default function DashboardPage() {
             <div className="absolute left-[19px] top-0 bottom-0 w-[2px] bg-gradient-to-b from-[var(--color-primary)]/60 via-[var(--color-agent-cfo)]/30 to-transparent shadow-[0_0_10px_var(--color-primary)]" />
 
             <div className="space-y-1">
-              {mockActivity.slice(0, 8).map((event, index) => {
-                const colors = AGENT_COLORS[event.agentRole];
+              {decisions.length > 0 ? decisions.slice(0, 8).map((decision, index) => {
+                const colors = AGENT_COLORS[decision.agentRole];
                 return (
                   <motion.div
-                    key={event.id}
+                    key={decision.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
@@ -322,7 +283,7 @@ export default function DashboardPage() {
                           borderColor: colors.primary,
                         }}
                       >
-                        {event.agentRole}
+                        {decision.agentRole}
                       </div>
                     </div>
 
@@ -330,22 +291,26 @@ export default function DashboardPage() {
                     <div className="flex-1 min-w-0 pt-1">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-[--color-foreground]">
-                          {event.action}
+                          {decision.title}
                         </span>
                         <span className="text-xs text-[--color-muted]">
-                          {new Date(event.timestamp).toLocaleTimeString('en-US', {
+                          {new Date(decision.timestamp).toLocaleTimeString('en-US', {
                             hour: '2-digit',
                             minute: '2-digit',
                           })}
                         </span>
                       </div>
                       <p className="text-xs text-[--color-muted-foreground] mt-0.5">
-                        {event.description}
+                        {decision.rationale.length > 100 ? `${decision.rationale.slice(0, 100)}...` : decision.rationale}
                       </p>
                     </div>
                   </motion.div>
                 );
-              })}
+              }) : (
+                <div className="text-center py-8 text-[--color-muted-foreground] text-sm">
+                  No activity yet. Connect wallet and trigger a decision cycle to see live data.
+                </div>
+              )}
             </div>
           </div>
         </GlassCard>
