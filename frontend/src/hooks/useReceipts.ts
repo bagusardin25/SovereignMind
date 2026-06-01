@@ -70,13 +70,13 @@ export function useReceipts() {
         const results: ReceiptRecord[] = [];
 
         // Helper to fetch logs in chunks to bypass the 1000 block RPC limit
-        const fetchLogsInBatches = async (address: `0x${string}`, event: any, maxHistory = 10000n) => {
+        const fetchLogsInBatches = async (address: `0x${string}`, event: any, maxHistory = BigInt(10000)) => {
           const latestBlock = await publicClient!.getBlockNumber();
-          const startBlock = latestBlock > maxHistory ? latestBlock - maxHistory : 0n;
-          const chunkSize = 999n;
+          const startBlock = latestBlock > maxHistory ? latestBlock - maxHistory : BigInt(0);
+          const chunkSize = BigInt(999);
           let logs: any[] = [];
           
-          for (let from = startBlock; from <= latestBlock; from += chunkSize + 1n) {
+          for (let from = startBlock; from <= latestBlock; from += chunkSize + BigInt(1)) {
             const to = from + chunkSize > latestBlock ? latestBlock : from + chunkSize;
             try {
               const chunkLogs = await publicClient!.getLogs({

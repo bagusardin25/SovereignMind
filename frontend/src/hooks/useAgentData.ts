@@ -47,6 +47,13 @@ function buildAgent(
   const isDeactivated = isRegistered && data.isActive === false;
   const effectiveStatus: AgentStatus = isDeactivated ? 'error' : status;
 
+// Mock response times based on role
+  const mockAvgResponseTimes: Record<AgentRole, number> = {
+    CEO: 1250,
+    CFO: 850,
+    CMO: 920,
+  };
+
   return {
     id: `agent-${role.toLowerCase()}`,
     role,
@@ -60,7 +67,7 @@ function buildAgent(
     uptime: registeredAt > 0 ? Math.min(99.9, ((now - registeredAt) / now) * 100) : 99.9,
     decisionsCount: decisions,
     successRate: decisions > 0 ? Math.round((success / decisions) * 1000) / 10 : 100,
-    avgResponseTime: 0,
+    avgResponseTime: mockAvgResponseTimes[role] || 1000,
     objective: meta.objective,
   };
 }
@@ -140,9 +147,9 @@ export function useAgentData() {
       status: isOnline && onlineCount === 3 ? 'healthy' : onlineCount > 0 ? 'degraded' : 'offline',
       agentsOnline: onlineCount,
       totalAgents: 3,
-      lastCycleTimestamp: metricsData?.lastCycleTimestamp
+      lastCycleTimestamp: metricsData?.lastCycleTimestamp != null && metricsData.lastCycleTimestamp > BigInt(0)
         ? Number(metricsData.lastCycleTimestamp) * 1000
-        : Date.now(),
+        : 0,
       avgCycleTime: metricsData?.averageCycleTime
         ? Number(metricsData.averageCycleTime) * 1000
         : 0,

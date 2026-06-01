@@ -9,7 +9,7 @@
 <h3 align="center">Autonomous On-Chain Agentic Venture Guild</h3>
 
 <p align="center">
-  <em>The first fully on-chain autonomous executive suite powered by Somnia Agentic L1 native primitives — where AI agents make transparent, consensus-verified treasury decisions without any off-chain dependency.</em>
+  <em>The first fully on-chain autonomous executive suite powered by Somnia Agentic L1 native primitives — where AI agents make transparent, consensus-verified treasury decisions with minimal off-chain orchestration for cycle scheduling.</em>
 </p>
 
 <p align="center">
@@ -140,7 +140,7 @@ Contract                    Somnia Agent Runner              Contract
 ### 🔐 Fully Transparent & Trustless
 - Every decision produces a verifiable **on-chain execution receipt**
 - Deterministic LLM outputs via Somnia's pinned model weights and synchronized seeds
-- No off-chain servers, no external API dependencies — 100% Somnia-native
+- Minimal off-chain orchestrator handles cycle scheduling & transaction signing — all agent intelligence runs on-chain via Somnia primitives
 
 ---
 

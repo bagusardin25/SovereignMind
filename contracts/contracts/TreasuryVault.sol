@@ -256,22 +256,35 @@ contract TreasuryVault is ReentrancyGuard, Pausable, AccessControl {
      * @param rationale Why the agent decided to hold
      */
     function recordHoldDecision(string calldata rationale) external {
+        _recordDecision("hold", rationale, 0);
+    }
+
+    /**
+     * @notice Record any agent decision with the correct action type
+     * @param action Action type ("hold", "rebalance", "allocate")
+     * @param rationale AI-generated rationale
+     */
+    function recordDecision(string calldata action, string calldata rationale) external {
+        _recordDecision(action, rationale, 0);
+    }
+
+    function _recordDecision(string memory action, string memory rationale, uint256 value) internal {
         require(registry.isActiveAgent(msg.sender), "Not an active agent");
 
         uint256 decisionId = decisions.length;
         decisions.push(Decision({
             id: decisionId,
             initiator: msg.sender,
-            action: "hold",
+            action: action,
             rationale: rationale,
             timestamp: block.timestamp,
-            value: 0,
+            value: value,
             outcome: DecisionOutcome.EXECUTED
         }));
 
         totalOperations++;
 
-        emit DecisionRecorded(decisionId, msg.sender, "hold", DecisionOutcome.EXECUTED, block.timestamp);
+        emit DecisionRecorded(decisionId, msg.sender, action, DecisionOutcome.EXECUTED, block.timestamp);
     }
 
     // ═══════════════════════════════════════════════════════════

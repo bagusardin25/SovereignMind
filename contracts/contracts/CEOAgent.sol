@@ -160,7 +160,7 @@ contract CEOAgent is IAgentCallback {
 
         currentCycle = CycleInfo({
             cycleId: cycleCount,
-            phase: CyclePhase.ANALYZING,
+            phase: CyclePhase.GATHERING_DATA,
             startedAt: block.timestamp,
             completedAt: 0
         });
@@ -213,6 +213,9 @@ contract CEOAgent is IAgentCallback {
             true,
             allowedValues
         );
+
+        // Transition to analyzing phase before LLM inference
+        currentCycle.phase = CyclePhase.ANALYZING;
 
         uint256 requiredDeposit = _calculateDeposit(llmAgentId);
         if (address(this).balance < requiredDeposit) revert InsufficientDeposit();
@@ -298,24 +301,17 @@ contract CEOAgent is IAgentCallback {
         DecisionAction action,
         string memory rationale
     ) internal {
+        currentCycle.phase = CyclePhase.EXECUTING;
         bool success = false;
 
         if (action == DecisionAction.HOLD) {
-            // Record hold decision in treasury
-            treasury.recordHoldDecision(rationale);
+            treasury.recordDecision("hold", rationale);
             success = true;
         } else if (action == DecisionAction.REBALANCE) {
-            // Record the rebalance intent in treasury
-            // In production, this would integrate with a DEX for actual swaps
-            treasury.recordHoldDecision(
-                string(abi.encodePacked("REBALANCE intent: ", rationale))
-            );
+            treasury.recordDecision("rebalance", rationale);
             success = true;
         } else if (action == DecisionAction.ALLOCATE) {
-            // Allocation decisions are recorded but not auto-executed for safety
-            treasury.recordHoldDecision(
-                string(abi.encodePacked("ALLOCATE decision pending manual review: ", rationale))
-            );
+            treasury.recordDecision("allocate", rationale);
             success = true;
         }
 
@@ -451,8 +447,8 @@ contract CEOAgent is IAgentCallback {
             confidence += 10;
 
             // Extra boost if there's clear sentiment consensus
-            (uint256 bullish, uint256 bearish, , ) = cmoAgent.getAggregatedSentiment();
-            uint256 total = bullish + bearish + signalCount;
+            (uint256 bullish, uint256 bearish, uint256 neutral, ) = cmoAgent.getAggregatedSentiment();
+            uint256 total = bullish + bearish + neutral;
             if (total > 0) {
                 uint256 maxSignal = bullish > bearish ? bullish : bearish;
                 uint256 consensus = (maxSignal * 100) / total;
@@ -466,23 +462,19 @@ contract CEOAgent is IAgentCallback {
         return confidence;
     }
 
-    function _buildRationale(DecisionAction action, string memory /* rawDecision */) internal view returns (string memory) {
+    function _buildRationale(DecisionAction action, string memory rawDecision) internal view returns (string memory) {
         uint256 riskScore = cfoAgent.getCurrentRiskScore();
-
         if (action == DecisionAction.HOLD) {
             return string(abi.encodePacked(
-                "HOLD: Risk score ", _uint2str(riskScore),
-                "/100 within acceptable range. Maintaining current positions."
+                "HOLD: ", rawDecision, " | Risk ", _uint2str(riskScore), "/100"
             ));
         } else if (action == DecisionAction.REBALANCE) {
             return string(abi.encodePacked(
-                "REBALANCE: Risk score ", _uint2str(riskScore),
-                "/100 indicates portfolio adjustment needed for risk mitigation."
+                "REBALANCE: ", rawDecision, " | Risk ", _uint2str(riskScore), "/100"
             ));
         } else {
             return string(abi.encodePacked(
-                "ALLOCATE: Risk score ", _uint2str(riskScore),
-                "/100 and market conditions favor new capital allocation."
+                "ALLOCATE: ", rawDecision, " | Risk ", _uint2str(riskScore), "/100"
             ));
         }
     }

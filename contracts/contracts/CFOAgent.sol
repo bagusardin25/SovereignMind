@@ -352,9 +352,13 @@ contract CFOAgent is IAgentCallback {
     function _parseUint(string memory s) internal pure returns (uint256) {
         bytes memory b = bytes(s);
         uint256 result = 0;
+        bool found = false;
         for (uint256 i = 0; i < b.length; i++) {
             if (b[i] >= 0x30 && b[i] <= 0x39) {
                 result = result * 10 + (uint256(uint8(b[i])) - 48);
+                found = true;
+            } else if (found) {
+                break;
             }
         }
         return result;

@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { useTreasuryData } from '@/hooks/useTreasuryData';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Wallet,
   TrendingUp,
@@ -20,7 +20,12 @@ import {
   Download,
   Search,
   Filter,
+  X,
+  Loader2,
+  CheckCircle2,
 } from 'lucide-react';
+import { parseEther } from 'viem';
+import { useDepositToTreasury } from '@/hooks/useContractActions';
 import { downloadCSV } from '@/lib/exportUtils';
 import GlassCard from '@/components/ui/GlassCard';
 import Skeleton, { SkeletonMetric, SkeletonTable } from '@/components/ui/Skeleton';
@@ -35,6 +40,10 @@ export default function TreasuryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('All');
   const { isConnected } = useAccount();
+
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+  const [depositAmount, setDepositAmount] = useState('0.01');
+  const depositTreasury = useDepositToTreasury();
 
   // Composite on-chain treasury data
   const { treasury, transactions, totalOperations } = useTreasuryData();
@@ -120,23 +129,22 @@ export default function TreasuryPage() {
             On-chain treasury managed by your autonomous agent guild
           </p>
         </div>
-        <Link href="/settings">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[--color-success]/10 border border-[--color-success]/20 text-[--color-success] text-sm font-medium hover:bg-[--color-success]/20 transition-all"
-            style={{ animation: 'subtle-pulse 3s ease-in-out infinite' }}
-          >
-            <ArrowDownToLine size={16} />
-            Deposit
-            <style>{`
-              @keyframes subtle-pulse {
-                0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-                50% { box-shadow: 0 0 12px 2px rgba(16, 185, 129, 0.15); }
-              }
-            `}</style>
-          </motion.button>
-        </Link>
+        <motion.button
+          onClick={() => setIsDepositModalOpen(true)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[--color-success]/10 border border-[--color-success]/20 text-[--color-success] text-sm font-medium hover:bg-[--color-success]/20 transition-all"
+          style={{ animation: 'subtle-pulse 3s ease-in-out infinite' }}
+        >
+          <ArrowDownToLine size={16} />
+          Deposit
+          <style>{`
+            @keyframes subtle-pulse {
+              0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+              50% { box-shadow: 0 0 12px 2px rgba(16, 185, 129, 0.15); }
+            }
+          `}</style>
+        </motion.button>
       </div>
 
       {/* Key Metrics */}
@@ -374,6 +382,116 @@ export default function TreasuryPage() {
           <TransactionList transactions={filteredTransactions} />
         </GlassCard>
       </div>
+
+      {/* Deposit Modal */}
+      <AnimatePresence>
+        {isDepositModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => !depositTreasury.isPending && !depositTreasury.isConfirming && setIsDepositModalOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md glass p-6 rounded-2xl shadow-2xl border border-white/10"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <ArrowDownToLine className="text-emerald-400" />
+                  Deposit to Treasury
+                </h3>
+                <button
+                  onClick={() => setIsDepositModalOpen(false)}
+                  disabled={depositTreasury.isPending || depositTreasury.isConfirming}
+                  className="text-white/50 hover:text-white transition-colors disabled:opacity-50"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <p className="text-sm text-[--color-muted-foreground] mb-6">
+                Fund the Treasury Vault with native STT tokens. These funds will be managed by the CFO agent.
+              </p>
+
+              <div className="space-y-4">
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.001"
+                    min="0"
+                    placeholder="Amount in STT"
+                    value={depositAmount}
+                    onChange={(e) => setDepositAmount(e.target.value)}
+                    className="w-full p-4 pr-16 bg-white/5 border border-white/10 rounded-xl text-white text-lg outline-none focus:border-emerald-500/60 transition-colors placeholder:text-white/20"
+                    disabled={depositTreasury.isPending || depositTreasury.isConfirming}
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-[--color-muted-foreground]">
+                    STT
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (!depositAmount || Number(depositAmount) <= 0) return;
+                    depositTreasury.deposit(parseEther(depositAmount));
+                  }}
+                  disabled={
+                    !isConnected ||
+                    depositTreasury.isPending ||
+                    depositTreasury.isConfirming ||
+                    !depositAmount ||
+                    Number(depositAmount) <= 0
+                  }
+                  className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ background: 'linear-gradient(135deg, #10b981, #34d399)' }}
+                >
+                  {depositTreasury.isPending || depositTreasury.isConfirming ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 size={16} className="animate-spin" /> Processing...
+                    </span>
+                  ) : !isConnected ? (
+                    'Connect Wallet to Deposit'
+                  ) : (
+                    'Confirm Deposit'
+                  )}
+                </button>
+
+                {/* Transaction Status */}
+                {(depositTreasury.isSuccess || depositTreasury.error) && (
+                  <div className={`p-4 rounded-xl text-sm mt-4 ${depositTreasury.isSuccess ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                    {depositTreasury.isSuccess ? (
+                      <div className="flex flex-col items-center gap-2 text-center">
+                        <CheckCircle2 size={24} className="text-emerald-400" />
+                        <span className="font-medium">Deposit Successful!</span>
+                        <a
+                          href={`https://shannon.somnia.network/tx/${depositTreasury.txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs underline underline-offset-2 hover:text-emerald-300 transition-colors"
+                        >
+                          View on Explorer
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <span className="font-medium">Transaction Failed</span>
+                        <p className="text-xs opacity-80 mt-1 break-all">
+                          {(depositTreasury.error as Error).message?.slice(0, 100)}...
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

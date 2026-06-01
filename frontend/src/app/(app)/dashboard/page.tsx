@@ -130,7 +130,7 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-center gap-2 text-xs text-[--color-muted-foreground]">
             <Clock size={14} />
-            <span>Last cycle: {Math.round((Date.now() - health.lastCycleTimestamp) / 60000)}m ago</span>
+            <span>Last cycle: {health.lastCycleTimestamp > 0 ? `${Math.round((Date.now() - health.lastCycleTimestamp) / 60000)}m ago` : 'Never'}</span>
           </div>
           <button
             onClick={() => orchestrator.trigger.mutate()}
