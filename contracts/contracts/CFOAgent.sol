@@ -327,11 +327,10 @@ contract CFOAgent is IAgentCallback {
     //                  INTERNAL HELPERS
     // ═══════════════════════════════════════════════════════════
 
-    function _calculateDeposit(uint256 agentId) internal view returns (uint256) {
-        uint256 baseDeposit = agentRunner.getRequestDeposit();
-        uint256 agentPrice = agentRunner.getAgentPrice(agentId);
-        uint256 subcommitteeSize = agentRunner.getSubcommitteeSize();
-        return baseDeposit + (agentPrice * subcommitteeSize);
+    function _calculateDeposit(uint256 /* agentId */) internal view returns (uint256) {
+        // Real AgentRunner only exposes getRequestDeposit() (0.03 STT on testnet).
+        // getAgentPrice() and getSubcommitteeSize() do not exist on the live contract.
+        return agentRunner.getRequestDeposit();
     }
 
     function _buildPriceReport() internal view returns (string memory) {

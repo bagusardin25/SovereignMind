@@ -43,7 +43,7 @@ export class HealthServer {
   private setupRoutes(): void {
     // Health check
     this.app.get('/health', async (_req, res) => {
-      const status = this.orchestrator.isRunning ? 'healthy' : 'healthy';
+      const status = this.orchestrator.isRunning ? 'healthy' : 'degraded';
       const response: HealthResponse = {
         status,
         uptime: Date.now() - this.startedAt,

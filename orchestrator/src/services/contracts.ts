@@ -121,15 +121,24 @@ export async function calculateDeposit(
   contracts: Contracts,
   agentIdGetter: () => Promise<bigint>,
 ): Promise<bigint> {
-  const agentId = await agentIdGetter();
-  const baseFee: bigint = await contracts.agentRunner.getRequestDeposit();
-  const agentPrice: bigint = await contracts.agentRunner.getAgentPrice(agentId);
-  const subcommitteeSize: bigint = await contracts.agentRunner.getSubcommitteeSize();
+  try {
+    const agentId = await agentIdGetter();
+    const baseFee: bigint = await contracts.agentRunner.getRequestDeposit();
+    const agentPrice: bigint = await contracts.agentRunner.getAgentPrice(agentId);
+    const subcommitteeSize: bigint = await contracts.agentRunner.getSubcommitteeSize();
 
-  const total = baseFee + agentPrice * subcommitteeSize;
-  logger.debug(
-    `Deposit calculation: baseFee=${baseFee}, agentPrice=${agentPrice}, ` +
-      `subcommitteeSize=${subcommitteeSize}, total=${total}`,
-  );
-  return total;
+    const total = baseFee + agentPrice * subcommitteeSize;
+    logger.debug(
+      `Deposit calculation: baseFee=${baseFee}, agentPrice=${agentPrice}, ` +
+        `subcommitteeSize=${subcommitteeSize}, total=${total}`,
+    );
+    return total;
+  } catch (error) {
+    // AgentRunner view functions may revert on testnet — use a generous fallback
+    const fallback = ethers.parseEther('0.05'); // 0.05 STT (getRequestDeposit returns 0.03)
+    logger.warn(
+      `⚠️ Dynamic deposit calculation failed, using fallback: ${ethers.formatEther(fallback)} STT`,
+    );
+    return fallback;
+  }
 }

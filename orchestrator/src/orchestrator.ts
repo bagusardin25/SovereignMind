@@ -115,7 +115,7 @@ export class Orchestrator {
 
         // Wait for the chained SentimentAnalyzed event
         try {
-          await this.events.waitFor('SentimentAnalyzed', config.eventTimeoutSeconds * 2000);
+          await this.events.waitFor('SentimentAnalyzed', config.eventTimeoutSeconds * 1000 * 2); // 2× timeout for chained ops
         } catch {
           logger.warn('⚠️ Timeout waiting for SentimentAnalyzed, continuing...');
         }
@@ -128,7 +128,7 @@ export class Orchestrator {
         const txHash = await this.ceo.initiateDecisionCycle();
 
         try {
-          await this.events.waitFor('CycleCompleted', config.eventTimeoutSeconds * 2000);
+          await this.events.waitFor('CycleCompleted', config.eventTimeoutSeconds * 1000 * 2); // 2× timeout for full cycle
         } catch {
           logger.warn('⚠️ Timeout waiting for CycleCompleted, continuing...');
         }

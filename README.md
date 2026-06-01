@@ -217,11 +217,12 @@ Add Somnia Testnet to your wallet:
 
 | Contract | Address | Status |
 |----------|---------|--------|
-| AgentRegistry | `0x9B4f52744EE60A763d1a1966eCD91e04E668d2d6` | ✅ Deployed |
-| TreasuryVault | `0x269B22DFF373Bb3aC9c564141edbfe9De3903a40` | ✅ Deployed |
-| CFOAgent | `0x21e908dc15cb5Dbd659f107DC0058Fe2D762E385` | ✅ Deployed |
-| CMOAgent | `0xd110592795615D78776c52b0a5B254d5eb7B6662` | ✅ Deployed |
-| CEOAgent | — | ⏳ Pending |
+| AgentRegistry | `0x41A6a0c76ddAD6F5dAeC70F7aaFA439eba1AC0c3` | ✅ Deployed |
+| TreasuryVault | `0x8f1c9bd9cc0EF059D0175fF05153D2fEe8Be7f9d` | ✅ Deployed |
+| CEOAgent | `0xd58a92F4BF829921a6cdc6FeE54d7CC8743F75c9` | ✅ Deployed (v2) |
+| CFOAgent | `0xEE3dB72FBBF25248edDe8324670aC8F1b9285869` | ✅ Deployed (v2) |
+| CMOAgent | `0x9C13A3d3ca1BB420F6f2489c93785eCE3125c600` | ✅ Deployed (v2) |
+| AgentRunner | `0x037Bb9C718F3f7fe5eCBDB0b600D607b52706776` | 🔗 Somnia Platform |
 
 ---
 
@@ -251,18 +252,21 @@ Add Somnia Testnet to your wallet:
 - [x] Deployment scripts — Full deploy + resume deploy for Somnia Testnet
 - [x] ABI copy script — Auto-copy compiled ABIs to frontend
 
-### Phase 3: Integration & Polish 🔄 *In Progress*
-- [x] Deploy AgentRegistry, TreasuryVault, CFOAgent, CMOAgent to Somnia Testnet
-- [ ] Deploy CEOAgent to Somnia Testnet
+### Phase 3: Integration & Polish ✅ *Completed*
+- [x] Deploy all 5 contracts to Somnia Testnet (AgentRegistry, TreasuryVault, CEO, CFO, CMO)
 - [x] Frontend wagmi hooks for all contracts (7 hook files, read + write)
 - [x] Contract addresses & ABIs integrated into frontend
 - [x] Settings page with live on-chain contract interaction panel
 - [x] Orchestrator backend — automated cycle engine, health API, auto-funding
-- [ ] Connect remaining frontend pages to live contracts (replace mock data)
-- [ ] Integrate Somnia Receipts API for real-time decision display
-- [ ] Deploy frontend to Vercel ✅ ([sovereignmind-app.vercel.app](https://sovereignmind-app.vercel.app))
+- [x] Connect all frontend pages to live contracts (replaced mock data with composite hooks)
+- [x] Integrate Somnia Receipts verification (event log parsing + ReceiptBadge + ReceiptModal)
+- [x] Deploy frontend to Vercel ✅ ([sovereignmind-app.vercel.app](https://sovereignmind-app.vercel.app))
+
+### Phase 4: Autonomous Loop & Validation 🔄 *In Progress*
+- [x] Fix orchestrator bugs (health endpoint, timeout calculation)
+- [x] Sync documentation with current deployment
 - [ ] Full autonomous loop: CEO → CFO → CMO → Decision → Execute
-- [ ] End-to-end testing (48h autonomous run)
+- [ ] End-to-end testing (multi-cycle validation)
 - [ ] Demo video (2-5 minutes)
 
 ---
