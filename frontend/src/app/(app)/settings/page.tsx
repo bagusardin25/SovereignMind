@@ -26,6 +26,7 @@ import {
   useScanMarket,
   useAnalyzeRisk,
 } from '@/hooks/useContractActions';
+import { toast } from '@/components/ui/Toast';
 
 // ─────────────────────────────────────────────────────────────
 // TxStatus — inline feedback for contract write actions
@@ -117,8 +118,29 @@ export default function SettingsPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('sovereignmind-settings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.riskThreshold !== undefined) setRiskThreshold(parsed.riskThreshold);
+        if (parsed.rebalanceInterval) setRebalanceInterval(parsed.rebalanceInterval);
+        if (parsed.notifications) setNotifications(parsed.notifications);
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }, []);
+
   const handleSave = () => {
-    alert('Settings saved successfully!');
+    const settings = {
+      riskThreshold,
+      rebalanceInterval,
+      notifications,
+    };
+    localStorage.setItem('sovereignmind-settings', JSON.stringify(settings));
+    toast('Settings saved successfully', 'success');
   };
 
   // ── wallet / contract reads ──

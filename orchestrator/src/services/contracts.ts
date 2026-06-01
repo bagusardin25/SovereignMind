@@ -122,22 +122,16 @@ export async function calculateDeposit(
   agentIdGetter: () => Promise<bigint>,
 ): Promise<bigint> {
   try {
-    const agentId = await agentIdGetter();
-    const baseFee: bigint = await contracts.agentRunner.getRequestDeposit();
-    const agentPrice: bigint = await contracts.agentRunner.getAgentPrice(agentId);
-    const subcommitteeSize: bigint = await contracts.agentRunner.getSubcommitteeSize();
-
-    const total = baseFee + agentPrice * subcommitteeSize;
-    logger.debug(
-      `Deposit calculation: baseFee=${baseFee}, agentPrice=${agentPrice}, ` +
-        `subcommitteeSize=${subcommitteeSize}, total=${total}`,
-    );
-    return total;
+    // In Somnia Testnet, getAgentPrice and getSubcommitteeSize are not implemented and revert.
+    // The only required fee is returned by getRequestDeposit().
+    const deposit: bigint = await contracts.agentRunner.getRequestDeposit();
+    logger.debug(`Deposit calculation: getRequestDeposit=${ethers.formatEther(deposit)} STT`);
+    return deposit;
   } catch (error) {
-    // AgentRunner view functions may revert on testnet — use a generous fallback
+    // Fallback if RPC call itself fails
     const fallback = ethers.parseEther('0.05'); // 0.05 STT (getRequestDeposit returns 0.03)
     logger.warn(
-      `⚠️ Dynamic deposit calculation failed, using fallback: ${ethers.formatEther(fallback)} STT`,
+      `⚠️ Failed to get request deposit from contract, using fallback: ${ethers.formatEther(fallback)} STT`,
     );
     return fallback;
   }

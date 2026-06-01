@@ -30,10 +30,22 @@ export const somniaTestnet = defineChain({
   testnet: true,
 });
 
+// WalletConnect / Reown Project ID
+// Get one free at https://cloud.reown.com
+const walletConnectProjectId =
+  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? '';
+
+if (!walletConnectProjectId) {
+  console.warn(
+    '[SovereignMind] NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set. ' +
+      'Wallet connections will fail. Get a free project ID at https://cloud.reown.com'
+  );
+}
+
 // Create wagmi config with RainbowKit defaults
 export const config = getDefaultConfig({
   appName: 'SovereignMind',
-  projectId: 'sovereignmind-demo', // WalletConnect project ID (demo)
+  projectId: walletConnectProjectId,
   chains: [somniaTestnet],
   ssr: true,
 });

@@ -38,12 +38,21 @@ function buildAgent(
   const decisions = decisionsOverride ?? (data?.decisionsCount ? Number(data.decisionsCount) : 0);
   const success = data?.successCount ? Number(data.successCount) : 0;
 
+  // Determine effective status:
+  // - If we have on-chain data AND the agent was registered (registeredAt > 0)
+  //   but is now deactivated (isActive === false), show 'error'.
+  // - If registeredAt === 0, the agent isn't registered on-chain yet — use
+  //   the status derived from agent-specific hooks (idle/active/processing).
+  const isRegistered = data != null && Number(data.registeredAt) > 0;
+  const isDeactivated = isRegistered && data.isActive === false;
+  const effectiveStatus: AgentStatus = isDeactivated ? 'error' : status;
+
   return {
     id: `agent-${role.toLowerCase()}`,
     role,
     name: meta.name,
     description: meta.description,
-    status: data && data.isActive === false ? 'error' : status,
+    status: effectiveStatus,
     currentTask,
     lastAction: lastAction > 0 ? 'Contract interaction' : null,
     lastActionTimestamp: lastAction > 0 ? lastAction : null,

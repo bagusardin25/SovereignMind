@@ -155,11 +155,8 @@ export default function TreasuryPage() {
           delay={0.1}
         />
         <MetricCard
-          label="Stablecoin Reserve"
-          value={`${treasury.holdings
-            .filter((h) => h.symbol === 'USDC')
-            .reduce((sum, h) => sum + h.allocation, 0)
-            .toFixed(1)}%`}
+          label="Native Reserve"
+          value={treasury.totalValue > 0 ? '100%' : '0%'}
           icon={<Shield size={22} />}
           accentColor="#10b981"
           delay={0.2}
