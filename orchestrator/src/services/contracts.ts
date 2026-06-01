@@ -14,7 +14,20 @@ import fs from 'fs';
  * then falls back to Hardhat-style artifacts ({abi, bytecode}).
  */
 function loadABI(contractName: string): ethers.InterfaceAbi {
-  // Try from frontend ABIs first (pure ABI array)
+  // 1. Local ABIs bundled with the orchestrator (works on Railway & standalone deploys)
+  const localPath = path.resolve(
+    __dirname,
+    '..',
+    'abis',
+    `${contractName}.json`,
+  );
+
+  if (fs.existsSync(localPath)) {
+    logger.debug(`Loading ABI for ${contractName} from local abis/`);
+    return JSON.parse(fs.readFileSync(localPath, 'utf-8'));
+  }
+
+  // 2. Frontend ABIs (monorepo local dev — pure ABI array)
   const frontendPath = path.resolve(
     __dirname,
     '..',
@@ -33,7 +46,7 @@ function loadABI(contractName: string): ethers.InterfaceAbi {
     return JSON.parse(fs.readFileSync(frontendPath, 'utf-8'));
   }
 
-  // Fallback: from contracts artifacts (has {abi, bytecode} wrapper)
+  // 3. Hardhat artifacts (monorepo local dev — {abi, bytecode} wrapper)
   const artifactPath = path.resolve(
     __dirname,
     '..',
@@ -48,7 +61,7 @@ function loadABI(contractName: string): ethers.InterfaceAbi {
 
   if (!fs.existsSync(artifactPath)) {
     throw new Error(
-      `ABI not found for ${contractName}. Checked:\n  ${frontendPath}\n  ${artifactPath}`,
+      `ABI not found for ${contractName}. Checked:\n  ${localPath}\n  ${frontendPath}\n  ${artifactPath}`,
     );
   }
 
