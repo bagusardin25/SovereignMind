@@ -2,7 +2,7 @@
 
 // ============================================================
 // SovereignMind — Live Stats Grid
-// Hero-side stats card pulling from mock-data with subtle live
+// Hero-side stats card pulling from live contract hooks with subtle
 // shimmer to signal "this protocol is alive".
 // ============================================================
 

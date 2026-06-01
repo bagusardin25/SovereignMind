@@ -179,7 +179,7 @@ frontend/
 │   ├── lib/
 │   │   ├── constants.ts                 # Chain config, contract addresses, agent colors
 │   │   ├── types.ts                     # TypeScript interfaces (Agent, Decision, Treasury)
-│   │   ├── mock-data.ts                 # Simulated data layer for development
+│   │   ├── agent-metadata.ts            # Static agent metadata + enum mappings
 │   │   ├── wagmi-config.ts              # wagmi v2 + RainbowKit chain setup
 │   │   ├── exportUtils.ts              # Data export utilities
 │   │   ├── orchestrator.ts              # Orchestrator backend API client

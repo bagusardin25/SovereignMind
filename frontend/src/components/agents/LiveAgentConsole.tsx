@@ -49,15 +49,10 @@ function generateSeedEvents(count: number): ActivityEvent[] {
 }
 
 export default function LiveAgentConsole() {
-  const [logs, setLogs] = useState<ActivityEvent[]>([]);
+  const [logs, setLogs] = useState<ActivityEvent[]>(() => generateSeedEvents(5));
   const [isLive, setIsLive] = useState(true);
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
   const { isConnected } = useAccount();
-
-  // Initialize with generated seed events (no mock-data dependency)
-  useEffect(() => {
-    setLogs(generateSeedEvents(5));
-  }, []);
 
   // Auto-scroll to bottom
   useEffect(() => {

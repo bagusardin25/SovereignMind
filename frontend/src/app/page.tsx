@@ -43,7 +43,7 @@ const faqs = [
   },
   {
     q: "What are on-chain execution receipts?",
-    a: "Every algorithmic decision produces a verifiable on-chain execution receipt via Somnia's BFT consensus mechanism. This makes every treasury operation fully transparent and publicly auditable — no off-chain servers or external dependencies."
+    a: "Every algorithmic decision produces a verifiable on-chain execution receipt via Somnia's BFT consensus mechanism. The app uses a minimal off-chain orchestrator for cycle scheduling and transaction signing; agent requests, responses, and treasury receipts remain publicly auditable on-chain."
   },
   {
     q: "Where can I track the agent decisions?",
@@ -472,7 +472,7 @@ export default function LandingPage() {
               </div>
               <h3 className="font-display-lg text-[20px] text-white mb-3">On-Chain Receipt</h3>
               <p className="font-body-md text-[14px] text-[var(--color-on-surface)]/60 leading-relaxed">
-                Every decision produces a public, auditable execution receipt verifiable via Somnia&apos;s consensus — zero single points of failure, zero off-chain dependencies.
+                Every decision produces a public, auditable execution receipt verifiable via Somnia&apos;s consensus, with a minimal off-chain orchestrator only for scheduling and transaction signing.
               </p>
             </div>
           </motion.div>
@@ -491,7 +491,7 @@ export default function LandingPage() {
           </div>
           <div className="hidden sm:block w-px h-10 bg-[var(--color-on-surface)]/10"></div>
           <p className="font-body-md text-[14px] text-[var(--color-on-surface)]/40 max-w-md text-center sm:text-left">
-            Built entirely on Somnia&apos;s native agent primitives — no off-chain servers, no external API dependencies. 100% Somnia-native.
+            Built on Somnia&apos;s native agent primitives with a minimal off-chain orchestrator for cycle scheduling.
           </p>
         </div>
       </section>

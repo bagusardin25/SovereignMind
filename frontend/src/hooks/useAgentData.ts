@@ -9,7 +9,7 @@
 import { useMemo } from 'react';
 import { useAgentInfo, useAgentCount, useTotalDecisions } from './useAgentRegistry';
 import { useCEOCurrentPhase, useCEOPerformanceMetrics, useCEODecisionCount } from './useCEOAgent';
-import { useCFORiskScore, useCFOAnalysisCount, useCFOLatestRisk } from './useCFOAgent';
+import { useCFOAnalysisCount, useCFOLatestRisk } from './useCFOAgent';
 import { useCMOSignalCount, useCMOLatestSignal } from './useCMOAgent';
 import { useOrchestrator } from './useOrchestrator';
 import { contracts } from '@/lib/somnia/contracts';
@@ -17,12 +17,39 @@ import {
   AGENT_METADATA,
   cyclePhaseToStatus,
   CYCLE_PHASE_NAMES,
-  toJsTimestamp,
 } from '@/lib/agent-metadata';
 import type { Agent, AgentRole, AgentStatus, SystemHealth } from '@/lib/types';
 import type { AgentInfo } from './useAgentRegistry';
 
 // ----- Helper -----
+
+type RawCEOPerformanceMetrics =
+  | readonly [bigint, bigint, bigint, bigint]
+  | {
+      completedCycles?: bigint;
+      totalDecisions?: bigint;
+      averageCycleTime?: bigint;
+      lastCycleTimestamp?: bigint;
+    };
+
+function normalizeCEOMetrics(data: unknown): {
+  averageCycleTime: bigint;
+  lastCycleTimestamp: bigint;
+} {
+  if (Array.isArray(data)) {
+    const metrics = data as unknown as readonly [bigint, bigint, bigint, bigint];
+    return {
+      averageCycleTime: metrics[2] ?? BigInt(0),
+      lastCycleTimestamp: metrics[3] ?? BigInt(0),
+    };
+  }
+
+  const metrics = data as Exclude<RawCEOPerformanceMetrics, readonly [bigint, bigint, bigint, bigint]> | undefined;
+  return {
+    averageCycleTime: metrics?.averageCycleTime ?? BigInt(0),
+    lastCycleTimestamp: metrics?.lastCycleTimestamp ?? BigInt(0),
+  };
+}
 
 function buildAgent(
   role: AgentRole,
@@ -139,18 +166,16 @@ export function useAgentData() {
   // Build system health from on-chain + orchestrator
   const systemHealth = useMemo<SystemHealth>(() => {
     const onlineCount = agents.filter(a => a.status !== 'error').length;
-    const metricsData = ceoMetrics.data as
-      | { completedCycles: bigint; totalDecisions: bigint; averageCycleTime: bigint; lastCycleTimestamp: bigint }
-      | undefined;
+    const metricsData = normalizeCEOMetrics(ceoMetrics.data);
 
     return {
       status: isOnline && onlineCount === 3 ? 'healthy' : onlineCount > 0 ? 'degraded' : 'offline',
       agentsOnline: onlineCount,
       totalAgents: 3,
-      lastCycleTimestamp: metricsData?.lastCycleTimestamp != null && metricsData.lastCycleTimestamp > BigInt(0)
+      lastCycleTimestamp: metricsData.lastCycleTimestamp > BigInt(0)
         ? Number(metricsData.lastCycleTimestamp) * 1000
         : 0,
-      avgCycleTime: metricsData?.averageCycleTime
+      avgCycleTime: metricsData.averageCycleTime > BigInt(0)
         ? Number(metricsData.averageCycleTime) * 1000
         : 0,
       networkLatency: 0,

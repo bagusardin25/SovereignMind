@@ -17,6 +17,8 @@ import { AGENT_COLORS } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, ArrowDown, Brain, LineChart, Megaphone, User, Landmark, Shield, Zap, Search } from 'lucide-react';
 
+const CONSOLE_SKELETON_WIDTHS = ['78%', '54%', '66%', '82%', '58%'];
+
 export default function AgentsPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
@@ -60,8 +62,8 @@ export default function AgentsPage() {
             <Skeleton width="24px" height="24px" className="rounded" />
           </div>
           <div className="flex-1 p-4 space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} width={`${Math.random() * 40 + 40}%`} height="12px" />
+            {CONSOLE_SKELETON_WIDTHS.map((width, i) => (
+              <Skeleton key={i} width={width} height="12px" />
             ))}
           </div>
         </div>

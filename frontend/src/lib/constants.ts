@@ -89,8 +89,10 @@ export function truncateAddress(address: string): string {
 
 // Format timestamp to relative time
 export function formatRelativeTime(timestamp: number): string {
+  if (!Number.isFinite(timestamp) || timestamp <= 0) return 'Pending';
+
   const now = Date.now();
-  const diff = now - timestamp;
+  const diff = Math.max(0, now - timestamp);
   const seconds = Math.floor(diff / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);

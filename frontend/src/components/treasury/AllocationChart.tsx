@@ -28,13 +28,14 @@ export default function AllocationChart({
   const strokeWidth = 28;
 
   // Calculate segments
-  let cumulativePercentage = 0;
   const segments = holdings.map((holding, index) => {
     const percentage = holding.allocation / 100;
+    const cumulativePercentage = holdings
+      .slice(0, index)
+      .reduce((sum, item) => sum + item.allocation / 100, 0);
     const dashLength = circumference * percentage;
     const gapLength = circumference - dashLength;
     const offset = circumference * cumulativePercentage;
-    cumulativePercentage += percentage;
 
     return {
       holding,

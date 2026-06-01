@@ -83,6 +83,8 @@ export function calculateUptime(registeredAtSeconds: bigint): number {
 }
 
 /** Convert bigint timestamp (seconds) to JS timestamp (milliseconds) */
-export function toJsTimestamp(seconds: bigint | number): number {
-  return Number(seconds) * 1000;
+export function toJsTimestamp(seconds: bigint | number | null | undefined): number {
+  if (seconds == null) return 0;
+  const timestamp = Number(seconds);
+  return Number.isFinite(timestamp) && timestamp > 0 ? timestamp * 1000 : 0;
 }

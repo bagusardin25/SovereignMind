@@ -92,7 +92,13 @@ export default function AgentControlPanel({
   const { isConnected } = useAccount();
 
   // ── Objective (writes on-chain to CEOAgent.setObjective) ──
-  const [objective, setObjective] = useState(currentObjective || '');
+  const [objective, setObjective] = useState(() => {
+    try {
+      return localStorage.getItem('sovereignmind-objective') || currentObjective || '';
+    } catch {
+      return currentObjective || '';
+    }
+  });
   const {
     setObjective: writeObjective,
     txHash: objectiveHash,
@@ -101,16 +107,6 @@ export default function AgentControlPanel({
     isSuccess: objectiveSuccess,
     error: objectiveError,
   } = useSetObjective();
-
-  // Load saved objective from localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('sovereignmind-objective');
-      if (saved) setObjective(saved);
-    } catch {
-      // Ignore
-    }
-  }, []);
 
   // Save to localStorage when confirmed on-chain
   useEffect(() => {

@@ -28,11 +28,12 @@ import AllocationChart from '@/components/treasury/AllocationChart';
 import DecisionCard from '@/components/decisions/DecisionCard';
 import { SkeletonCard, SkeletonMetric } from '@/components/ui/Skeleton';
 import Skeleton from '@/components/ui/Skeleton';
-import { AGENT_COLORS } from '@/lib/constants';
+import { AGENT_COLORS, formatRelativeTime } from '@/lib/constants';
 import Link from 'next/link';
 
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
+  const [now, setNow] = useState(() => Date.now());
   const { isConnected } = useAccount();
 
   // Composite on-chain data hooks
@@ -47,6 +48,11 @@ export default function DashboardPage() {
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(interval);
   }, []);
 
   if (isLoading) {
@@ -130,7 +136,7 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-center gap-2 text-xs text-[--color-muted-foreground]">
             <Clock size={14} />
-            <span>Last cycle: {health.lastCycleTimestamp > 0 ? `${Math.round((Date.now() - health.lastCycleTimestamp) / 60000)}m ago` : 'Never'}</span>
+            <span>Last cycle: {health.lastCycleTimestamp > 0 ? formatRelativeTime(Math.min(health.lastCycleTimestamp, now)) : 'Never'}</span>
           </div>
           <button
             onClick={() => orchestrator.trigger.mutate()}

@@ -11,7 +11,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { usePublicClient } from 'wagmi';
-import { parseAbiItem, type Log } from 'viem';
+import { parseAbiItem, type AbiEvent, type Log } from 'viem';
 import { CONTRACT_ADDRESSES } from '@/lib/constants';
 import { buildExplorerTxUrl, buildVerificationUrl } from '@/lib/somnia/receipts';
 
@@ -39,7 +39,7 @@ export interface ReceiptRecord {
 // ── Event ABI items ───────────────────────────────────────────
 
 const CEO_DECISION_MADE = parseAbiItem(
-  'event DecisionMade(uint256 indexed id, string action, string rationale, uint256 confidence, uint256 timestamp)'
+  'event DecisionMade(uint256 indexed id, uint8 action, string rationale, uint256 confidenceScore, uint256 timestamp)'
 );
 
 const CFO_ANALYSIS_STARTED = parseAbiItem(
@@ -55,11 +55,10 @@ const CMO_SCAN_STARTED = parseAbiItem(
 export function useReceipts() {
   const publicClient = usePublicClient();
   const [records, setRecords] = useState<ReceiptRecord[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!publicClient) {
-      setIsLoading(false);
       return;
     }
 
@@ -70,11 +69,16 @@ export function useReceipts() {
         const results: ReceiptRecord[] = [];
 
         // Helper to fetch logs in chunks to bypass the 1000 block RPC limit
-        const fetchLogsInBatches = async (address: `0x${string}`, event: any, maxHistory = BigInt(10000)) => {
+        type EventLog = Log & { args?: Record<string, unknown> };
+        const fetchLogsInBatches = async (
+          address: `0x${string}`,
+          event: AbiEvent,
+          maxHistory = BigInt(10000),
+        ): Promise<EventLog[]> => {
           const latestBlock = await publicClient!.getBlockNumber();
           const startBlock = latestBlock > maxHistory ? latestBlock - maxHistory : BigInt(0);
           const chunkSize = BigInt(999);
-          let logs: any[] = [];
+          let logs: EventLog[] = [];
           
           for (let from = startBlock; from <= latestBlock; from += chunkSize + BigInt(1)) {
             const to = from + chunkSize > latestBlock ? latestBlock : from + chunkSize;
@@ -85,7 +89,7 @@ export function useReceipts() {
                 fromBlock: from,
                 toBlock: to,
               });
-              logs = logs.concat(chunkLogs);
+              logs = logs.concat(chunkLogs as EventLog[]);
             } catch (err) {
               console.warn(`Failed to fetch logs chunk ${from}-${to} for ${address}:`, err);
             }
@@ -102,7 +106,7 @@ export function useReceipts() {
 
           for (const log of ceoLogs) {
             const txHash = log.transactionHash || '';
-            const args = log.args;
+            const args = log.args ?? {};
             results.push({
               id: `ceo-${args.id?.toString() || '0'}`,
               requestId: null,
@@ -127,7 +131,7 @@ export function useReceipts() {
 
           for (const log of cfoLogs) {
             const txHash = log.transactionHash || '';
-            const args = log.args;
+            const args = log.args ?? {};
             const requestId = args.requestId?.toString() || null;
             results.push({
               id: `cfo-${requestId || txHash}`,
@@ -153,7 +157,7 @@ export function useReceipts() {
 
           for (const log of cmoLogs) {
             const txHash = log.transactionHash || '';
-            const args = log.args;
+            const args = log.args ?? {};
             const requestId = args.requestId?.toString() || null;
             results.push({
               id: `cmo-${requestId || txHash}`,

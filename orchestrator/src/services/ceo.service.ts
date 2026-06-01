@@ -10,8 +10,7 @@ export enum CyclePhase {
   IDLE = 0,
   GATHERING_DATA = 1,
   ANALYZING = 2,
-  DECIDING = 3,
-  EXECUTING = 4,
+  EXECUTING = 3,
 }
 
 // ---------------------------------------------------------------------------

@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { AGENT_COLORS, SOMNIA_TESTNET } from '@/lib/constants';
-import type { Decision, AgentRole } from '@/lib/types';
+import type { Decision } from '@/lib/types';
 import { getVerificationStatus, type VerificationStatus } from '@/lib/somnia/receipts';
 
 interface ReceiptModalProps {
@@ -40,6 +40,35 @@ const statusConfig: Record<VerificationStatus, { label: string; color: string; i
   failed: { label: 'Execution Failed', color: '#ef4444', icon: X },
   unknown: { label: 'No On-Chain Record', color: '#6b7280', icon: Activity },
 };
+
+function CopyButton({
+  text,
+  field,
+  copiedField,
+  onCopy,
+}: {
+  text: string;
+  field: string;
+  copiedField: string | null;
+  onCopy: (text: string, field: string) => void;
+}) {
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onCopy(text, field);
+      }}
+      className="p-1 rounded hover:bg-white/10 transition-colors"
+      title="Copy to clipboard"
+    >
+      {copiedField === field ? (
+        <Check size={12} className="text-emerald-400" />
+      ) : (
+        <Copy size={12} className="text-[--color-muted]" />
+      )}
+    </button>
+  );
+}
 
 export default function ReceiptModal({
   decision,
@@ -79,23 +108,6 @@ export default function ReceiptModal({
     setCopiedField(field);
     setTimeout(() => setCopiedField(null), 2000);
   };
-
-  const CopyButton = ({ text, field }: { text: string; field: string }) => (
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        copyToClipboard(text, field);
-      }}
-      className="p-1 rounded hover:bg-white/10 transition-colors"
-      title="Copy to clipboard"
-    >
-      {copiedField === field ? (
-        <Check size={12} className="text-emerald-400" />
-      ) : (
-        <Copy size={12} className="text-[--color-muted]" />
-      )}
-    </button>
-  );
 
   return (
     <AnimatePresence>
@@ -193,7 +205,7 @@ export default function ReceiptModal({
                             ? `${requestId.slice(0, 10)}...${requestId.slice(-8)}`
                             : requestId}
                         </code>
-                        <CopyButton text={requestId} field="requestId" />
+                        <CopyButton text={requestId} field="requestId" copiedField={copiedField} onCopy={copyToClipboard} />
                       </div>
                     </div>
                   )}
@@ -209,7 +221,7 @@ export default function ReceiptModal({
                         <code className="text-xs font-mono text-[--color-foreground]">
                           {txHash.slice(0, 10)}...{txHash.slice(-8)}
                         </code>
-                        <CopyButton text={txHash} field="txHash" />
+                        <CopyButton text={txHash} field="txHash" copiedField={copiedField} onCopy={copyToClipboard} />
                       </div>
                     </div>
                   )}

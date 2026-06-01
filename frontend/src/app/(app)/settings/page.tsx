@@ -15,7 +15,6 @@ import {
 } from 'lucide-react';
 import { useAccount } from 'wagmi';
 import { parseEther, formatEther } from 'viem';
-import { contracts } from '@/lib/somnia/contracts';
 import { CONTRACT_ADDRESSES, truncateAddress } from '@/lib/constants';
 import { useTreasuryBalance } from '@/hooks/useTreasuryVault';
 import { useAgentCount, useTotalDecisions } from '@/hooks/useAgentRegistry';
@@ -88,6 +87,58 @@ function TxStatus({
   );
 }
 
+type NotificationSettings = {
+  email: boolean;
+  slack: boolean;
+  telegram: boolean;
+  urgentOnly: boolean;
+};
+
+type SavedSettings = {
+  riskThreshold?: number;
+  rebalanceInterval?: string;
+  notifications?: NotificationSettings;
+};
+
+function readSavedSettings(): SavedSettings {
+  try {
+    const saved = localStorage.getItem('sovereignmind-settings');
+    return saved ? JSON.parse(saved) : {};
+  } catch {
+    return {};
+  }
+}
+
+function AddressRow({
+  label,
+  addr,
+  copiedField,
+  onCopy,
+}: {
+  label: string;
+  addr: string;
+  copiedField: string | null;
+  onCopy: (text: string, field: string) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between py-2 border-b border-white/5 last:border-b-0">
+      <span className="text-xs text-[--color-muted-foreground]">{label}</span>
+      <button
+        onClick={() => onCopy(addr, label)}
+        className="flex items-center gap-1.5 text-xs font-mono text-white/80 hover:text-white transition-colors"
+        title="Copy address"
+      >
+        {truncateAddress(addr)}
+        {copiedField === label ? (
+          <CheckCircle2 size={12} className="text-emerald-400" />
+        ) : (
+          <Copy size={12} className="text-white/40" />
+        )}
+      </button>
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────
 // Main Page
 // ─────────────────────────────────────────────────────────────
@@ -95,9 +146,9 @@ export default function SettingsPage() {
   const { address, isConnected } = useAccount();
 
   // ── existing settings state ──
-  const [riskThreshold, setRiskThreshold] = useState(75);
-  const [rebalanceInterval, setRebalanceInterval] = useState('daily');
-  const [notifications, setNotifications] = useState({
+  const [riskThreshold, setRiskThreshold] = useState(() => readSavedSettings().riskThreshold ?? 75);
+  const [rebalanceInterval, setRebalanceInterval] = useState(() => readSavedSettings().rebalanceInterval ?? 'daily');
+  const [notifications, setNotifications] = useState<NotificationSettings>(() => readSavedSettings().notifications ?? {
     email: true,
     slack: false,
     telegram: true,
@@ -142,35 +193,24 @@ export default function SettingsPage() {
   const updateRiskThresholdHook = useUpdateRiskThreshold();
   const setCycleIntervalHook = useSetCycleInterval();
 
-  // Load settings from localStorage on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('sovereignmind-settings');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.riskThreshold !== undefined) setRiskThreshold(parsed.riskThreshold);
-        if (parsed.rebalanceInterval) setRebalanceInterval(parsed.rebalanceInterval);
-        if (parsed.notifications) setNotifications(parsed.notifications);
-      }
-    } catch {
-      // Ignore parse errors
-    }
-  }, []);
-
   // Sync state with on-chain values on load
   useEffect(() => {
     if (onChainRiskThreshold !== undefined) {
-      setRiskThreshold(Number(onChainRiskThreshold));
+      const timer = setTimeout(() => setRiskThreshold(Number(onChainRiskThreshold)), 0);
+      return () => clearTimeout(timer);
     }
   }, [onChainRiskThreshold]);
 
   useEffect(() => {
     if (onChainCycleInterval !== undefined) {
       const seconds = Number(onChainCycleInterval);
-      if (seconds === 3600) setRebalanceInterval('hourly');
-      else if (seconds === 86400) setRebalanceInterval('daily');
-      else if (seconds === 604800) setRebalanceInterval('weekly');
-      else setRebalanceInterval('manual');
+      const nextInterval =
+        seconds === 3600 ? 'hourly'
+        : seconds === 86400 ? 'daily'
+        : seconds === 604800 ? 'weekly'
+        : 'manual';
+      const timer = setTimeout(() => setRebalanceInterval(nextInterval), 0);
+      return () => clearTimeout(timer);
     }
   }, [onChainCycleInterval]);
 
@@ -240,24 +280,6 @@ export default function SettingsPage() {
   };
 
   // ── helper: address row in status panel ──
-  const AddressRow = ({ label, addr }: { label: string; addr: string }) => (
-    <div className="flex items-center justify-between py-2 border-b border-white/5 last:border-b-0">
-      <span className="text-xs text-[--color-muted-foreground]">{label}</span>
-      <button
-        onClick={() => copyToClipboard(addr, label)}
-        className="flex items-center gap-1.5 text-xs font-mono text-white/80 hover:text-white transition-colors"
-        title="Copy address"
-      >
-        {truncateAddress(addr)}
-        {copiedField === label ? (
-          <CheckCircle2 size={12} className="text-emerald-400" />
-        ) : (
-          <Copy size={12} className="text-white/40" />
-        )}
-      </button>
-    </div>
-  );
-
   // disabled style helper
   const disabledBtnClass = !isConnected
     ? 'opacity-40 cursor-not-allowed'
@@ -620,11 +642,11 @@ export default function SettingsPage() {
               <div className="text-xs text-[--color-muted-foreground] mb-3 font-medium uppercase tracking-wider">
                 Deployed Contract Addresses
               </div>
-              <AddressRow label="Agent Registry" addr={CONTRACT_ADDRESSES.agentRegistry} />
-              <AddressRow label="Treasury Vault" addr={CONTRACT_ADDRESSES.treasuryVault} />
-              <AddressRow label="CEO Agent" addr={CONTRACT_ADDRESSES.ceoAgent} />
-              <AddressRow label="CFO Agent" addr={CONTRACT_ADDRESSES.cfoAgent} />
-              <AddressRow label="CMO Agent" addr={CONTRACT_ADDRESSES.cmoAgent} />
+              <AddressRow label="Agent Registry" addr={CONTRACT_ADDRESSES.agentRegistry} copiedField={copiedField} onCopy={copyToClipboard} />
+              <AddressRow label="Treasury Vault" addr={CONTRACT_ADDRESSES.treasuryVault} copiedField={copiedField} onCopy={copyToClipboard} />
+              <AddressRow label="CEO Agent" addr={CONTRACT_ADDRESSES.ceoAgent} copiedField={copiedField} onCopy={copyToClipboard} />
+              <AddressRow label="CFO Agent" addr={CONTRACT_ADDRESSES.cfoAgent} copiedField={copiedField} onCopy={copyToClipboard} />
+              <AddressRow label="CMO Agent" addr={CONTRACT_ADDRESSES.cmoAgent} copiedField={copiedField} onCopy={copyToClipboard} />
             </div>
           </GlassCard>
         </motion.div>

@@ -30,7 +30,7 @@ function decisionsToEvents(decisions: unknown): ActivityEvent[] {
     agentRole: 'CEO' as AgentRole,
     action: actionLabels[Number(d.action)] ?? `Decision #${d.id?.toString() ?? i}`,
     description: d.rationale || 'Executive decision recorded on-chain.',
-    timestamp: d.timestamp ? Number(d.timestamp) * 1000 : Date.now() - i * 60_000,
+    timestamp: d.timestamp ? Number(d.timestamp) * 1000 : 0,
   }));
 }
 
