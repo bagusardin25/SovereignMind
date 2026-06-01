@@ -9,6 +9,7 @@
 import { useMemo } from 'react';
 import { useCEORecentDecisions, useCEODecisionCount } from './useCEOAgent';
 import { useTreasuryRecentDecisions, useTreasuryDecisionCount } from './useTreasuryVault';
+import { useReceipts, type ReceiptRecord } from './useReceipts';
 import {
   CEO_DECISION_ACTIONS,
   TREASURY_OUTCOMES,
@@ -16,6 +17,7 @@ import {
   toJsTimestamp,
 } from '@/lib/agent-metadata';
 import { SOMNIA_TESTNET } from '@/lib/constants';
+import { buildExplorerTxUrl } from '@/lib/somnia/receipts';
 import type { Decision, DecisionType, DecisionOutcome, AgentRole } from '@/lib/types';
 
 // ----- On-chain struct types -----
@@ -43,9 +45,10 @@ interface OnChainTreasuryDecision {
 
 // ----- Transform Functions -----
 
-function transformCEODecision(d: OnChainExecutiveDecision): Decision {
+function transformCEODecision(d: OnChainExecutiveDecision, matchedReceipt?: ReceiptRecord): Decision {
   const decisionType = CEO_DECISION_ACTIONS[d.action] || 'hold';
-  const txExplorerBase = SOMNIA_TESTNET.blockExplorers.default.url;
+  const txHash = matchedReceipt?.txHash || null;
+  const receiptUrl = txHash ? buildExplorerTxUrl(txHash) : null;
 
   return {
     id: `ceo-${d.id.toString()}`,
@@ -55,19 +58,20 @@ function transformCEODecision(d: OnChainExecutiveDecision): Decision {
     rationale: d.rationale || 'On-chain decision executed',
     action: decisionType,
     outcome: d.executed ? 'executed' : 'pending',
-    txHash: null,
-    receiptUrl: null,
+    txHash,
+    receiptUrl,
     timestamp: toJsTimestamp(d.timestamp),
     confidenceScore: Number(d.confidenceScore),
     llmReasoning: d.rationale || undefined,
   };
 }
 
-function transformTreasuryDecision(d: OnChainTreasuryDecision): Decision {
+function transformTreasuryDecision(d: OnChainTreasuryDecision, matchedReceipt?: ReceiptRecord): Decision {
   const outcome = TREASURY_OUTCOMES[d.outcome] || 'pending';
   const agentRole: AgentRole = ADDRESS_TO_ROLE[d.initiator.toLowerCase()] || 'CEO';
   const action = d.action || 'treasury_action';
-  const txExplorerBase = SOMNIA_TESTNET.blockExplorers.default.url;
+  const txHash = matchedReceipt?.txHash || null;
+  const receiptUrl = txHash ? buildExplorerTxUrl(txHash) : null;
 
   // Map treasury action string to DecisionType
   let type: DecisionType = 'hold';
@@ -84,8 +88,8 @@ function transformTreasuryDecision(d: OnChainTreasuryDecision): Decision {
     rationale: d.rationale || 'Treasury operation executed',
     action,
     outcome,
-    txHash: null,
-    receiptUrl: null,
+    txHash,
+    receiptUrl,
     timestamp: toJsTimestamp(d.timestamp),
     confidenceScore: outcome === 'executed' ? 90 : 50,
   };
@@ -98,17 +102,28 @@ export function useDecisionData(count: number = 20) {
   const { data: treasuryDecisions, isLoading: treasuryLoading } = useTreasuryRecentDecisions(BigInt(count));
   const { data: ceoCount } = useCEODecisionCount();
   const { data: treasuryCount } = useTreasuryDecisionCount();
+  const { records: receiptRecords } = useReceipts();
 
   const isLoading = ceoLoading || treasuryLoading;
 
   const decisions = useMemo<Decision[]>(() => {
     const result: Decision[] = [];
 
+    // Build a receipt lookup by timestamp (approximate match within 60s)
+    const findReceipt = (agentRole: string, timestampMs: number): ReceiptRecord | undefined => {
+      return receiptRecords.find(
+        (r) => r.agentRole === agentRole && Math.abs(r.timestamp - timestampMs) < 60000
+      );
+    };
+
     // Transform CEO decisions
     if (ceoDecisions && Array.isArray(ceoDecisions)) {
       for (const d of ceoDecisions) {
         try {
-          result.push(transformCEODecision(d as OnChainExecutiveDecision));
+          const raw = d as OnChainExecutiveDecision;
+          const ts = toJsTimestamp(raw.timestamp);
+          const receipt = findReceipt('CEO', ts);
+          result.push(transformCEODecision(raw, receipt));
         } catch {
           // Skip malformed data
         }
@@ -119,7 +134,12 @@ export function useDecisionData(count: number = 20) {
     if (treasuryDecisions && Array.isArray(treasuryDecisions)) {
       for (const d of treasuryDecisions) {
         try {
-          result.push(transformTreasuryDecision(d as OnChainTreasuryDecision));
+          const raw = d as OnChainTreasuryDecision;
+          const ts = toJsTimestamp(raw.timestamp);
+          // Try to find receipt from the initiator's agent role
+          const agentRole: AgentRole = ADDRESS_TO_ROLE[raw.initiator.toLowerCase()] || 'CEO';
+          const receipt = findReceipt(agentRole, ts);
+          result.push(transformTreasuryDecision(raw, receipt));
         } catch {
           // Skip malformed data
         }
@@ -130,7 +150,7 @@ export function useDecisionData(count: number = 20) {
     result.sort((a, b) => b.timestamp - a.timestamp);
 
     return result;
-  }, [ceoDecisions, treasuryDecisions]);
+  }, [ceoDecisions, treasuryDecisions, receiptRecords]);
 
   const totalDecisionCount = (ceoCount != null ? Number(ceoCount) : 0)
     + (treasuryCount != null ? Number(treasuryCount) : 0);

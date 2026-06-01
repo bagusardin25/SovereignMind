@@ -23,6 +23,9 @@ import {
 } from 'lucide-react';
 import type { Decision, AgentRole } from '@/lib/types';
 import { AGENT_COLORS, formatRelativeTime, SOMNIA_TESTNET } from '@/lib/constants';
+import { getVerificationStatus } from '@/lib/somnia/receipts';
+import ReceiptBadge from './ReceiptBadge';
+import ReceiptModal from './ReceiptModal';
 
 interface DecisionCardProps {
   decision: Decision;
@@ -50,9 +53,11 @@ const roleIcons: Record<AgentRole, React.ReactNode> = {
 
 export default function DecisionCard({ decision, delay = 0 }: DecisionCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
   const colors = AGENT_COLORS[decision.agentRole];
   const outcome = outcomeConfig[decision.outcome];
   const OutcomeIcon = outcome.icon;
+  const verificationStatus = getVerificationStatus(decision.outcome, decision.txHash);
 
   return (
     <motion.div
@@ -118,6 +123,14 @@ export default function DecisionCard({ decision, delay = 0 }: DecisionCardProps)
               <span className="text-xs text-[--color-muted] ml-auto flex-shrink-0">
                 {formatRelativeTime(decision.timestamp)}
               </span>
+              {/* Receipt Verification Badge */}
+              <ReceiptBadge
+                status={verificationStatus}
+                txHash={decision.txHash}
+                receiptUrl={decision.receiptUrl}
+                size="sm"
+                showLabel={false}
+              />
             </div>
 
             {/* Title */}
@@ -238,21 +251,43 @@ export default function DecisionCard({ decision, delay = 0 }: DecisionCardProps)
                   </a>
                 )}
                 {decision.receiptUrl && (
-                  <a
-                    href={decision.receiptUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setReceiptModalOpen(true);
+                    }}
                     className="flex items-center gap-1.5 text-xs text-[--color-agent-cfo] hover:text-[--color-agent-cfo-light] transition-colors"
                   >
                     <ExternalLink size={12} />
                     View Receipt
-                  </a>
+                  </button>
+                )}
+                {!decision.receiptUrl && decision.txHash && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setReceiptModalOpen(true);
+                    }}
+                    className="flex items-center gap-1.5 text-xs text-[--color-agent-cfo] hover:text-[--color-agent-cfo-light] transition-colors"
+                  >
+                    <ExternalLink size={12} />
+                    View Receipt
+                  </button>
                 )}
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Receipt Detail Modal */}
+      <ReceiptModal
+        decision={decision}
+        receiptUrl={decision.receiptUrl}
+        txHash={decision.txHash}
+        isOpen={receiptModalOpen}
+        onClose={() => setReceiptModalOpen(false)}
+      />
     </motion.div>
   );
 }

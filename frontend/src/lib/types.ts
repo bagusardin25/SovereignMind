@@ -79,14 +79,20 @@ export interface Transaction {
 }
 
 export interface Receipt {
-  requestId: string;
-  agentType: string;
+  requestId: string;           // uint256 from createRequest
+  agentId?: string;            // Somnia base agent ID
+  agentType: 'json_api' | 'llm_inference' | 'llm_parse_website' | string;
   status: 'completed' | 'pending' | 'failed';
-  input: string;
-  output: string;
+  input: string;               // prompt / API URL
+  output: string;              // agent response
   timestamp: number;
+  txHash: string;              // transaction hash
+  explorerUrl: string;         // block explorer link
+  receiptUrl: string;          // receipts API link (or explorer fallback)
   gasUsed: number;
-  executionTime: number; // ms
+  executionTime: number;       // ms
+  validatorConsensus?: boolean; // BFT consensus achieved
+  callbackContract?: string;   // contract that received response
 }
 
 export interface ActivityEvent {
