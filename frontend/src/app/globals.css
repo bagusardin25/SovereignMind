@@ -138,7 +138,7 @@ body {
 }
 
 .marquee-slanted { 
-  transform: rotate(-5deg) scale(1.1); 
+  transform: rotate(-1.5deg) scale(1.05); 
   white-space: nowrap; 
   overflow: hidden; 
   position: relative; 
@@ -146,8 +146,8 @@ body {
 }
 
 .marquee-slanted-reverse { 
-  transform: rotate(5deg) scale(1.1); 
-  margin-top: -40px; 
+  transform: rotate(1.5deg) scale(1.05); 
+  margin-top: -15px; 
   z-index: 10; 
   white-space: nowrap; 
   overflow: hidden; 
@@ -158,11 +158,13 @@ body {
 .marquee-content { 
   display: inline-block; 
   animation: marquee 20s linear infinite; 
+  will-change: transform;
 }
 
 .marquee-content-reverse { 
   display: inline-block; 
   animation: marquee-reverse 20s linear infinite; 
+  will-change: transform;
 }
 
 @keyframes marquee { 
@@ -185,8 +187,18 @@ body {
   50% { transform: translateY(15px) rotate(-2deg); } 
 }
 
-.animate-float-1 { animation: float1 8s ease-in-out infinite; }
-.animate-float-2 { animation: float2 10s ease-in-out infinite; }
+.animate-float-1 { animation: float1 8s ease-in-out infinite; will-change: transform; }
+.animate-float-2 { animation: float2 10s ease-in-out infinite; will-change: transform; }
+
+/* ── Accessibility & Performance ────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
 /* ── Mobile Responsive Overrides ─────────────────────────── */
 @media (max-width: 767px) {

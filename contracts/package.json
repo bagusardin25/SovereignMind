@@ -1,0 +1,24 @@
+{
+  "name": "sovereignmind-contracts",
+  "version": "1.0.0",
+  "description": "SovereignMind Smart Contracts for Somnia Testnet",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy": "hardhat run scripts/deploy.ts --network somnia_testnet",
+    "deploy:local": "hardhat run scripts/deploy.ts --network hardhat",
+    "copy-abis": "ts-node scripts/copy-abis.ts",
+    "clean": "hardhat clean"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "hardhat": "^2.22.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0",
+    "dotenv": "^16.4.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.1.0"
+  }
+}

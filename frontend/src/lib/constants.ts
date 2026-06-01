@@ -26,16 +26,12 @@ export const SOMNIA_TESTNET = {
 } as const;
 
 // Somnia Agent Runner Address (Testnet)
-export const AGENT_RUNNER_ADDRESS = '0x0000000000000000000000000000000000000000'; // TBD
+import deployedAddresses from './somnia/deployed-addresses.json';
 
-// Contract Addresses (will be updated after deployment)
-export const CONTRACT_ADDRESSES = {
-  ceoAgent: '0x0000000000000000000000000000000000000001',
-  cfoAgent: '0x0000000000000000000000000000000000000002',
-  cmoAgent: '0x0000000000000000000000000000000000000003',
-  treasuryVault: '0x0000000000000000000000000000000000000004',
-  agentRegistry: '0x0000000000000000000000000000000000000005',
-} as const;
+export const AGENT_RUNNER_ADDRESS = deployedAddresses.config.agentRunnerAddress;
+
+// Contract Addresses (loaded from deployment output)
+export const CONTRACT_ADDRESSES = deployedAddresses.contracts;
 
 // Somnia Receipts API
 export const RECEIPTS_API_BASE = 'https://receipts.net.somnia.host';
@@ -93,8 +89,10 @@ export function truncateAddress(address: string): string {
 
 // Format timestamp to relative time
 export function formatRelativeTime(timestamp: number): string {
+  if (!Number.isFinite(timestamp) || timestamp <= 0) return 'Pending';
+
   const now = Date.now();
-  const diff = now - timestamp;
+  const diff = Math.max(0, now - timestamp);
   const seconds = Math.floor(diff / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
@@ -114,6 +112,14 @@ export function formatUSD(value: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
+}
+
+// Format STT value (native token — NOT USD)
+export function formatSTT(value: number): string {
+  return `${new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4,
+  }).format(value)} STT`;
 }
 
 // Format compact number

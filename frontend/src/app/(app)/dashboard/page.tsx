@@ -5,6 +5,11 @@
 // ============================================================
 
 import { useState, useEffect } from 'react';
+import { useAccount } from 'wagmi';
+import { useAgentData } from '@/hooks/useAgentData';
+import { useDecisionData } from '@/hooks/useDecisionData';
+import { useTreasuryData } from '@/hooks/useTreasuryData';
+import { useOrchestrator } from '@/hooks/useOrchestrator';
 import { motion } from 'framer-motion';
 import {
   Wallet,
@@ -13,6 +18,8 @@ import {
   ShieldCheck,
   ArrowRight,
   Clock,
+  Play,
+  Loader2,
 } from 'lucide-react';
 import MetricCard from '@/components/ui/MetricCard';
 import GlassCard from '@/components/ui/GlassCard';
@@ -21,23 +28,31 @@ import AllocationChart from '@/components/treasury/AllocationChart';
 import DecisionCard from '@/components/decisions/DecisionCard';
 import { SkeletonCard, SkeletonMetric } from '@/components/ui/Skeleton';
 import Skeleton from '@/components/ui/Skeleton';
-import {
-  mockAgents,
-  mockTreasury,
-  mockDecisions,
-  mockActivity,
-  mockSystemHealth,
-} from '@/lib/mock-data';
-import { formatUSD, AGENT_COLORS } from '@/lib/constants';
+import { AGENT_COLORS, formatRelativeTime } from '@/lib/constants';
 import Link from 'next/link';
 
 export default function DashboardPage() {
-  const health = mockSystemHealth;
   const [isLoading, setIsLoading] = useState(true);
+  const [now, setNow] = useState(() => Date.now());
+  const { isConnected } = useAccount();
+
+  // Composite on-chain data hooks
+  const { agents, totalDecisions, systemHealth: health } = useAgentData();
+  const { decisions } = useDecisionData(10);
+  const { treasury } = useTreasuryData();
+
+  // Live orchestrator backend (Express health API)
+  const orchestrator = useOrchestrator();
+  const orch = orchestrator.status;
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(interval);
   }, []);
 
   if (isLoading) {
@@ -112,9 +127,29 @@ export default function DashboardPage() {
             Real-time overview of your autonomous agent guild
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-[--color-muted-foreground]">
-          <Clock size={14} />
-          <span>Last cycle: {Math.round((Date.now() - health.lastCycleTimestamp) / 60000)}m ago</span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 text-xs text-[--color-muted-foreground]">
+            <span
+              className={`w-2 h-2 rounded-full ${orchestrator.isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`}
+            />
+            <span>{orchestrator.isOnline ? 'Orchestrator live' : 'Orchestrator offline'}</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-[--color-muted-foreground]">
+            <Clock size={14} />
+            <span>Last cycle: {health.lastCycleTimestamp > 0 ? formatRelativeTime(Math.min(health.lastCycleTimestamp, now)) : 'Never'}</span>
+          </div>
+          <button
+            onClick={() => orchestrator.trigger.mutate()}
+            disabled={!orchestrator.isOnline || orchestrator.trigger.isPending || orch?.isRunning}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[--color-agent-ceo]/15 text-[--color-agent-ceo] border border-[--color-agent-ceo]/30 hover:bg-[--color-agent-ceo]/25 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {orchestrator.trigger.isPending || orch?.isRunning ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Play size={14} />
+            )}
+            {orch?.isRunning ? 'Running…' : 'Run Cycle'}
+          </button>
         </div>
       </div>
 
@@ -122,8 +157,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           label="Treasury Value"
-          value={formatUSD(mockTreasury.totalValue)}
-          change={mockTreasury.change24h}
+          value={`${treasury.totalValue.toFixed(4)} STT`}
+          change={treasury.change24h || undefined}
           icon={<Wallet size={22} />}
           accentColor="#cfbcff"
           delay={0}
@@ -136,8 +171,8 @@ export default function DashboardPage() {
           delay={0.1}
         />
         <MetricCard
-          label="Decisions Today"
-          value={mockDecisions.filter(d => Date.now() - d.timestamp < 86400000).length.toString()}
+          label="Total Decisions"
+          value={totalDecisions.toString()}
           icon={<ScrollText size={22} />}
           accentColor="#8b5cf6"
           delay={0.2}
@@ -163,7 +198,7 @@ export default function DashboardPage() {
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {mockAgents.map((agent, index) => (
+          {agents.map((agent, index) => (
             <AgentCard
               key={agent.id}
               agent={agent}
@@ -187,13 +222,19 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div className="space-y-3">
-            {mockDecisions.slice(0, 4).map((decision, index) => (
+            {decisions.length > 0 ? decisions.slice(0, 4).map((decision, index) => (
               <DecisionCard
                 key={decision.id}
                 decision={decision}
                 delay={index * 0.08}
               />
-            ))}
+            )) : (
+              <GlassCard>
+                <div className="text-center py-6 text-[--color-muted-foreground] text-sm">
+                  No decisions yet. Trigger a decision cycle to see live data.
+                </div>
+              </GlassCard>
+            )}
           </div>
         </div>
 
@@ -210,8 +251,8 @@ export default function DashboardPage() {
           </div>
           <GlassCard>
             <AllocationChart
-              holdings={mockTreasury.holdings}
-              totalValue={mockTreasury.totalValue}
+              holdings={treasury.holdings}
+              totalValue={treasury.totalValue}
               size={200}
             />
           </GlassCard>
@@ -227,11 +268,11 @@ export default function DashboardPage() {
             <div className="absolute left-[19px] top-0 bottom-0 w-[2px] bg-gradient-to-b from-[var(--color-primary)]/60 via-[var(--color-agent-cfo)]/30 to-transparent shadow-[0_0_10px_var(--color-primary)]" />
 
             <div className="space-y-1">
-              {mockActivity.slice(0, 8).map((event, index) => {
-                const colors = AGENT_COLORS[event.agentRole];
+              {decisions.length > 0 ? decisions.slice(0, 8).map((decision, index) => {
+                const colors = AGENT_COLORS[decision.agentRole];
                 return (
                   <motion.div
-                    key={event.id}
+                    key={decision.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
@@ -248,7 +289,7 @@ export default function DashboardPage() {
                           borderColor: colors.primary,
                         }}
                       >
-                        {event.agentRole}
+                        {decision.agentRole}
                       </div>
                     </div>
 
@@ -256,22 +297,26 @@ export default function DashboardPage() {
                     <div className="flex-1 min-w-0 pt-1">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-[--color-foreground]">
-                          {event.action}
+                          {decision.title}
                         </span>
                         <span className="text-xs text-[--color-muted]">
-                          {new Date(event.timestamp).toLocaleTimeString('en-US', {
+                          {new Date(decision.timestamp).toLocaleTimeString('en-US', {
                             hour: '2-digit',
                             minute: '2-digit',
                           })}
                         </span>
                       </div>
                       <p className="text-xs text-[--color-muted-foreground] mt-0.5">
-                        {event.description}
+                        {decision.rationale.length > 100 ? `${decision.rationale.slice(0, 100)}...` : decision.rationale}
                       </p>
                     </div>
                   </motion.div>
                 );
-              })}
+              }) : (
+                <div className="text-center py-8 text-[--color-muted-foreground] text-sm">
+                  No activity yet. Connect wallet and trigger a decision cycle to see live data.
+                </div>
+              )}
             </div>
           </div>
         </GlassCard>

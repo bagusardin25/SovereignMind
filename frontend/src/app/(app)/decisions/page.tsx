@@ -5,6 +5,8 @@
 // ============================================================
 
 import { useState, useMemo, useEffect } from 'react';
+import { useAccount } from 'wagmi';
+import { useDecisionData } from '@/hooks/useDecisionData';
 import { motion } from 'framer-motion';
 import {
   Filter,
@@ -19,7 +21,6 @@ import { downloadCSV } from '@/lib/exportUtils';
 import GlassCard from '@/components/ui/GlassCard';
 import DecisionCard from '@/components/decisions/DecisionCard';
 import Skeleton, { SkeletonCard, SkeletonDecision } from '@/components/ui/Skeleton';
-import { mockDecisions } from '@/lib/mock-data';
 import { AGENT_COLORS } from '@/lib/constants';
 import type { AgentRole, DecisionType } from '@/lib/types';
 
@@ -31,6 +32,10 @@ export default function DecisionsPage() {
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const { isConnected } = useAccount();
+
+  // Composite on-chain decision data
+  const { decisions: allDecisions, totalDecisionCount } = useDecisionData(50);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 800);
@@ -38,7 +43,7 @@ export default function DecisionsPage() {
   }, []);
 
   const filteredDecisions = useMemo(() => {
-    return mockDecisions.filter((d) => {
+    return allDecisions.filter((d) => {
       if (filterRole !== 'ALL' && d.agentRole !== filterRole) return false;
       if (filterType !== 'all' && d.type !== filterType) return false;
       if (
@@ -49,7 +54,7 @@ export default function DecisionsPage() {
         return false;
       return true;
     });
-  }, [filterRole, filterType, searchQuery]);
+  }, [allDecisions, filterRole, filterType, searchQuery]);
 
   const roleFilters: { value: FilterRole; label: string; icon?: React.ReactNode; color?: string }[] = [
     { value: 'ALL', label: 'All Agents' },
@@ -142,22 +147,24 @@ export default function DecisionsPage() {
       {/* Stats Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Total Decisions', value: mockDecisions.length, color: '#3b82f6' },
+          { label: 'Total Decisions', value: totalDecisionCount, color: '#3b82f6' },
           {
             label: 'Executed',
-            value: mockDecisions.filter((d) => d.outcome === 'executed').length,
+            value: allDecisions.filter((d) => d.outcome === 'executed').length,
             color: '#10b981',
           },
           {
             label: 'Avg Confidence',
-            value: `${Math.round(
-              mockDecisions.reduce((sum, d) => sum + d.confidenceScore, 0) / mockDecisions.length
-            )}%`,
+            value: allDecisions.length > 0
+              ? `${Math.round(
+                  allDecisions.reduce((sum, d) => sum + d.confidenceScore, 0) / allDecisions.length
+                )}%`
+              : '—',
             color: '#f59e0b',
           },
           {
             label: 'Agents Active',
-            value: `${new Set(mockDecisions.map((d) => d.agentRole)).size}/3`,
+            value: `${new Set(allDecisions.map((d) => d.agentRole)).size}/3`,
             color: '#8b5cf6',
           },
         ].map((stat, index) => (

@@ -5,20 +5,25 @@
 // ============================================================
 
 import { useState, useEffect } from 'react';
+import { useAccount } from 'wagmi';
+import { useAgentData } from '@/hooks/useAgentData';
 import { motion } from 'framer-motion';
 import AgentCard from '@/components/agents/AgentCard';
 import AgentControlPanel from '@/components/agents/AgentControlPanel';
 import LiveAgentConsole from '@/components/agents/LiveAgentConsole';
 import GlassCard from '@/components/ui/GlassCard';
 import Skeleton, { SkeletonCard } from '@/components/ui/Skeleton';
-import { mockAgents } from '@/lib/mock-data';
 import { AGENT_COLORS } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, ArrowDown, Brain, LineChart, Megaphone, User, Landmark, Shield, Zap, Search } from 'lucide-react';
 
+const CONSOLE_SKELETON_WIDTHS = ['78%', '54%', '66%', '82%', '58%'];
+
 export default function AgentsPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const { isConnected } = useAccount();
+  const { agents } = useAgentData();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
@@ -57,8 +62,8 @@ export default function AgentsPage() {
             <Skeleton width="24px" height="24px" className="rounded" />
           </div>
           <div className="flex-1 p-4 space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} width={`${Math.random() * 40 + 40}%`} height="12px" />
+            {CONSOLE_SKELETON_WIDTHS.map((width, i) => (
+              <Skeleton key={i} width={width} height="12px" />
             ))}
           </div>
         </div>
@@ -89,12 +94,12 @@ export default function AgentsPage() {
 
       {/* Agent Control Panel */}
       <AgentControlPanel
-        currentObjective={mockAgents[0].objective}
+        currentObjective={agents[0]?.objective || 'Autonomous multi-agent coordination'}
       />
 
       {/* Agent Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {mockAgents.map((agent, index) => (
+        {agents.map((agent, index) => (
           <AgentCard
             key={agent.id}
             agent={agent}

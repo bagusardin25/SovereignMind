@@ -6,19 +6,21 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAccount } from 'wagmi';
 import { Check, Inbox } from 'lucide-react';
-import { mockActivity } from '@/lib/mock-data';
 import { AGENT_COLORS, formatRelativeTime } from '@/lib/constants';
-import type { AgentRole } from '@/lib/types';
+import type { ActivityEvent, AgentRole } from '@/lib/types';
 
 interface NotificationPanelProps {
   isOpen: boolean;
   onClose: () => void;
+  events: ActivityEvent[];
 }
 
-export default function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
+export default function NotificationPanel({ isOpen, onClose, events }: NotificationPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const { isConnected } = useAccount();
 
   // Close on click outside
   useEffect(() => {
@@ -40,10 +42,10 @@ export default function NotificationPanel({ isOpen, onClose }: NotificationPanel
   }, [isOpen, onClose]);
 
   const handleMarkAllRead = () => {
-    setReadIds(new Set(mockActivity.map((a) => a.id)));
+    setReadIds(new Set(events.map((a) => a.id)));
   };
 
-  const unreadCount = mockActivity.filter((a) => !readIds.has(a.id)).length;
+  const unreadCount = events.filter((a) => !readIds.has(a.id)).length;
 
   return (
     <AnimatePresence>
@@ -71,6 +73,11 @@ export default function NotificationPanel({ isOpen, onClose }: NotificationPanel
                   {unreadCount}
                 </span>
               )}
+              {isConnected && (
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  ● Somnia
+                </span>
+              )}
             </div>
             <button
               onClick={handleMarkAllRead}
@@ -83,13 +90,13 @@ export default function NotificationPanel({ isOpen, onClose }: NotificationPanel
 
           {/* Notification List */}
           <div className="overflow-y-auto max-h-[400px] divide-y divide-[--color-border]/50">
-            {mockActivity.length === 0 ? (
+            {events.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-[--color-muted]">
                 <Inbox size={32} className="mb-2 opacity-50" />
                 <p className="text-sm">No notifications</p>
               </div>
             ) : (
-              mockActivity.map((event) => {
+              events.map((event) => {
                 const agentColor =
                   AGENT_COLORS[event.agentRole as AgentRole]?.primary || '#6b7280';
                 const isRead = readIds.has(event.id);

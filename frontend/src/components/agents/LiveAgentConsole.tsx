@@ -6,8 +6,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Terminal, Activity, Play, Square } from 'lucide-react';
-import { mockActivity } from '@/lib/mock-data';
+import { useAccount } from 'wagmi';
+import { Terminal, Play, Square } from 'lucide-react';
 import { AGENT_COLORS } from '@/lib/constants';
 import type { ActivityEvent, AgentRole } from '@/lib/types';
 import GlassCard from '@/components/ui/GlassCard';
@@ -34,15 +34,25 @@ const generateRandomEvent = (): ActivityEvent => {
   };
 };
 
+// Generate a batch of initial seed events so the console isn't empty on load
+function generateSeedEvents(count: number): ActivityEvent[] {
+  const events: ActivityEvent[] = [];
+  const now = Date.now();
+  for (let i = 0; i < count; i++) {
+    const evt = generateRandomEvent();
+    // Stagger timestamps so they appear to have happened recently
+    evt.id = `seed-${i}`;
+    evt.timestamp = now - (count - i) * 8000; // ~8 seconds apart
+    events.push(evt);
+  }
+  return events;
+}
+
 export default function LiveAgentConsole() {
-  const [logs, setLogs] = useState<ActivityEvent[]>([]);
+  const [logs, setLogs] = useState<ActivityEvent[]>(() => generateSeedEvents(5));
   const [isLive, setIsLive] = useState(true);
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
-
-  // Initialize with some recent events
-  useEffect(() => {
-    setLogs([...mockActivity].reverse().slice(0, 5));
-  }, []);
+  const { isConnected } = useAccount();
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -76,7 +86,7 @@ export default function LiveAgentConsole() {
           <div className="flex items-center gap-1.5 ml-4 px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
             <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
             <span className="text-[10px] font-medium text-[--color-muted-foreground]">
-              {isLive ? 'CONNECTED' : 'PAUSED'}
+              {isLive ? (isConnected ? 'ON-CHAIN' : 'CONNECTED') : 'PAUSED'}
             </span>
           </div>
         </div>

@@ -48,11 +48,6 @@ export default function Sidebar() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Close mobile sidebar on route change
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
-
   // Prevent body scroll when mobile sidebar is open
   useEffect(() => {
     if (mobileOpen) {
@@ -156,7 +151,7 @@ export default function Sidebar() {
                 const Icon = item.icon;
 
                 return (
-                  <Link key={item.href} href={item.href}>
+                  <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)}>
                     <div
                       className={`sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
                         isActive

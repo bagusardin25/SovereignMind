@@ -1,0 +1,19 @@
+{
+  "network": "somnia_testnet",
+  "chainId": 50312,
+  "deployer": "0xF8EBBd9c50f2A33A4d8B9964cF39Ed9013CF0381",
+  "deployedAt": "2026-06-01T10:05:27.107Z",
+  "contracts": {
+    "agentRegistry": "0x41A6a0c76ddAD6F5dAeC70F7aaFA439eba1AC0c3",
+    "treasuryVault": "0x8f1c9bd9cc0EF059D0175fF05153D2fEe8Be7f9d",
+    "ceoAgent": "0xd58a92F4BF829921a6cdc6FeE54d7CC8743F75c9",
+    "cfoAgent": "0xEE3dB72FBBF25248edDe8324670aC8F1b9285869",
+    "cmoAgent": "0x9C13A3d3ca1BB420F6f2489c93785eCE3125c600"
+  },
+  "config": {
+    "agentRunnerAddress": "0x037Bb9C718F3f7fe5eCBDB0b600D607b52706776",
+    "jsonApiAgentId": "13174292974160097713",
+    "llmInferenceAgentId": "12847293847561029384",
+    "llmParseWebsiteAgentId": "12875401142070969085"
+  }
+}

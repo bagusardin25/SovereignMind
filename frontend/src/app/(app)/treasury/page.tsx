@@ -4,8 +4,11 @@
 // Treasury Page — Vault overview and management
 // ============================================================
 
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useAccount } from 'wagmi';
+import { useTreasuryData } from '@/hooks/useTreasuryData';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Wallet,
   TrendingUp,
@@ -17,24 +20,35 @@ import {
   Download,
   Search,
   Filter,
+  X,
+  Loader2,
+  CheckCircle2,
 } from 'lucide-react';
+import { parseEther } from 'viem';
+import { useDepositToTreasury } from '@/hooks/useContractActions';
 import { downloadCSV } from '@/lib/exportUtils';
 import GlassCard from '@/components/ui/GlassCard';
 import Skeleton, { SkeletonMetric, SkeletonTable } from '@/components/ui/Skeleton';
 import MetricCard from '@/components/ui/MetricCard';
 import AllocationChart from '@/components/treasury/AllocationChart';
 import TransactionList from '@/components/treasury/TransactionList';
-import { mockTreasury, mockTransactions } from '@/lib/mock-data';
-import { formatUSD, formatCompact } from '@/lib/constants';
+import { formatSTT } from '@/lib/constants';
 import { toast } from '@/components/ui/Toast';
 
 export default function TreasuryPage() {
-  const treasury = mockTreasury;
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('All');
+  const { isConnected } = useAccount();
 
-  const filteredTransactions = mockTransactions.filter((tx) => {
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+  const [depositAmount, setDepositAmount] = useState('0.01');
+  const depositTreasury = useDepositToTreasury();
+
+  // Composite on-chain treasury data
+  const { treasury, transactions, totalOperations } = useTreasuryData();
+
+  const filteredTransactions = transactions.filter((tx) => {
     if (filterType !== 'All' && tx.type.toLowerCase() !== filterType.toLowerCase()) {
       return false;
     }
@@ -116,9 +130,9 @@ export default function TreasuryPage() {
           </p>
         </div>
         <motion.button
+          onClick={() => setIsDepositModalOpen(true)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => toast('Deposit functionality will be available after contract deployment', 'info')}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[--color-success]/10 border border-[--color-success]/20 text-[--color-success] text-sm font-medium hover:bg-[--color-success]/20 transition-all"
           style={{ animation: 'subtle-pulse 3s ease-in-out infinite' }}
         >
@@ -137,7 +151,7 @@ export default function TreasuryPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           label="Total Value"
-          value={formatUSD(treasury.totalValue)}
+          value={`${treasury.totalValue.toFixed(4)} STT`}
           change={treasury.change24h}
           icon={<Wallet size={22} />}
           accentColor="#3b82f6"
@@ -151,18 +165,15 @@ export default function TreasuryPage() {
           delay={0.1}
         />
         <MetricCard
-          label="Stablecoin Reserve"
-          value={`${treasury.holdings
-            .filter((h) => h.symbol === 'USDC')
-            .reduce((sum, h) => sum + h.allocation, 0)
-            .toFixed(1)}%`}
+          label="Native Reserve"
+          value={treasury.totalValue > 0 ? '100%' : '0%'}
           icon={<Shield size={22} />}
           accentColor="#10b981"
           delay={0.2}
         />
         <MetricCard
           label="Transactions"
-          value={mockTransactions.length.toString()}
+          value={totalOperations.toString()}
           icon={<TrendingUp size={22} />}
           accentColor="#06b6d4"
           delay={0.3}
@@ -238,13 +249,13 @@ export default function TreasuryPage() {
                         </span>
                       </td>
                       <td className="text-right px-4 py-4">
-                        <span className="text-sm text-[--color-foreground]">
-                          {formatUSD(holding.price)}
+                        <span className="text-sm text-[--color-muted-foreground] italic">
+                          Native
                         </span>
                       </td>
                       <td className="text-right px-4 py-4">
                         <span className="text-sm font-medium text-[--color-foreground]">
-                          {formatUSD(holding.value)}
+                          {formatSTT(holding.value)}
                         </span>
                       </td>
                       <td className="text-right px-4 py-4">
@@ -371,6 +382,116 @@ export default function TreasuryPage() {
           <TransactionList transactions={filteredTransactions} />
         </GlassCard>
       </div>
+
+      {/* Deposit Modal */}
+      <AnimatePresence>
+        {isDepositModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => !depositTreasury.isPending && !depositTreasury.isConfirming && setIsDepositModalOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md glass p-6 rounded-2xl shadow-2xl border border-white/10"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <ArrowDownToLine className="text-emerald-400" />
+                  Deposit to Treasury
+                </h3>
+                <button
+                  onClick={() => setIsDepositModalOpen(false)}
+                  disabled={depositTreasury.isPending || depositTreasury.isConfirming}
+                  className="text-white/50 hover:text-white transition-colors disabled:opacity-50"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <p className="text-sm text-[--color-muted-foreground] mb-6">
+                Fund the Treasury Vault with native STT tokens. These funds will be managed by the CFO agent.
+              </p>
+
+              <div className="space-y-4">
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.001"
+                    min="0"
+                    placeholder="Amount in STT"
+                    value={depositAmount}
+                    onChange={(e) => setDepositAmount(e.target.value)}
+                    className="w-full p-4 pr-16 bg-white/5 border border-white/10 rounded-xl text-white text-lg outline-none focus:border-emerald-500/60 transition-colors placeholder:text-white/20"
+                    disabled={depositTreasury.isPending || depositTreasury.isConfirming}
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-[--color-muted-foreground]">
+                    STT
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (!depositAmount || Number(depositAmount) <= 0) return;
+                    depositTreasury.deposit(parseEther(depositAmount));
+                  }}
+                  disabled={
+                    !isConnected ||
+                    depositTreasury.isPending ||
+                    depositTreasury.isConfirming ||
+                    !depositAmount ||
+                    Number(depositAmount) <= 0
+                  }
+                  className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ background: 'linear-gradient(135deg, #10b981, #34d399)' }}
+                >
+                  {depositTreasury.isPending || depositTreasury.isConfirming ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 size={16} className="animate-spin" /> Processing...
+                    </span>
+                  ) : !isConnected ? (
+                    'Connect Wallet to Deposit'
+                  ) : (
+                    'Confirm Deposit'
+                  )}
+                </button>
+
+                {/* Transaction Status */}
+                {(depositTreasury.isSuccess || depositTreasury.error) && (
+                  <div className={`p-4 rounded-xl text-sm mt-4 ${depositTreasury.isSuccess ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                    {depositTreasury.isSuccess ? (
+                      <div className="flex flex-col items-center gap-2 text-center">
+                        <CheckCircle2 size={24} className="text-emerald-400" />
+                        <span className="font-medium">Deposit Successful!</span>
+                        <a
+                          href={`https://shannon.somnia.network/tx/${depositTreasury.txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs underline underline-offset-2 hover:text-emerald-300 transition-colors"
+                        >
+                          View on Explorer
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <span className="font-medium">Transaction Failed</span>
+                        <p className="text-xs opacity-80 mt-1 break-all">
+                          {(depositTreasury.error as Error).message?.slice(0, 100)}...
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

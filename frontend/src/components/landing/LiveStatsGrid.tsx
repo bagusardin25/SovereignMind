@@ -2,13 +2,16 @@
 
 // ============================================================
 // SovereignMind — Live Stats Grid
-// Hero-side stats card pulling from mock-data with subtle live
+// Hero-side stats card pulling from live contract hooks with subtle
 // shimmer to signal "this protocol is alive".
 // ============================================================
 
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, Activity } from 'lucide-react';
-import { mockTreasury, mockDecisions, mockAgents, mockSystemHealth } from '@/lib/mock-data';
+import { useAccount } from 'wagmi';
+import { useAgentData } from '@/hooks/useAgentData';
+import { useDecisionData } from '@/hooks/useDecisionData';
+import { useTreasuryData } from '@/hooks/useTreasuryData';
 import { formatCompact, formatRelativeTime } from '@/lib/constants';
 
 type Stat = {
@@ -27,25 +30,32 @@ const accentMap: Record<Stat['accent'], string> = {
 };
 
 export default function LiveStatsGrid() {
-  // Derive stats from mock data so the numbers feel grounded.
+  // Wallet connection state
+  const { isConnected } = useAccount();
+
+  // Composite on-chain data hooks
+  const { agents, totalDecisions, agentCount, systemHealth } = useAgentData();
+  const { decisions } = useDecisionData(5);
+  const { treasury } = useTreasuryData();
+
+  // Derive stats from on-chain data
   const stats = useMemo<Stat[]>(() => {
-    const tvl = mockTreasury.totalValue;
-    const decisions = mockDecisions.length + mockAgents.reduce((sum, a) => sum + a.decisionsCount, 0);
-    const uptime =
-      mockAgents.reduce((sum, a) => sum + a.uptime, 0) / Math.max(mockAgents.length, 1);
-    const activeAgents = `${mockSystemHealth.agentsOnline}/${mockSystemHealth.totalAgents}`;
+    const tvl = treasury.totalValue;
+    const uptime = agents.length > 0
+      ? agents.reduce((sum, a) => sum + a.uptime, 0) / agents.length
+      : 99.9;
 
     return [
       {
         label: 'Treasury TVL',
-        value: `$${formatCompact(tvl)}`,
-        delta: `+${mockTreasury.change24h.toFixed(2)}%`,
-        deltaPositive: mockTreasury.change24h >= 0,
+        value: tvl > 0 ? `${tvl.toFixed(2)} STT` : '0 STT',
+        delta: 'on-chain',
+        deltaPositive: true,
         accent: 'primary',
       },
       {
         label: 'Decisions',
-        value: formatCompact(decisions),
+        value: formatCompact(totalDecisions),
         delta: 'on-chain',
         deltaPositive: true,
         accent: 'tertiary',
@@ -59,13 +69,13 @@ export default function LiveStatsGrid() {
       },
       {
         label: 'Active Agents',
-        value: activeAgents,
-        delta: 'live',
+        value: `${systemHealth.agentsOnline}/${systemHealth.totalAgents}`,
+        delta: 'on-chain',
         deltaPositive: true,
         accent: 'cmo',
       },
     ];
-  }, []);
+  }, [treasury, agents, totalDecisions, systemHealth]);
 
   // Pulsing "last decision" indicator — re-renders every 30s so the
   // relative time string ("12m ago") stays fresh while the page is open.
@@ -75,7 +85,7 @@ export default function LiveStatsGrid() {
     return () => window.clearInterval(id);
   }, []);
 
-  const lastDecision = mockDecisions[0];
+  const lastDecision = decisions.length > 0 ? decisions[0] : null;
 
   return (
     <div className="w-full max-w-[340px] flex flex-col gap-3">

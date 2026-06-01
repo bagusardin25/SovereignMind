@@ -1,4 +1,4 @@
-export function downloadCSV(filename: string, headers: string[], data: any[][]) {
+export function downloadCSV(filename: string, headers: string[], data: unknown[][]) {
   const csvContent = [
     headers.join(','),
     ...data.map((row) =>

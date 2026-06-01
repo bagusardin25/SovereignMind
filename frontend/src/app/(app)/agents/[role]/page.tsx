@@ -5,6 +5,9 @@
 // ============================================================
 
 import { use, useState, useEffect } from 'react';
+import { useAccount } from 'wagmi';
+import { useAgentData } from '@/hooks/useAgentData';
+import { useDecisionData } from '@/hooks/useDecisionData';
 import { motion } from 'framer-motion';
 import {
   Brain,
@@ -23,8 +26,7 @@ import Skeleton, { SkeletonCard, SkeletonMetric } from '@/components/ui/Skeleton
 import StatusBadge from '@/components/ui/StatusBadge';
 import Breadcrumbs from '@/components/ui/Breadcrumbs';
 import DecisionCard from '@/components/decisions/DecisionCard';
-import { mockAgents, mockDecisions, mockActivity } from '@/lib/mock-data';
-import { AGENT_COLORS, formatRelativeTime } from '@/lib/constants';
+import { AGENT_COLORS, formatRelativeTime, CONTRACT_ADDRESSES } from '@/lib/constants';
 import type { AgentRole } from '@/lib/types';
 
 const roleIcons: Record<AgentRole, React.ReactNode> = {
@@ -46,11 +48,24 @@ export default function AgentDetailPage({
 }) {
   const { role: roleParam } = use(params);
   const role = roleParam.toUpperCase() as AgentRole;
-  const agent = mockAgents.find((a) => a.role === role);
+  const { agents } = useAgentData();
+  const { decisions: allDecisions } = useDecisionData(20);
+  const agent = agents.find((a) => a.role === role);
   const colors = AGENT_COLORS[role] || AGENT_COLORS.CEO;
-  const agentDecisions = mockDecisions.filter((d) => d.agentRole === role);
-  const agentActivity = mockActivity.filter((a) => a.agentRole === role);
+  const agentDecisions = allDecisions.filter((d) => d.agentRole === role);
+  // Derive activity from decisions for this agent
+  const agentActivity = agentDecisions.map((d) => ({
+    id: d.id,
+    agentRole: d.agentRole,
+    action: d.title,
+    description: d.rationale.length > 120 ? `${d.rationale.slice(0, 120)}...` : d.rationale,
+    timestamp: d.timestamp,
+  }));
   const [isLoading, setIsLoading] = useState(true);
+  const { isConnected } = useAccount();
+
+  // Use real contract address
+  const contractAddr = agent?.contractAddress || '';
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
@@ -189,7 +204,7 @@ export default function AgentDetailPage({
             <div className="flex-shrink-0 text-right">
               <p className="text-xs text-[--color-muted] mb-1">Contract</p>
               <code className="text-xs font-mono text-[--color-agent-cmo-light] bg-white/[0.03] px-2 py-1 rounded">
-                {agent.contractAddress.slice(0, 10)}...{agent.contractAddress.slice(-8)}
+                {contractAddr.slice(0, 10)}...{contractAddr.slice(-8)}
               </code>
             </div>
           </div>
