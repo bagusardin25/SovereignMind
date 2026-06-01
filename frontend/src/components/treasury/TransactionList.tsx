@@ -12,7 +12,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import type { Transaction } from '@/lib/types';
-import { formatRelativeTime, formatUSD, SOMNIA_TESTNET } from '@/lib/constants';
+import { formatRelativeTime, formatSTT, SOMNIA_TESTNET } from '@/lib/constants';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -89,7 +89,7 @@ export default function TransactionList({
             {/* Value & Time */}
             <div className="text-right flex-shrink-0">
               <p className="text-sm font-medium text-[--color-foreground]">
-                {formatUSD(tx.value)}
+                {formatSTT(tx.value)}
               </p>
               <p className="text-xs text-[--color-muted]">
                 {formatRelativeTime(tx.timestamp)}

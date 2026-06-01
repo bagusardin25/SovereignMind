@@ -84,14 +84,23 @@ function TxStatus({
   );
 }
 
+import { useSetObjective } from '@/hooks/useContractActions';
+
 export default function AgentControlPanel({
   currentObjective,
 }: AgentControlPanelProps) {
   const { isConnected } = useAccount();
 
-  // ── Objective (persisted to localStorage — no on-chain function available) ──
+  // ── Objective (writes on-chain to CEOAgent.setObjective) ──
   const [objective, setObjective] = useState(currentObjective || '');
-  const [isSettingObjective, setIsSettingObjective] = useState(false);
+  const {
+    setObjective: writeObjective,
+    txHash: objectiveHash,
+    isPending: objectivePending,
+    isConfirming: objectiveConfirming,
+    isSuccess: objectiveSuccess,
+    error: objectiveError,
+  } = useSetObjective();
 
   // Load saved objective from localStorage
   useEffect(() => {
@@ -103,18 +112,26 @@ export default function AgentControlPanel({
     }
   }, []);
 
+  // Save to localStorage when confirmed on-chain
+  useEffect(() => {
+    if (objectiveSuccess) {
+      localStorage.setItem('sovereignmind-objective', objective);
+      toast('Objective set on-chain successfully!', 'success');
+    }
+  }, [objectiveSuccess, objective]);
+
   const handleSetObjective = useCallback(() => {
     if (!objective.trim()) {
       toast('Please enter a strategic objective', 'warning');
       return;
     }
-    setIsSettingObjective(true);
-    localStorage.setItem('sovereignmind-objective', objective);
-    setTimeout(() => {
-      setIsSettingObjective(false);
-      toast('Objective saved locally', 'success');
-    }, 300);
-  }, [objective]);
+    if (!isConnected) {
+      toast('Connect your wallet first', 'warning');
+      return;
+    }
+    writeObjective(objective);
+    toast('Setting strategic objective on-chain…', 'info');
+  }, [objective, isConnected, writeObjective]);
 
   // ── Run Cycle → orchestrator backend ────────────────────────
   const orchestrator = useOrchestrator();
@@ -237,7 +254,7 @@ export default function AgentControlPanel({
         <label className="block text-sm font-medium text-[--color-muted-foreground] mb-2">
           <Target size={14} className="inline mr-1.5" />
           Strategic Objective
-          <span className="text-[--color-muted] text-xs ml-2">(saved locally)</span>
+          <span className="text-[--color-muted] text-xs ml-2">(on-chain & local)</span>
         </label>
         <div className="flex gap-2">
           <input
@@ -251,11 +268,11 @@ export default function AgentControlPanel({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleSetObjective}
-            disabled={isSettingObjective}
+            disabled={objectivePending || objectiveConfirming}
             className="px-4 py-2.5 rounded-xl bg-[--color-agent-ceo] text-white text-sm font-medium hover:bg-[--color-agent-ceo-light] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <AnimatePresence mode="wait">
-              {isSettingObjective ? (
+              {objectivePending || objectiveConfirming ? (
                 <motion.span
                   key="spinner"
                   initial={{ opacity: 0 }}
@@ -269,6 +286,13 @@ export default function AgentControlPanel({
             Set
           </motion.button>
         </div>
+        <TxStatus
+          isPending={objectivePending}
+          isConfirming={objectiveConfirming}
+          isSuccess={objectiveSuccess}
+          error={objectiveError}
+          txHash={objectiveHash}
+        />
       </div>
 
       {/* Action Buttons */}

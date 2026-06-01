@@ -7,7 +7,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import type { TokenHolding } from '@/lib/types';
-import { formatUSD } from '@/lib/constants';
+import { formatSTT } from '@/lib/constants';
 
 interface AllocationChartProps {
   holdings: TokenHolding[];
@@ -109,14 +109,14 @@ export default function AllocationChart({
                   {hoveredHolding.allocation.toFixed(1)}%
                 </p>
                 <p className="text-xs text-[--color-muted]">
-                  {formatUSD(hoveredHolding.value)}
+                  {formatSTT(hoveredHolding.value)}
                 </p>
               </>
             ) : (
               <>
                 <p className="text-xs text-[--color-muted-foreground]">Total Value</p>
                 <p className="text-lg font-bold text-[--color-foreground]">
-                  {formatUSD(totalValue)}
+                  {formatSTT(totalValue)}
                 </p>
               </>
             )}

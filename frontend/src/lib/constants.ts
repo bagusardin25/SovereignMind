@@ -112,6 +112,14 @@ export function formatUSD(value: number): string {
   }).format(value);
 }
 
+// Format STT value (native token — NOT USD)
+export function formatSTT(value: number): string {
+  return `${new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 4,
+  }).format(value)} STT`;
+}
+
 // Format compact number
 export function formatCompact(value: number): string {
   return new Intl.NumberFormat('en-US', {

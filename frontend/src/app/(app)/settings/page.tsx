@@ -19,12 +19,16 @@ import { contracts } from '@/lib/somnia/contracts';
 import { CONTRACT_ADDRESSES, truncateAddress } from '@/lib/constants';
 import { useTreasuryBalance } from '@/hooks/useTreasuryVault';
 import { useAgentCount, useTotalDecisions } from '@/hooks/useAgentRegistry';
+import { useCEOCycleInterval } from '@/hooks/useCEOAgent';
+import { useCFORiskThreshold } from '@/hooks/useCFOAgent';
 import {
   useInitiateDecisionCycle,
   useDepositToTreasury,
   useFetchPrice,
   useScanMarket,
   useAnalyzeRisk,
+  useUpdateRiskThreshold,
+  useSetCycleInterval,
 } from '@/hooks/useContractActions';
 import { toast } from '@/components/ui/Toast';
 
@@ -88,6 +92,8 @@ function TxStatus({
 // Main Page
 // ─────────────────────────────────────────────────────────────
 export default function SettingsPage() {
+  const { address, isConnected } = useAccount();
+
   // ── existing settings state ──
   const [riskThreshold, setRiskThreshold] = useState(75);
   const [rebalanceInterval, setRebalanceInterval] = useState('daily');
@@ -118,6 +124,24 @@ export default function SettingsPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // ── wallet / contract reads ──
+  const { data: treasuryBalance, isLoading: isBalanceLoading } = useTreasuryBalance();
+  const { data: agentCount, isLoading: isAgentCountLoading } = useAgentCount();
+  const { data: totalDecisions, isLoading: isTotalDecisionsLoading } = useTotalDecisions();
+
+  const { data: onChainRiskThreshold, refetch: refetchRiskThreshold } = useCFORiskThreshold();
+  const { data: onChainCycleInterval, refetch: refetchCycleInterval } = useCEOCycleInterval();
+
+  // ── contract write hooks ──
+  const decisionCycle = useInitiateDecisionCycle();
+  const depositTreasury = useDepositToTreasury();
+  const fetchPriceHook = useFetchPrice();
+  const scanMarketHook = useScanMarket();
+  const analyzeRiskHook = useAnalyzeRisk();
+
+  const updateRiskThresholdHook = useUpdateRiskThreshold();
+  const setCycleIntervalHook = useSetCycleInterval();
+
   // Load settings from localStorage on mount
   useEffect(() => {
     try {
@@ -133,6 +157,38 @@ export default function SettingsPage() {
     }
   }, []);
 
+  // Sync state with on-chain values on load
+  useEffect(() => {
+    if (onChainRiskThreshold !== undefined) {
+      setRiskThreshold(Number(onChainRiskThreshold));
+    }
+  }, [onChainRiskThreshold]);
+
+  useEffect(() => {
+    if (onChainCycleInterval !== undefined) {
+      const seconds = Number(onChainCycleInterval);
+      if (seconds === 3600) setRebalanceInterval('hourly');
+      else if (seconds === 86400) setRebalanceInterval('daily');
+      else if (seconds === 604800) setRebalanceInterval('weekly');
+      else setRebalanceInterval('manual');
+    }
+  }, [onChainCycleInterval]);
+
+  // Success refetch triggers
+  useEffect(() => {
+    if (updateRiskThresholdHook.isSuccess) {
+      refetchRiskThreshold();
+      toast('Risk threshold updated on-chain!', 'success');
+    }
+  }, [updateRiskThresholdHook.isSuccess, refetchRiskThreshold]);
+
+  useEffect(() => {
+    if (setCycleIntervalHook.isSuccess) {
+      refetchCycleInterval();
+      toast('Cycle interval updated on-chain!', 'success');
+    }
+  }, [setCycleIntervalHook.isSuccess, refetchCycleInterval]);
+
   const handleSave = () => {
     const settings = {
       riskThreshold,
@@ -140,21 +196,32 @@ export default function SettingsPage() {
       notifications,
     };
     localStorage.setItem('sovereignmind-settings', JSON.stringify(settings));
-    toast('Settings saved successfully', 'success');
+    toast('Settings saved to browser successfully', 'success');
   };
 
-  // ── wallet / contract reads ──
-  const { address, isConnected } = useAccount();
-  const { data: treasuryBalance, isLoading: isBalanceLoading } = useTreasuryBalance();
-  const { data: agentCount, isLoading: isAgentCountLoading } = useAgentCount();
-  const { data: totalDecisions, isLoading: isTotalDecisionsLoading } = useTotalDecisions();
+  const handleUpdateRiskThresholdOnChain = () => {
+    if (!isConnected) {
+      toast('Connect your wallet first', 'warning');
+      return;
+    }
+    updateRiskThresholdHook.updateThreshold(BigInt(riskThreshold));
+    toast('Updating risk threshold on-chain…', 'info');
+  };
 
-  // ── contract write hooks ──
-  const decisionCycle = useInitiateDecisionCycle();
-  const depositTreasury = useDepositToTreasury();
-  const fetchPriceHook = useFetchPrice();
-  const scanMarketHook = useScanMarket();
-  const analyzeRiskHook = useAnalyzeRisk();
+  const handleSetCycleIntervalOnChain = () => {
+    if (!isConnected) {
+      toast('Connect your wallet first', 'warning');
+      return;
+    }
+    let seconds = 86400;
+    if (rebalanceInterval === 'hourly') seconds = 3600;
+    else if (rebalanceInterval === 'daily') seconds = 86400;
+    else if (rebalanceInterval === 'weekly') seconds = 604800;
+    else if (rebalanceInterval === 'manual') seconds = 99999999;
+
+    setCycleIntervalHook.setCycleInterval(BigInt(seconds));
+    toast('Updating cycle interval on-chain…', 'info');
+  };
 
   // ── local form state ──
   const [depositAmount, setDepositAmount] = useState('0.01');
@@ -248,6 +315,34 @@ export default function SettingsPage() {
                 className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[--color-agent-cfo]"
               />
             </div>
+
+            {/* On-Chain controls */}
+            <div className="pt-4 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-xs text-[--color-muted-foreground]">On-Chain Value: </span>
+                <span className="text-sm font-semibold text-white">
+                  {onChainRiskThreshold !== undefined ? `${onChainRiskThreshold}/100` : 'Loading…'}
+                </span>
+              </div>
+              <button
+                onClick={handleUpdateRiskThresholdOnChain}
+                disabled={!isConnected || updateRiskThresholdHook.isPending || updateRiskThresholdHook.isConfirming}
+                className={`px-4 py-2.5 bg-[--color-agent-cfo] hover:bg-[--color-agent-cfo]/80 text-white rounded-xl text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed`}
+              >
+                {updateRiskThresholdHook.isPending || updateRiskThresholdHook.isConfirming ? (
+                  <span className="flex items-center gap-1.5"><Loader2 size={12} className="animate-spin" /> Confirming…</span>
+                ) : (
+                  'Update On-Chain'
+                )}
+              </button>
+            </div>
+            <TxStatus
+              isPending={updateRiskThresholdHook.isPending}
+              isConfirming={updateRiskThresholdHook.isConfirming}
+              isSuccess={updateRiskThresholdHook.isSuccess}
+              error={updateRiskThresholdHook.error}
+              txHash={updateRiskThresholdHook.txHash}
+            />
           </GlassCard>
         </motion.div>
 
@@ -308,6 +403,38 @@ export default function SettingsPage() {
                 )}
               </AnimatePresence>
             </div>
+
+            {/* On-Chain controls */}
+            <div className="pt-4 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-xs text-[--color-muted-foreground]">On-Chain Value: </span>
+                <span className="text-sm font-semibold text-white">
+                  {onChainCycleInterval !== undefined 
+                    ? Number(onChainCycleInterval) >= 86400 
+                      ? `${Number(onChainCycleInterval) / 86400} days` 
+                      : `${Number(onChainCycleInterval) / 60} mins` 
+                    : 'Loading…'}
+                </span>
+              </div>
+              <button
+                onClick={handleSetCycleIntervalOnChain}
+                disabled={!isConnected || setCycleIntervalHook.isPending || setCycleIntervalHook.isConfirming}
+                className={`px-4 py-2.5 bg-[--color-agent-ceo] hover:bg-[--color-agent-ceo]/80 text-white rounded-xl text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed`}
+              >
+                {setCycleIntervalHook.isPending || setCycleIntervalHook.isConfirming ? (
+                  <span className="flex items-center gap-1.5"><Loader2 size={12} className="animate-spin" /> Confirming…</span>
+                ) : (
+                  'Update On-Chain'
+                )}
+              </button>
+            </div>
+            <TxStatus
+              isPending={setCycleIntervalHook.isPending}
+              isConfirming={setCycleIntervalHook.isConfirming}
+              isSuccess={setCycleIntervalHook.isSuccess}
+              error={setCycleIntervalHook.error}
+              txHash={setCycleIntervalHook.txHash}
+            />
           </GlassCard>
         </motion.div>
 

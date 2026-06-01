@@ -170,3 +170,65 @@ export function useCalculateDeposit(agentAddress: `0x${string}` | undefined) {
     },
   });
 }
+
+// ─────────────────────────────────────────────────────────────
+// On-chain Settings Write Hooks
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Sets the strategic objective on the CEOAgent.
+ */
+export function useSetObjective() {
+  const { writeContract, data: hash, isPending, error } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  const setObjective = (objective: string) => {
+    writeContract({
+      address: contracts.ceoAgent.address,
+      abi: contracts.ceoAgent.abi,
+      functionName: 'setObjective',
+      args: [objective],
+    });
+  };
+
+  return { setObjective, txHash: hash, isPending, isConfirming, isSuccess, error };
+}
+
+/**
+ * Sets the cycle interval on the CEOAgent.
+ */
+export function useSetCycleInterval() {
+  const { writeContract, data: hash, isPending, error } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  const setCycleInterval = (newInterval: bigint) => {
+    writeContract({
+      address: contracts.ceoAgent.address,
+      abi: contracts.ceoAgent.abi,
+      functionName: 'setCycleInterval',
+      args: [newInterval],
+    });
+  };
+
+  return { setCycleInterval, txHash: hash, isPending, isConfirming, isSuccess, error };
+}
+
+/**
+ * Updates the risk threshold in the CFOAgent.
+ */
+export function useUpdateRiskThreshold() {
+  const { writeContract, data: hash, isPending, error } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  const updateThreshold = (newThreshold: bigint) => {
+    writeContract({
+      address: contracts.cfoAgent.address,
+      abi: contracts.cfoAgent.abi,
+      functionName: 'setRiskThreshold',
+      args: [newThreshold],
+    });
+  };
+
+  return { updateThreshold, txHash: hash, isPending, isConfirming, isSuccess, error };
+}
+

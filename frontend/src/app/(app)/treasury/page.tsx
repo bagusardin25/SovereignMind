@@ -4,6 +4,7 @@
 // Treasury Page — Vault overview and management
 // ============================================================
 
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { useTreasuryData } from '@/hooks/useTreasuryData';
@@ -26,7 +27,7 @@ import Skeleton, { SkeletonMetric, SkeletonTable } from '@/components/ui/Skeleto
 import MetricCard from '@/components/ui/MetricCard';
 import AllocationChart from '@/components/treasury/AllocationChart';
 import TransactionList from '@/components/treasury/TransactionList';
-import { formatUSD, formatCompact } from '@/lib/constants';
+import { formatSTT } from '@/lib/constants';
 import { toast } from '@/components/ui/Toast';
 
 export default function TreasuryPage() {
@@ -119,22 +120,23 @@ export default function TreasuryPage() {
             On-chain treasury managed by your autonomous agent guild
           </p>
         </div>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => toast('Connect wallet and use the Settings page to deposit STT to treasury', 'info')}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[--color-success]/10 border border-[--color-success]/20 text-[--color-success] text-sm font-medium hover:bg-[--color-success]/20 transition-all"
-          style={{ animation: 'subtle-pulse 3s ease-in-out infinite' }}
-        >
-          <ArrowDownToLine size={16} />
-          Deposit
-          <style>{`
-            @keyframes subtle-pulse {
-              0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-              50% { box-shadow: 0 0 12px 2px rgba(16, 185, 129, 0.15); }
-            }
-          `}</style>
-        </motion.button>
+        <Link href="/settings">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[--color-success]/10 border border-[--color-success]/20 text-[--color-success] text-sm font-medium hover:bg-[--color-success]/20 transition-all"
+            style={{ animation: 'subtle-pulse 3s ease-in-out infinite' }}
+          >
+            <ArrowDownToLine size={16} />
+            Deposit
+            <style>{`
+              @keyframes subtle-pulse {
+                0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+                50% { box-shadow: 0 0 12px 2px rgba(16, 185, 129, 0.15); }
+              }
+            `}</style>
+          </motion.button>
+        </Link>
       </div>
 
       {/* Key Metrics */}
@@ -239,13 +241,13 @@ export default function TreasuryPage() {
                         </span>
                       </td>
                       <td className="text-right px-4 py-4">
-                        <span className="text-sm text-[--color-foreground]">
-                          {formatUSD(holding.price)}
+                        <span className="text-sm text-[--color-muted-foreground] italic">
+                          Native
                         </span>
                       </td>
                       <td className="text-right px-4 py-4">
                         <span className="text-sm font-medium text-[--color-foreground]">
-                          {formatUSD(holding.value)}
+                          {formatSTT(holding.value)}
                         </span>
                       </td>
                       <td className="text-right px-4 py-4">

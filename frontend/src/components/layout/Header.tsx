@@ -4,22 +4,67 @@
 // Header — Top navigation bar with wallet connect
 // ============================================================
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { Activity, Bell } from 'lucide-react';
 import { useAgentCount } from '@/hooks/useAgentRegistry';
-import { mockSystemHealth, mockActivity } from '@/lib/mock-data';
+import { useCEORecentDecisions } from '@/hooks/useCEOAgent';
+import { AGENT_COLORS } from '@/lib/constants';
+import type { ActivityEvent, AgentRole } from '@/lib/types';
 import NotificationPanel from '@/components/ui/NotificationPanel';
 import { ToastContainer } from '@/components/ui/Toast';
 
+// Map on-chain CEO decisions to ActivityEvent[]
+function decisionsToEvents(decisions: unknown): ActivityEvent[] {
+  if (!decisions || !Array.isArray(decisions)) return [];
+
+  const actionLabels: Record<number, string> = {
+    0: 'HOLD Decision',
+    1: 'Rebalance Executed',
+    2: 'Allocation Adjusted',
+  };
+
+  return decisions.map((d, i) => ({
+    id: `ceo-${d.id?.toString() ?? i}`,
+    agentRole: 'CEO' as AgentRole,
+    action: actionLabels[Number(d.action)] ?? `Decision #${d.id?.toString() ?? i}`,
+    description: d.rationale || 'Executive decision recorded on-chain.',
+    timestamp: d.timestamp ? Number(d.timestamp) * 1000 : Date.now() - i * 60_000,
+  }));
+}
+
 export default function Header() {
-  const health = mockSystemHealth;
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const { isConnected } = useAccount();
   const { data: onChainAgentCount } = useAgentCount();
+  const { data: rawDecisions } = useCEORecentDecisions(BigInt(10));
 
-  const unreadCount = mockActivity.length;
+  // Derive notification events from real on-chain decisions
+  const events = useMemo(() => decisionsToEvents(rawDecisions), [rawDecisions]);
+  const unreadCount = events.length;
+
+  // Approximate network latency via RPC ping
+  const [latency, setLatency] = useState<number | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    async function ping() {
+      try {
+        const start = performance.now();
+        await fetch('https://dream-rpc.somnia.network', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'net_version', params: [] }),
+        });
+        if (!cancelled) setLatency(Math.round(performance.now() - start));
+      } catch {
+        if (!cancelled) setLatency(null);
+      }
+    }
+    ping();
+    const interval = setInterval(ping, 30_000); // refresh every 30s
+    return () => { cancelled = true; clearInterval(interval); };
+  }, []);
 
   return (
     <>
@@ -32,7 +77,7 @@ export default function Header() {
           </div>
           <div className="hidden sm:flex items-center gap-2 text-xs text-[--color-muted-foreground]">
             <Activity size={14} />
-            <span>Latency: {health.networkLatency}ms</span>
+            <span>Latency: {latency != null ? `${latency}ms` : '—'}</span>
             {isConnected && onChainAgentCount != null && (
               <span className="ml-2 px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[10px]">
                 Agents: {Number(onChainAgentCount as bigint)}
@@ -59,6 +104,7 @@ export default function Header() {
             <NotificationPanel
               isOpen={isNotifOpen}
               onClose={() => setIsNotifOpen(false)}
+              events={events}
             />
           </div>
 

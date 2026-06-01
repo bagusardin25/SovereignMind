@@ -69,14 +69,36 @@ export function useReceipts() {
       try {
         const results: ReceiptRecord[] = [];
 
+        // Helper to fetch logs in chunks to bypass the 1000 block RPC limit
+        const fetchLogsInBatches = async (address: `0x${string}`, event: any, maxHistory = 10000n) => {
+          const latestBlock = await publicClient!.getBlockNumber();
+          const startBlock = latestBlock > maxHistory ? latestBlock - maxHistory : 0n;
+          const chunkSize = 999n;
+          let logs: any[] = [];
+          
+          for (let from = startBlock; from <= latestBlock; from += chunkSize + 1n) {
+            const to = from + chunkSize > latestBlock ? latestBlock : from + chunkSize;
+            try {
+              const chunkLogs = await publicClient!.getLogs({
+                address,
+                event,
+                fromBlock: from,
+                toBlock: to,
+              });
+              logs = logs.concat(chunkLogs);
+            } catch (err) {
+              console.warn(`Failed to fetch logs chunk ${from}-${to} for ${address}:`, err);
+            }
+          }
+          return logs;
+        };
+
         // Fetch CEO DecisionMade events
         try {
-          const ceoLogs = await publicClient!.getLogs({
-            address: CONTRACT_ADDRESSES.ceoAgent as `0x${string}`,
-            event: CEO_DECISION_MADE,
-            fromBlock: 'earliest',
-            toBlock: 'latest',
-          });
+          const ceoLogs = await fetchLogsInBatches(
+            CONTRACT_ADDRESSES.ceoAgent as `0x${string}`,
+            CEO_DECISION_MADE
+          );
 
           for (const log of ceoLogs) {
             const txHash = log.transactionHash || '';
@@ -92,18 +114,16 @@ export function useReceipts() {
               timestamp: args.timestamp ? Number(args.timestamp) * 1000 : 0,
             });
           }
-        } catch {
-          // CEO events fetch failed silently
+        } catch (err) {
+          console.error('Failed to fetch CEO decision logs:', err);
         }
 
         // Fetch CFO AnalysisStarted events
         try {
-          const cfoLogs = await publicClient!.getLogs({
-            address: CONTRACT_ADDRESSES.cfoAgent as `0x${string}`,
-            event: CFO_ANALYSIS_STARTED,
-            fromBlock: 'earliest',
-            toBlock: 'latest',
-          });
+          const cfoLogs = await fetchLogsInBatches(
+            CONTRACT_ADDRESSES.cfoAgent as `0x${string}`,
+            CFO_ANALYSIS_STARTED
+          );
 
           for (const log of cfoLogs) {
             const txHash = log.transactionHash || '';
@@ -120,18 +140,16 @@ export function useReceipts() {
               timestamp: args.timestamp ? Number(args.timestamp) * 1000 : 0,
             });
           }
-        } catch {
-          // CFO events fetch failed silently
+        } catch (err) {
+          console.error('Failed to fetch CFO analysis logs:', err);
         }
 
         // Fetch CMO ScanStarted events
         try {
-          const cmoLogs = await publicClient!.getLogs({
-            address: CONTRACT_ADDRESSES.cmoAgent as `0x${string}`,
-            event: CMO_SCAN_STARTED,
-            fromBlock: 'earliest',
-            toBlock: 'latest',
-          });
+          const cmoLogs = await fetchLogsInBatches(
+            CONTRACT_ADDRESSES.cmoAgent as `0x${string}`,
+            CMO_SCAN_STARTED
+          );
 
           for (const log of cmoLogs) {
             const txHash = log.transactionHash || '';
@@ -148,8 +166,8 @@ export function useReceipts() {
               timestamp: args.timestamp ? Number(args.timestamp) * 1000 : 0,
             });
           }
-        } catch {
-          // CMO events fetch failed silently
+        } catch (err) {
+          console.error('Failed to fetch CMO scan logs:', err);
         }
 
         // Sort by block number descending
@@ -159,7 +177,8 @@ export function useReceipts() {
           setRecords(results);
           setIsLoading(false);
         }
-      } catch {
+      } catch (err) {
+        console.error('Failed to fetch blockchain receipt logs:', err);
         if (!cancelled) {
           setIsLoading(false);
         }
