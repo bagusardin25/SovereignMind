@@ -5,7 +5,7 @@
 // ============================================================
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAccount } from 'wagmi';
 import { useTreasuryData } from '@/hooks/useTreasuryData';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,6 +23,7 @@ import {
   X,
   Loader2,
   CheckCircle2,
+  ChevronDown,
 } from 'lucide-react';
 import { parseEther } from 'viem';
 import { useDepositToTreasury } from '@/hooks/useContractActions';
@@ -41,9 +42,23 @@ export default function TreasuryPage() {
   const [filterType, setFilterType] = useState('All');
   const { isConnected } = useAccount();
 
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+  const filterDropdownRef = useRef<HTMLDivElement>(null);
+
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [depositAmount, setDepositAmount] = useState('0.01');
   const depositTreasury = useDepositToTreasury();
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+        setIsFilterDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Composite on-chain treasury data
   const { treasury, transactions, totalOperations } = useTreasuryData();
@@ -338,7 +353,7 @@ export default function TreasuryPage() {
               ]);
               downloadCSV('transactions.csv', headers, data);
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/5 border border-[--color-border] hover:bg-white/10 text-[--color-foreground] transition-colors"
+            className="flex items-center justify-center gap-1.5 w-full sm:w-auto px-3 py-1.5 rounded-lg text-sm font-medium bg-white/5 border border-[--color-border] hover:bg-white/10 text-[--color-foreground] transition-colors"
           >
             <Download size={16} className="text-[--color-muted]" />
             Export CSV
@@ -362,18 +377,44 @@ export default function TreasuryPage() {
               />
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 relative" ref={filterDropdownRef}>
               <Filter size={14} className="text-[--color-muted]" />
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-                className="bg-transparent border border-[--color-border] rounded-lg px-3 py-1.5 text-sm text-[--color-foreground] focus:outline-none focus:border-[--color-agent-ceo]/50 [&>option]:bg-[#0f111a]"
+              <button
+                type="button"
+                onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                className="flex items-center justify-between gap-2 px-3 py-1.5 bg-white/5 border border-[--color-border] rounded-lg text-sm text-[--color-foreground] hover:bg-white/10 transition-colors focus:outline-none min-w-[120px]"
               >
-                <option value="All">All</option>
-                <option value="Deposit">Deposit</option>
-                <option value="Rebalance">Rebalance</option>
-                <option value="Withdrawal">Withdrawal</option>
-              </select>
+                <span>{filterType}</span>
+                <ChevronDown size={14} className={`text-[--color-muted] transition-transform duration-200 ${isFilterDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {isFilterDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                    className="absolute z-20 left-6 top-full mt-1 py-1 w-[120px] rounded-lg border border-[--color-border] bg-[#0f141b] shadow-xl overflow-hidden"
+                  >
+                    {['All', 'Deposit', 'Rebalance', 'Withdrawal'].map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => {
+                          setFilterType(type);
+                          setIsFilterDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 text-xs transition-colors hover:bg-white/5 ${
+                          filterType === type ? 'text-[--color-agent-ceo-light] font-semibold bg-white/[0.02]' : 'text-[--color-muted-foreground]'
+                        }`}
+                      >
+                        {type}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </GlassCard>

@@ -288,7 +288,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-10">
       {/* Page Title */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold gradient-text-primary">System Settings</h1>
           <p className="text-sm text-[--color-muted-foreground] mt-1">
@@ -297,7 +297,7 @@ export default function SettingsPage() {
         </div>
         <button 
           onClick={handleSave}
-          className="flex items-center gap-2 px-4 py-2 bg-[--color-agent-ceo] hover:bg-[--color-agent-ceo]/80 text-white rounded-xl font-medium transition-colors"
+          className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2 bg-[--color-agent-ceo] hover:bg-[--color-agent-ceo]/80 text-white rounded-xl font-medium transition-colors"
         >
           <Save size={18} />
           <span>Save Changes</span>
@@ -790,7 +790,7 @@ export default function SettingsPage() {
                     fetchPriceHook.fetchPrice(priceSymbol, priceApiUrl, priceJsonPath, FIXED_DECISION_DEPOSIT);
                   }}
                   disabled={!isConnected || fetchPriceHook.isPending || fetchPriceHook.isConfirming || !priceSymbol || !priceApiUrl || !priceJsonPath}
-                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 ${disabledBtnClass}`}
+                  className={`flex items-center justify-center w-full sm:w-auto px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 ${disabledBtnClass}`}
                   style={{ background: 'linear-gradient(135deg, #8b5cf6, #a78bfa)' }}
                 >
                   {fetchPriceHook.isPending || fetchPriceHook.isConfirming ? (

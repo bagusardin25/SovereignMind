@@ -171,7 +171,7 @@ export default function AgentDetailPage({
       >
         <div className="h-1.5 w-full" style={{ background: colors.gradient }} />
         <div className="p-8">
-          <div className="flex items-start gap-6">
+          <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6">
             {/* Agent Icon */}
             <div
               className="w-20 h-20 rounded-2xl flex items-center justify-center flex-shrink-0"
@@ -186,7 +186,7 @@ export default function AgentDetailPage({
 
             {/* Info */}
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-2 mb-2">
                 <h1 className="text-2xl font-bold text-[--color-foreground]">
                   {role} Agent
                 </h1>
@@ -201,7 +201,7 @@ export default function AgentDetailPage({
             </div>
 
             {/* Contract Address */}
-            <div className="flex-shrink-0 text-right">
+            <div className="flex-shrink-0 md:text-right md:self-start self-center mt-4 md:mt-0">
               <p className="text-xs text-[--color-muted] mb-1">Contract</p>
               <code className="text-xs font-mono text-[--color-agent-cmo-light] bg-white/[0.03] px-2 py-1 rounded">
                 {contractAddr.slice(0, 10)}...{contractAddr.slice(-8)}

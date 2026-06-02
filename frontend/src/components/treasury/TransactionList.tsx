@@ -101,7 +101,7 @@ export default function TransactionList({
               href={`${SOMNIA_TESTNET.blockExplorers.default.url}/tx/${tx.txHash}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="opacity-0 group-hover:opacity-100 transition-opacity text-[--color-muted-foreground] hover:text-[--color-foreground]"
+              className="md:opacity-0 md:group-hover:opacity-100 opacity-60 transition-opacity text-[--color-muted-foreground] hover:text-[--color-foreground]"
             >
               <ExternalLink size={14} />
             </a>

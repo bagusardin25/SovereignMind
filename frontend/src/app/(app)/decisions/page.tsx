@@ -137,7 +137,7 @@ export default function DecisionsPage() {
             ]);
             downloadCSV('decisions.csv', headers, data);
           }}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-white/5 border border-[--color-border] hover:bg-white/10 text-[--color-foreground] transition-colors"
+          className="flex items-center justify-center gap-1.5 w-full sm:w-auto px-4 py-2 rounded-xl text-sm font-medium bg-white/5 border border-[--color-border] hover:bg-white/10 text-[--color-foreground] transition-colors"
         >
           <Download size={16} className="text-[--color-muted]" />
           Export CSV

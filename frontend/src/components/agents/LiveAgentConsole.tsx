@@ -51,13 +51,13 @@ function generateSeedEvents(count: number): ActivityEvent[] {
 export default function LiveAgentConsole() {
   const [logs, setLogs] = useState<ActivityEvent[]>(() => generateSeedEvents(5));
   const [isLive, setIsLive] = useState(true);
-  const endOfMessagesRef = useRef<HTMLDivElement>(null);
+  const consoleContainerRef = useRef<HTMLDivElement>(null);
   const { isConnected } = useAccount();
 
-  // Auto-scroll to bottom
+  // Auto-scroll inside container only to prevent page jumping
   useEffect(() => {
-    if (endOfMessagesRef.current) {
-      endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (consoleContainerRef.current) {
+      consoleContainerRef.current.scrollTop = consoleContainerRef.current.scrollHeight;
     }
   }, [logs]);
 
@@ -104,7 +104,11 @@ export default function LiveAgentConsole() {
       </div>
 
       {/* Terminal Output */}
-      <div className="h-[300px] overflow-y-auto p-4 font-mono text-xs bg-[#0a0a0a]/80" style={{ scrollbarWidth: 'thin' }}>
+      <div 
+        ref={consoleContainerRef}
+        className="h-[300px] overflow-y-auto p-4 font-mono text-xs bg-[#0a0a0a]/80" 
+        style={{ scrollbarWidth: 'thin' }}
+      >
         <AnimatePresence initial={false}>
           {logs.map((log) => {
             const colors = AGENT_COLORS[log.agentRole];
@@ -135,7 +139,6 @@ export default function LiveAgentConsole() {
             );
           })}
         </AnimatePresence>
-        <div ref={endOfMessagesRef} />
       </div>
     </GlassCard>
   );

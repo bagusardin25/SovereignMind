@@ -25,7 +25,12 @@ export default function NotificationPanel({ isOpen, onClose, events }: Notificat
   // Close on click outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+      const target = e.target as HTMLElement;
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(target) &&
+        !target.closest('#notification-bell-btn')
+      ) {
         onClose();
       }
     }
@@ -56,9 +61,9 @@ export default function NotificationPanel({ isOpen, onClose, events }: Notificat
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -8, scale: 0.96 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="absolute top-full right-0 mt-2 w-96 max-h-[480px] rounded-2xl border border-[--color-border] overflow-hidden shadow-2xl z-50"
+          className="fixed sm:absolute top-16 sm:top-full left-1/2 sm:left-auto -translate-x-1/2 sm:translate-x-0 sm:right-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-sm sm:max-w-none max-h-[480px] rounded-2xl border border-[--color-border] overflow-hidden shadow-2xl z-50"
           style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+            background: 'linear-gradient(135deg, rgba(15, 20, 27, 0.95), rgba(10, 14, 19, 0.98))',
             backdropFilter: 'blur(24px)',
             WebkitBackdropFilter: 'blur(24px)',
             boxShadow: '0 16px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',

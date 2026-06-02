@@ -207,7 +207,7 @@ export default function PortfolioPage() {
                 <thead>
                   <tr className="border-b border-[--color-border]/50">
                     <th className="text-left text-xs font-semibold text-[--color-muted-foreground] px-4 py-3">Asset</th>
-                    <th className="text-right text-xs font-semibold text-[--color-muted-foreground] px-4 py-3">On-Chain Balance</th>
+                    <th className="text-right text-xs font-semibold text-[--color-muted-foreground] px-4 py-3 hidden sm:table-cell">On-Chain Balance</th>
                     <th className="text-right text-xs font-semibold text-[--color-muted-foreground] px-4 py-3">Current Value</th>
                     <th className="text-right text-xs font-semibold text-[--color-muted-foreground] px-4 py-3">Allocation</th>
                   </tr>
@@ -245,7 +245,7 @@ export default function PortfolioPage() {
                               </div>
                             </div>
                           </td>
-                          <td className="text-right px-4 py-4 font-mono text-sm text-[--color-muted-foreground]">
+                          <td className="text-right px-4 py-4 font-mono text-sm text-[--color-muted-foreground] hidden sm:table-cell">
                             {isSTT ? '-' : Number(formatEther(value)).toLocaleString(undefined, { maximumFractionDigits: 6 })}
                           </td>
                           <td className="text-right px-4 py-4 font-mono text-sm text-white font-medium">
@@ -289,9 +289,9 @@ export default function PortfolioPage() {
                 <BookOpen size={24} />
               </div>
               <div className="space-y-2">
-                <h3 className="text-md font-bold text-white">Bagaimana cara kerja "Robot Manajer Investasi"?</h3>
+                <h3 className="text-md font-bold text-white">How does the &quot;Robo Investment Manager&quot; work?</h3>
                 <p className="text-sm text-[--color-muted-foreground] leading-relaxed">
-                  SovereignMind menggunakan PRIMITIF kecerdasan on-chain Somnia Agent Runner. CMO memantau pasar dan CFO memantau risiko 24/7. Saat cycle keputusan dipicu, CEOAgent memformulasikan rebalancing portfolio terbaik.
+                  SovereignMind utilizes Somnia Agent Runner&apos;s native on-chain intelligence primitives. The CMO monitors the market and the CFO analyzes financial risk 24/7. When a decision cycle is triggered, the CEO Agent formulates the optimal portfolio rebalancing strategy.
                 </p>
                 <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-[--color-muted-foreground] font-medium pt-2">
                   <span className="flex items-center gap-1">

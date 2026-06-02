@@ -68,12 +68,13 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 h-16 glass bg-black/20 shadow-md flex items-center justify-between px-6">
+      <header className="sticky top-0 z-30 h-16 glass bg-black/20 shadow-md flex items-center justify-between px-4 md:px-6">
         {/* Left: Network Status */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 pl-12 md:pl-0">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[--color-success]/10 border border-[--color-success]/20">
             <span className="w-2 h-2 rounded-full bg-[--color-success] status-dot-active" style={{ color: 'var(--color-success)' }} />
-            <span className="text-xs font-medium text-[--color-success]">Somnia Testnet</span>
+            <span className="text-xs font-medium text-[--color-success] hidden sm:inline">Somnia Testnet</span>
+            <span className="text-xs font-medium text-[--color-success] sm:hidden">Somnia</span>
           </div>
           <div className="hidden sm:flex items-center gap-2 text-xs text-[--color-muted-foreground]">
             <Activity size={14} />
@@ -91,12 +92,13 @@ export default function Header() {
           {/* Notification Bell */}
           <div className="relative">
             <button
+              id="notification-bell-btn"
               onClick={() => setIsNotifOpen((prev) => !prev)}
               className="relative p-2 rounded-xl text-[--color-muted-foreground] hover:text-[--color-foreground] hover:bg-white/5 transition-colors"
             >
-              <Bell size={22} className="transition-transform active:scale-95" />
+              <Bell size={22} className="transition-transform active:scale-95 pointer-events-none" />
               {unreadCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white px-1 ring-2 ring-[#0a0e1a]">
+                <span className="absolute top-0.5 right-0.5 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white px-1 ring-2 ring-[#0a0e1a] pointer-events-none">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}

@@ -53,6 +53,7 @@
   --color-background: #0f141b;
   --color-on-background: #dee2ec;
   --color-surface-variant: #30353d;
+  --color-success: #10b981;
 
   /* Dashboard agent legacy colors (keep for dashboard compatibility) */
   --color-agent-ceo: #cfbcff;
@@ -219,3 +220,24 @@ a[href*="spline.design"] {
 [data-rk] * {
   font-family: var(--font-plus-jakarta-sans), 'Plus Jakarta Sans', sans-serif !important;
 }
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.status-dot-active {
+  animation: status-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  box-shadow: 0 0 8px var(--color-success);
+}
+
+@keyframes status-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.9);
+  }
+}
+

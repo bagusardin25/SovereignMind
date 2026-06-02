@@ -120,14 +120,14 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Page Title */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold gradient-text-primary">Dashboard</h1>
           <p className="text-sm text-[--color-muted-foreground] mt-1">
             Real-time overview of your autonomous agent guild
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4">
           <div className="flex items-center gap-2 text-xs text-[--color-muted-foreground]">
             <span
               className={`w-2 h-2 rounded-full ${orchestrator.isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`}

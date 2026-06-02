@@ -68,7 +68,7 @@ export default function Sidebar() {
       {isMobile && (
         <button
           onClick={() => setMobileOpen(true)}
-          className="fixed top-4 left-4 z-50 w-10 h-10 rounded-xl glass border border-[--color-border] flex items-center justify-center text-[--color-muted-foreground] hover:text-[--color-foreground] transition-colors md:hidden"
+          className="fixed top-3 left-4 z-50 w-10 h-10 rounded-xl flex items-center justify-center text-[--color-muted-foreground] hover:text-[--color-foreground] hover:bg-white/5 transition-all duration-200 md:hidden"
           aria-label="Open navigation"
         >
           <Menu size={20} />
@@ -83,7 +83,7 @@ export default function Sidebar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="sidebar-overlay"
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
         )}
@@ -93,9 +93,9 @@ export default function Sidebar() {
       <AnimatePresence>
         {(isMobile ? mobileOpen : true) && (
           <motion.aside
-            className={`fixed left-0 top-0 h-full z-50 flex flex-col glass bg-black/20 ${
-              isMobile ? 'shadow-2xl' : ''
-            }`}
+            className={`fixed left-0 top-0 h-full z-50 flex flex-col glass ${
+              isMobile ? 'bg-[#0f141b]' : 'bg-black/20'
+            } ${isMobile ? 'shadow-2xl' : ''}`}
             initial={isMobile ? { x: -280 } : false}
             animate={{
               x: 0,

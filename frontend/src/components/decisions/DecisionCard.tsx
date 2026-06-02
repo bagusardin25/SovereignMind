@@ -85,7 +85,7 @@ export default function DecisionCard({ decision, delay = 0 }: DecisionCardProps)
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             {/* Header Row */}
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex flex-wrap items-center gap-1.5 mb-2">
               <div
                 className="w-7 h-7 rounded-lg flex items-center justify-center"
                 style={{ backgroundColor: colors.bg, color: colors.primary }}
