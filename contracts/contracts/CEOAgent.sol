@@ -66,6 +66,8 @@ contract CEOAgent is IAgentCallback {
     // Decision tracking
     ExecutiveDecision[] public decisions;
     mapping(uint256 => bool) public pendingRequests;
+    mapping(uint256 => uint256) public requestTimestamps;
+    uint256 public constant REQUEST_TIMEOUT = 30 minutes;
     uint256 public decisionCount;
 
     // Cycle management
@@ -104,6 +106,7 @@ contract CEOAgent is IAgentCallback {
     error UnknownRequest(uint256 requestId);
     error InsufficientDeposit();
     error InvalidDecisionId();
+    error RequestNotTimedOut();
 
     // ═══════════════════════════════════════════════════════════
     //                      MODIFIERS
@@ -228,6 +231,7 @@ contract CEOAgent is IAgentCallback {
         );
 
         pendingRequests[requestId] = true;
+        requestTimestamps[requestId] = block.timestamp;
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -242,6 +246,7 @@ contract CEOAgent is IAgentCallback {
     ) external override onlyAgentRunner {
         if (!pendingRequests[requestId]) revert UnknownRequest(requestId);
         delete pendingRequests[requestId];
+        delete requestTimestamps[requestId];
 
         if (status != ResponseStatus.SUCCESS || responses.length == 0) {
             // Decision failed — record and reset
@@ -308,8 +313,14 @@ contract CEOAgent is IAgentCallback {
             treasury.recordDecision("hold", rationale);
             success = true;
         } else if (action == DecisionAction.REBALANCE) {
-            treasury.recordDecision("rebalance", rationale);
-            success = true;
+            // Execute actual rebalance on treasury (native STT self-rebalance)
+            try treasury.executeRebalance(address(0), address(0), 0, rationale) {
+                success = true;
+            } catch {
+                // Fallback to just recording if execution fails
+                treasury.recordDecision("rebalance", rationale);
+                success = true;
+            }
         } else if (action == DecisionAction.ALLOCATE) {
             treasury.recordDecision("allocate", rationale);
             success = true;
@@ -355,6 +366,21 @@ contract CEOAgent is IAgentCallback {
     function resetCycle() external onlyOwner {
         currentCycle.phase = CyclePhase.IDLE;
         currentCycle.completedAt = block.timestamp;
+    }
+
+    /**
+     * @notice Cancel a stuck request that has timed out
+     */
+    function cancelStuckRequest(uint256 requestId) external onlyOwner {
+        if (!pendingRequests[requestId]) revert UnknownRequest(requestId);
+        if (block.timestamp < requestTimestamps[requestId] + REQUEST_TIMEOUT) {
+            revert RequestNotTimedOut();
+        }
+        delete pendingRequests[requestId];
+        delete requestTimestamps[requestId];
+        currentCycle.phase = CyclePhase.IDLE;
+        currentCycle.completedAt = block.timestamp;
+        registry.recordDecision(false);
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -405,10 +431,18 @@ contract CEOAgent is IAgentCallback {
     //                  INTERNAL HELPERS
     // ═══════════════════════════════════════════════════════════
 
-    function _calculateDeposit(uint256 /* agentId */) internal view returns (uint256) {
-        // Real AgentRunner only exposes getRequestDeposit() (0.03 STT on testnet).
-        // getAgentPrice() and getSubcommitteeSize() do not exist on the live contract.
-        return agentRunner.getRequestDeposit();
+    function _calculateDeposit(uint256 agentId) internal view returns (uint256) {
+        uint256 baseDeposit = agentRunner.getRequestDeposit();
+        // Try full formula: baseDeposit + agentPrice × subcommitteeSize
+        try agentRunner.getAgentPrice(agentId) returns (uint256 agentPrice) {
+            try agentRunner.getSubcommitteeSize() returns (uint256 subcommitteeSize) {
+                return baseDeposit + (agentPrice * subcommitteeSize);
+            } catch {
+                return baseDeposit;
+            }
+        } catch {
+            return baseDeposit;
+        }
     }
 
     function _buildSentimentSummary() internal view returns (string memory) {

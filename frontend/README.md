@@ -214,11 +214,12 @@ frontend/
 
 | Contract | Address |
 |----------|---------|
-| AgentRegistry | `0x9B4f52744EE60A763d1a1966eCD91e04E668d2d6` |
-| TreasuryVault | `0x269B22DFF373Bb3aC9c564141edbfe9De3903a40` |
-| CFOAgent | `0x21e908dc15cb5Dbd659f107DC0058Fe2D762E385` |
-| CMOAgent | `0xd110592795615D78776c52b0a5B254d5eb7B6662` |
-| CEOAgent | ⏳ Pending deployment |
+| AgentRegistry | `0x9C58a49649De1c10785577E6EFc18b425f870191` |
+| TreasuryVault | `0x1F0f008feFA0c1a69909f7137462ab9A9689DC18` |
+| CEOAgent | `0xaB246FD3a4f4aa5aac953913DFAB606f3bE754F9` |
+| CFOAgent | `0xD31170Cd86A1441476DcCcdebdA0D3215c86e0Bb` |
+| CMOAgent | `0xA925a43dAb833a6b1B38B9fbF0254f3E2bF1EEC5` |
+| AgentRunner | `0x037Bb9C718F3f7fe5eCBDB0b600D607b52706776` |
 
 ---
 

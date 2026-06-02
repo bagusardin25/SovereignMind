@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Somnia-Agentathon_2026-6C5CE7?style=for-the-badge&logo=ethereum&logoColor=white" alt="Somnia Agentathon 2026" />
   <img src="https://img.shields.io/badge/Track-Novel_Agent_Applications-00B894?style=for-the-badge" alt="Track" />
-  <img src="https://img.shields.io/badge/Status-In_Development-F0932B?style=for-the-badge" alt="Status" />
+  <img src="https://img.shields.io/badge/Status-Live_on_Testnet-00B894?style=for-the-badge" alt="Status" />
 </p>
 
 <h1 align="center">🧠 SovereignMind</h1>
@@ -9,7 +9,7 @@
 <h3 align="center">Autonomous On-Chain Agentic Venture Guild</h3>
 
 <p align="center">
-  <em>The first fully on-chain autonomous executive suite powered by Somnia Agentic L1 native primitives — where AI agents make transparent, consensus-verified treasury decisions with minimal off-chain orchestration for cycle scheduling.</em>
+  <em>An on-chain verified autonomous executive suite powered by Somnia Agentic L1 native primitives — where AI agents make transparent, consensus-verified treasury decisions. A minimal off-chain orchestrator handles cycle scheduling and transaction signing, while all agent intelligence runs on-chain via Somnia's native Agent Runner.</em>
 </p>
 
 <p align="center">
@@ -37,7 +37,7 @@
 | 🟣 **CFO Agent** | Financial analysis, risk scoring & treasury execution | JSON API Request Agent + LLM Inference Agent |
 | 🔷 **CMO Agent** | Market intelligence & sentiment analysis | LLM Parse Website Agent + LLM Inference Agent |
 
-Every decision produces a **public execution receipt** verifiable via Somnia's consensus mechanism — making SovereignMind a fully transparent, autonomous treasury manager with **zero single points of failure**.
+Every decision produces a **public execution receipt** verifiable via Somnia's consensus mechanism — making SovereignMind a fully transparent, on-chain verified autonomous treasury manager.
 
 ---
 
@@ -121,7 +121,7 @@ Contract                    Somnia Agent Runner              Contract
 
 ### 💰 On-Chain Treasury Management
 - Secure vault with role-based access control via Agent Registry
-- Autonomous rebalancing based on risk thresholds and market conditions
+- AI-driven rebalancing decisions with on-chain execution records
 - Full transaction history with on-chain audit trail
 
 ### 📊 Real-Time Dashboard
@@ -140,7 +140,7 @@ Contract                    Somnia Agent Runner              Contract
 ### 🔐 Fully Transparent & Trustless
 - Every decision produces a verifiable **on-chain execution receipt**
 - Deterministic LLM outputs via Somnia's pinned model weights and synchronized seeds
-- Minimal off-chain orchestrator handles cycle scheduling & transaction signing — all agent intelligence runs on-chain via Somnia primitives
+- Permissionless cycle trigger — anyone can call `initiateDecisionCycle()` on-chain once cooldown elapses. Off-chain orchestrator automates this but is not required
 
 ---
 
@@ -217,11 +217,11 @@ Add Somnia Testnet to your wallet:
 
 | Contract | Address | Status |
 |----------|---------|--------|
-| AgentRegistry | `0x41A6a0c76ddAD6F5dAeC70F7aaFA439eba1AC0c3` | ✅ Deployed |
-| TreasuryVault | `0x8f1c9bd9cc0EF059D0175fF05153D2fEe8Be7f9d` | ✅ Deployed |
-| CEOAgent | `0xd58a92F4BF829921a6cdc6FeE54d7CC8743F75c9` | ✅ Deployed (v2) |
-| CFOAgent | `0xEE3dB72FBBF25248edDe8324670aC8F1b9285869` | ✅ Deployed (v2) |
-| CMOAgent | `0x9C13A3d3ca1BB420F6f2489c93785eCE3125c600` | ✅ Deployed (v2) |
+| AgentRegistry | `0x9C58a49649De1c10785577E6EFc18b425f870191` | ✅ Deployed (v3) |
+| TreasuryVault | `0x1F0f008feFA0c1a69909f7137462ab9A9689DC18` | ✅ Deployed (v3) |
+| CEOAgent | `0xaB246FD3a4f4aa5aac953913DFAB606f3bE754F9` | ✅ Deployed (v3) |
+| CFOAgent | `0xD31170Cd86A1441476DcCcdebdA0D3215c86e0Bb` | ✅ Deployed (v3) |
+| CMOAgent | `0xA925a43dAb833a6b1B38B9fbF0254f3E2bF1EEC5` | ✅ Deployed (v3) |
 | AgentRunner | `0x037Bb9C718F3f7fe5eCBDB0b600D607b52706776` | 🔗 Somnia Platform |
 
 ---

@@ -27,10 +27,15 @@ export class HealthServer {
     this.funding = funding;
     this.app = express();
     this.app.use(express.json());
-    this.app.use((_req, res, next) => {
-      res.header('Access-Control-Allow-Origin', '*');
+    // CORS with origin allowlist
+    const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000,https://sovereignmind-app.vercel.app').split(',');
+    this.app.use((_req: express.Request, res: express.Response, next: express.NextFunction) => {
+      const origin = _req.headers.origin || '';
+      if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+        res.header('Access-Control-Allow-Origin', origin);
+      }
       res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-      res.header('Access-Control-Allow-Headers', 'Content-Type');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
       if (_req.method === 'OPTIONS') {
         res.sendStatus(204);
         return;
@@ -38,6 +43,24 @@ export class HealthServer {
       next();
     });
     this.setupRoutes();
+  }
+
+  /**
+   * Auth middleware for mutating endpoints.
+   * If AUTH_TOKEN env is set, requires Bearer token.
+   */
+  private authMiddleware(req: express.Request, res: express.Response, next: express.NextFunction): void {
+    const authToken = process.env.AUTH_TOKEN || '';
+    if (!authToken) {
+      next(); // No token configured = dev mode, allow all
+      return;
+    }
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (token !== authToken) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+    next();
   }
 
   private setupRoutes(): void {
@@ -72,7 +95,7 @@ export class HealthServer {
     });
 
     // Manual trigger
-    this.app.post('/trigger', async (_req, res) => {
+    this.app.post('/trigger', this.authMiddleware.bind(this), async (_req, res) => {
       if (this.orchestrator.isRunning) {
         res.status(409).json({ error: 'Cycle already in progress' });
         return;
@@ -87,13 +110,13 @@ export class HealthServer {
     });
 
     // Stop scheduler
-    this.app.post('/stop', (_req, res) => {
+    this.app.post('/stop', this.authMiddleware.bind(this), (_req, res) => {
       this.scheduler.stop();
       res.json({ message: 'Scheduler stopped' });
     });
 
     // Resume scheduler
-    this.app.post('/resume', async (_req, res) => {
+    this.app.post('/resume', this.authMiddleware.bind(this), async (_req, res) => {
       await this.scheduler.resume();
       res.json({ message: 'Scheduler resumed' });
     });

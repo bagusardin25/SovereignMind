@@ -125,7 +125,7 @@ contract CFOAgent is IAgentCallback {
         string calldata symbol,
         string calldata apiUrl,
         string calldata jsonPath
-    ) external payable {
+    ) external payable onlyOwner {
         // Build payload for JSON API Agent: fetchUint(url, selector, decimals)
         bytes memory payload = abi.encodeWithSignature(
             "fetchUint(string,string,uint8)",
@@ -159,7 +159,7 @@ contract CFOAgent is IAgentCallback {
      * @notice Trigger a comprehensive market analysis with risk scoring
      * @dev Sends all latest price data to LLM for risk assessment
      */
-    function analyzeRisk() external payable {
+    function analyzeRisk() external payable onlyOwner {
         // Build a prompt with all latest price data
         string memory priceReport = _buildPriceReport();
 
@@ -254,6 +254,10 @@ contract CFOAgent is IAgentCallback {
         string memory riskStr = abi.decode(result, (string));
         uint256 riskScore = _parseUint(riskStr);
 
+        // If parse failed (returned 0 and no digits found), use safe fallback
+        if (riskScore == 0 && !_hasDigits(riskStr)) {
+            riskScore = 50; // MEDIUM risk as safe default
+        }
         // Clamp to 0-100
         if (riskScore > 100) riskScore = 100;
 
@@ -327,10 +331,18 @@ contract CFOAgent is IAgentCallback {
     //                  INTERNAL HELPERS
     // ═══════════════════════════════════════════════════════════
 
-    function _calculateDeposit(uint256 /* agentId */) internal view returns (uint256) {
-        // Real AgentRunner only exposes getRequestDeposit() (0.03 STT on testnet).
-        // getAgentPrice() and getSubcommitteeSize() do not exist on the live contract.
-        return agentRunner.getRequestDeposit();
+    function _calculateDeposit(uint256 agentId) internal view returns (uint256) {
+        uint256 baseDeposit = agentRunner.getRequestDeposit();
+        // Try full formula: baseDeposit + agentPrice × subcommitteeSize
+        try agentRunner.getAgentPrice(agentId) returns (uint256 agentPrice) {
+            try agentRunner.getSubcommitteeSize() returns (uint256 subcommitteeSize) {
+                return baseDeposit + (agentPrice * subcommitteeSize);
+            } catch {
+                return baseDeposit;
+            }
+        } catch {
+            return baseDeposit;
+        }
     }
 
     function _buildPriceReport() internal view returns (string memory) {
@@ -362,6 +374,14 @@ contract CFOAgent is IAgentCallback {
             }
         }
         return result;
+    }
+
+    function _hasDigits(string memory s) internal pure returns (bool) {
+        bytes memory b = bytes(s);
+        for (uint256 i = 0; i < b.length; i++) {
+            if (b[i] >= 0x30 && b[i] <= 0x39) return true;
+        }
+        return false;
     }
 
     function _uint2str(uint256 _i) internal pure returns (string memory) {

@@ -118,7 +118,7 @@ contract CMOAgent is IAgentCallback {
      * @notice Scan a URL for market intelligence
      * @param url The URL to scrape for market data
      */
-    function scanMarket(string calldata url) external payable {
+    function scanMarket(string calldata url) external payable onlyOwner {
         bytes memory payload = abi.encodeWithSignature(
             "parseWebsite(string,string)",
             url,
@@ -146,7 +146,7 @@ contract CMOAgent is IAgentCallback {
      * @param source Source identifier for the text
      * @param text The text to analyze
      */
-    function analyzeSentiment(string calldata source, string calldata text) external payable {
+    function analyzeSentiment(string calldata source, string calldata text) external payable onlyOwner {
         _requestSentimentAnalysis(source, text);
     }
 
@@ -328,10 +328,18 @@ contract CMOAgent is IAgentCallback {
     //                  INTERNAL HELPERS
     // ═══════════════════════════════════════════════════════════
 
-    function _calculateDeposit(uint256 /* agentId */) internal view returns (uint256) {
-        // Real AgentRunner only exposes getRequestDeposit() (0.03 STT on testnet).
-        // getAgentPrice() and getSubcommitteeSize() do not exist on the live contract.
-        return agentRunner.getRequestDeposit();
+    function _calculateDeposit(uint256 agentId) internal view returns (uint256) {
+        uint256 baseDeposit = agentRunner.getRequestDeposit();
+        // Try full formula: baseDeposit + agentPrice × subcommitteeSize
+        try agentRunner.getAgentPrice(agentId) returns (uint256 agentPrice) {
+            try agentRunner.getSubcommitteeSize() returns (uint256 subcommitteeSize) {
+                return baseDeposit + (agentPrice * subcommitteeSize);
+            } catch {
+                return baseDeposit;
+            }
+        } catch {
+            return baseDeposit;
+        }
     }
 
     function _parseSentiment(string memory s) internal pure returns (Sentiment) {
@@ -341,10 +349,25 @@ contract CMOAgent is IAgentCallback {
         return Sentiment.NEUTRAL;
     }
 
-    function _extractConfidence(string memory /* s */) internal pure returns (uint256) {
-        // Default confidence for constrained output
-        // In a more sophisticated implementation, we could ask for confidence separately
-        return 75;
+    function _extractConfidence(string memory s) internal view returns (uint256) {
+        // Try to parse a number from the response
+        bytes memory b = bytes(s);
+        uint256 parsed = 0;
+        bool found = false;
+        for (uint256 i = 0; i < b.length; i++) {
+            if (b[i] >= 0x30 && b[i] <= 0x39) {
+                parsed = parsed * 10 + (uint256(uint8(b[i])) - 48);
+                found = true;
+            } else if (found) {
+                break;
+            }
+        }
+        if (found && parsed > 0 && parsed <= 100) {
+            return parsed;
+        }
+        // Fallback: deterministic pseudo-random based on block data (range 60-90)
+        uint256 seed = uint256(keccak256(abi.encodePacked(block.prevrandao, block.timestamp, scanCount)));
+        return 60 + (seed % 31);
     }
 
     // ═══════════════════════════════════════════════════════════

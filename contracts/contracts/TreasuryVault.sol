@@ -59,6 +59,15 @@ contract TreasuryVault is ReentrancyGuard, Pausable, AccessControl {
     mapping(address => TokenInfo) public tokenInfos;
     address[] public trackedTokens;
 
+    // Emergency withdraw timelock
+    struct EmergencyRequest {
+        address to;
+        uint256 requestedAt;
+        bool active;
+    }
+    EmergencyRequest public pendingEmergency;
+    uint256 public constant EMERGENCY_DELAY = 1 hours;
+
     // ═══════════════════════════════════════════════════════════
     //                        EVENTS
     // ═══════════════════════════════════════════════════════════
@@ -86,6 +95,8 @@ contract TreasuryVault is ReentrancyGuard, Pausable, AccessControl {
         uint256 timestamp
     );
     event EmergencyWithdraw(address indexed to, uint256 amount, uint256 timestamp);
+    event EmergencyRequested(address indexed to, uint256 timestamp);
+    event EmergencyCancelled(uint256 timestamp);
 
     // ═══════════════════════════════════════════════════════════
     //                        ERRORS
@@ -95,6 +106,8 @@ contract TreasuryVault is ReentrancyGuard, Pausable, AccessControl {
     error InvalidAddress();
     error NotTreasuryManager();
     error TransferFailed();
+    error NoActiveEmergency();
+    error TimelockNotElapsed();
 
     // ═══════════════════════════════════════════════════════════
     //                      MODIFIERS
@@ -181,6 +194,22 @@ contract TreasuryVault is ReentrancyGuard, Pausable, AccessControl {
                 revert InsufficientBalance(amount, tokenBalance);
             }
         }
+
+        // Execute actual token movement
+        if (fromToken == address(0) && toToken != address(0)) {
+            // Native STT → send to toToken address
+            (bool sent, ) = toToken.call{value: amount}("");
+            if (!sent) revert TransferFailed();
+        } else if (fromToken != address(0) && toToken == address(0)) {
+            // ERC20 → transfer out
+            IERC20(fromToken).safeTransfer(msg.sender, amount);
+            tokenInfos[fromToken].totalWithdrawn += amount;
+        } else if (fromToken != address(0) && toToken != address(0)) {
+            // ERC20 → ERC20: transfer fromToken out
+            IERC20(fromToken).safeTransfer(msg.sender, amount);
+            tokenInfos[fromToken].totalWithdrawn += amount;
+        }
+        // If both are address(0), it's a recorded hold
 
         // Record the decision
         uint256 decisionId = decisions.length;
@@ -300,11 +329,38 @@ contract TreasuryVault is ReentrancyGuard, Pausable, AccessControl {
     }
 
     /**
-     * @notice Emergency withdraw all native tokens (admin only)
+     * @notice Request emergency withdrawal (starts timelock)
      * @param to Recipient address
      */
-    function emergencyWithdraw(address to) external onlyRole(DEFAULT_ADMIN_ROLE) nonReentrant {
+    function requestEmergencyWithdraw(address to) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (to == address(0)) revert InvalidAddress();
+        pendingEmergency = EmergencyRequest({
+            to: to,
+            requestedAt: block.timestamp,
+            active: true
+        });
+        emit EmergencyRequested(to, block.timestamp);
+    }
+
+    /**
+     * @notice Cancel a pending emergency withdrawal
+     */
+    function cancelEmergencyWithdraw() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        pendingEmergency.active = false;
+        emit EmergencyCancelled(block.timestamp);
+    }
+
+    /**
+     * @notice Execute emergency withdrawal after timelock delay
+     */
+    function emergencyWithdraw() external onlyRole(DEFAULT_ADMIN_ROLE) nonReentrant {
+        if (!pendingEmergency.active) revert NoActiveEmergency();
+        if (block.timestamp < pendingEmergency.requestedAt + EMERGENCY_DELAY) {
+            revert TimelockNotElapsed();
+        }
+        address to = pendingEmergency.to;
+        pendingEmergency.active = false;
+
         uint256 balance = address(this).balance;
         (bool success, ) = to.call{value: balance}("");
         if (!success) revert TransferFailed();

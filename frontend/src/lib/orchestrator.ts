@@ -6,6 +6,14 @@
 export const ORCHESTRATOR_URL =
   process.env.NEXT_PUBLIC_ORCHESTRATOR_URL || 'http://localhost:3001';
 
+// Warn in production if orchestrator URL is not explicitly set
+if (typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_ORCHESTRATOR_URL) {
+  console.warn(
+    '[SovereignMind] NEXT_PUBLIC_ORCHESTRATOR_URL not set — using localhost fallback. ' +
+    'Set this env var in your deployment platform (Vercel).'
+  );
+}
+
 export type CycleStep =
   | 'IDLE'
   | 'FUNDING'
@@ -67,7 +75,10 @@ export const fetchHealth = (signal?: AbortSignal) => get<HealthResponse>('/healt
 export const fetchStatus = (signal?: AbortSignal) => get<StatusResponse>('/status', signal);
 
 export async function triggerCycle(): Promise<{ message: string; cycleId: number }> {
-  const res = await fetch(`${ORCHESTRATOR_URL}/trigger`, { method: 'POST' });
+  const authToken = process.env.NEXT_PUBLIC_ORCHESTRATOR_TOKEN || '';
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  const res = await fetch(`${ORCHESTRATOR_URL}/trigger`, { method: 'POST', headers });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || `Trigger failed: ${res.status}`);

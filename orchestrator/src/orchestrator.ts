@@ -210,7 +210,11 @@ export class Orchestrator {
         duration: Date.now() - start,
         error: errorMsg,
       });
-      // Don't rethrow — continue to next step
+      // Rethrow for critical steps to abort the cycle
+      if (step === 'CEO_DECISION' || step === 'ANALYZING_RISK') {
+        throw error;
+      }
+      // Non-critical steps: continue to next step
     }
   }
 
