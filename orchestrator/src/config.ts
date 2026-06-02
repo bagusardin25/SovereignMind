@@ -31,6 +31,9 @@ export const config = {
     cfoAgent: required('CFO_AGENT_ADDRESS'),
     cmoAgent: required('CMO_AGENT_ADDRESS'),
     agentRunner: required('AGENT_RUNNER_ADDRESS'),
+    vaultShares: optional('VAULT_SHARES_ADDRESS', ''),
+    swapRouter: optional('SWAP_ROUTER_ADDRESS', ''),
+    priceOracle: optional('PRICE_ORACLE_ADDRESS', ''),
   },
 
   // Orchestration

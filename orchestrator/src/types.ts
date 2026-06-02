@@ -9,6 +9,7 @@ export type CycleStep =
   | 'ANALYZING_RISK'
   | 'SCANNING_MARKET'
   | 'CEO_DECISION'
+  | 'PORTFOLIO_REBALANCE'
   | 'COMPLETED'
   | 'ERROR';
 

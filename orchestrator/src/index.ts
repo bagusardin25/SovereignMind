@@ -16,6 +16,7 @@ import { FundingService } from './services/funding.service';
 import { CFOService } from './services/cfo.service';
 import { CMOService } from './services/cmo.service';
 import { CEOService } from './services/ceo.service';
+import { PortfolioService } from './services/portfolio.service';
 import { Orchestrator } from './orchestrator';
 import { Scheduler } from './scheduler';
 import { HealthServer } from './health';
@@ -55,6 +56,7 @@ async function main(): Promise<void> {
   const cfoService = new CFOService(contracts);
   const cmoService = new CMOService(contracts);
   const ceoService = new CEOService(contracts);
+  const portfolioService = new PortfolioService(wallet);
 
   // ── 4. Initialize orchestrator ────────────────────────
   const orchestrator = new Orchestrator({
@@ -63,6 +65,7 @@ async function main(): Promise<void> {
     ceo: ceoService,
     events: eventService,
     funding: fundingService,
+    portfolio: portfolioService,
   });
 
   // ── 5. Start event monitoring ─────────────────────────

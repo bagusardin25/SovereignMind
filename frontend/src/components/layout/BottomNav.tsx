@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Bot, Landmark, ScrollText } from 'lucide-react';
+import { LayoutDashboard, Bot, Briefcase, Landmark, ScrollText } from 'lucide-react';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Agents', href: '/agents', icon: Bot },
+  { label: 'Portfolio', href: '/portfolio', icon: Briefcase },
   { label: 'Treasury', href: '/treasury', icon: Landmark },
   { label: 'Decisions', href: '/decisions', icon: ScrollText },
 ];

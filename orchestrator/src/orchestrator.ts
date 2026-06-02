@@ -11,6 +11,7 @@ import { CMOService } from './services/cmo.service';
 import { CEOService } from './services/ceo.service';
 import { EventService } from './services/events.service';
 import { FundingService } from './services/funding.service';
+import { PortfolioService } from './services/portfolio.service';
 import type { CycleStep, CycleResult, StepResult } from './types';
 
 export class Orchestrator {
@@ -19,6 +20,7 @@ export class Orchestrator {
   private ceo: CEOService;
   private events: EventService;
   private funding: FundingService;
+  private portfolio: PortfolioService;
 
   // State
   private _isRunning = false;
@@ -33,12 +35,14 @@ export class Orchestrator {
     ceo: CEOService;
     events: EventService;
     funding: FundingService;
+    portfolio: PortfolioService;
   }) {
     this.cfo = deps.cfo;
     this.cmo = deps.cmo;
     this.ceo = deps.ceo;
     this.events = deps.events;
     this.funding = deps.funding;
+    this.portfolio = deps.portfolio;
   }
 
   get isRunning(): boolean { return this._isRunning; }
@@ -136,6 +140,16 @@ export class Orchestrator {
         const metrics = await this.ceo.getPerformanceMetrics();
         return { txHash, ...metrics };
       });
+
+      // ── Step 6: Portfolio Rebalance ──────────────────────
+      if (this.portfolio.isConfigured) {
+        await this.executeStep('PORTFOLIO_REBALANCE', steps, async () => {
+          const riskScore = await this.cfo.getCurrentRiskScore();
+          await this.portfolio.executeRebalance(Number(riskScore));
+          const status = await this.portfolio.getStatus();
+          return { ...status };
+        });
+      }
 
       // ── Cycle complete ────────────────────────────────
       this._currentStep = 'COMPLETED';

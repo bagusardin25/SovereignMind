@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
   Bot,
+  Briefcase,
   Landmark,
   ScrollText,
   Settings,
@@ -24,6 +25,7 @@ import { useState, useEffect } from 'react';
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Agents', href: '/agents', icon: Bot },
+  { label: 'Portfolio', href: '/portfolio', icon: Briefcase },
   { label: 'Treasury', href: '/treasury', icon: Landmark },
   { label: 'Decisions', href: '/decisions', icon: ScrollText },
   { label: 'Settings', href: '/settings', icon: Settings },

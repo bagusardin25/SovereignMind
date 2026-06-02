@@ -309,14 +309,29 @@ describe("TreasuryVault", function () {
   // ════════════════════════════════════════════════════════
 
   describe("Emergency Withdraw", function () {
-    it("Should allow admin to emergency withdraw all native balance", async function () {
+    it("Should allow admin to request and execute emergency withdraw after timelock", async function () {
       const depositAmount = ethers.parseEther("5");
       await vault.connect(depositor).deposit({ value: depositAmount });
 
+      // Request emergency withdraw
+      await expect(
+        vault.connect(owner).requestEmergencyWithdraw(recipient.address)
+      ).to.emit(vault, "EmergencyRequested");
+
+      // Cannot execute immediately
+      await expect(
+        vault.connect(owner).emergencyWithdraw()
+      ).to.be.revertedWithCustomError(vault, "TimelockNotElapsed");
+
+      // Fast forward time by 1 hour (3600 seconds)
+      await ethers.provider.send("evm_increaseTime", [3600]);
+      await ethers.provider.send("evm_mine", []);
+
       const balanceBefore = await ethers.provider.getBalance(recipient.address);
 
+      // Execute emergency withdraw
       await expect(
-        vault.connect(owner).emergencyWithdraw(recipient.address)
+        vault.connect(owner).emergencyWithdraw()
       ).to.emit(vault, "EmergencyWithdraw");
 
       const balanceAfter = await ethers.provider.getBalance(recipient.address);
@@ -325,23 +340,43 @@ describe("TreasuryVault", function () {
 
     it("Should leave vault with zero balance after emergency withdraw", async function () {
       await vault.connect(depositor).deposit({ value: ethers.parseEther("3") });
-      await vault.connect(owner).emergencyWithdraw(recipient.address);
+      await vault.connect(owner).requestEmergencyWithdraw(recipient.address);
+
+      // Fast forward time by 1 hour
+      await ethers.provider.send("evm_increaseTime", [3600]);
+      await ethers.provider.send("evm_mine", []);
+
+      await vault.connect(owner).emergencyWithdraw();
 
       expect(await vault.getBalance()).to.equal(0);
     });
 
-    it("Should revert when non-admin tries to emergency withdraw", async function () {
+    it("Should revert when non-admin tries to request emergency withdraw", async function () {
       await vault.connect(depositor).deposit({ value: ethers.parseEther("1") });
       await expect(
-        vault.connect(nonAdmin).emergencyWithdraw(recipient.address)
+        vault.connect(nonAdmin).requestEmergencyWithdraw(recipient.address)
       ).to.be.reverted;
     });
 
-    it("Should revert emergency withdraw to zero address", async function () {
+    it("Should revert emergency withdraw request to zero address", async function () {
       await vault.connect(depositor).deposit({ value: ethers.parseEther("1") });
       await expect(
-        vault.connect(owner).emergencyWithdraw(ethers.ZeroAddress)
+        vault.connect(owner).requestEmergencyWithdraw(ethers.ZeroAddress)
       ).to.be.revertedWithCustomError(vault, "InvalidAddress");
+    });
+
+    it("Should allow admin to cancel a pending emergency withdrawal", async function () {
+      await vault.connect(depositor).deposit({ value: ethers.parseEther("1") });
+      await vault.connect(owner).requestEmergencyWithdraw(recipient.address);
+      
+      await expect(
+        vault.connect(owner).cancelEmergencyWithdraw()
+      ).to.emit(vault, "EmergencyCancelled");
+
+      // Verify that executing reverts
+      await expect(
+        vault.connect(owner).emergencyWithdraw()
+      ).to.be.revertedWithCustomError(vault, "NoActiveEmergency");
     });
   });
 

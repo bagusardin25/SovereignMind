@@ -4,6 +4,7 @@ pragma solidity ^0.8.28;
 import "./interfaces/ISomniaAgentRunner.sol";
 import "./AgentRegistry.sol";
 import "./TreasuryVault.sol";
+import "./PriceOracle.sol";
 
 /**
  * @title CFOAgent
@@ -46,6 +47,9 @@ contract CFOAgent is IAgentCallback {
     uint256 public jsonApiAgentId;
     uint256 public llmAgentId;
     address public owner;
+
+    /// @notice On-chain price oracle (set post-deployment)
+    PriceOracle public oracle;
 
     // Request tracking
     mapping(uint256 => RequestType) public pendingRequests;
@@ -248,6 +252,11 @@ contract CFOAgent is IAgentCallback {
         delete requestSymbols[requestId];
 
         emit PriceFetched(symbol, price, block.timestamp);
+
+        // Push price to the on-chain oracle for the synthetic portfolio system
+        if (address(oracle) != address(0)) {
+            try oracle.updatePrice(symbol, price) {} catch {}
+        }
     }
 
     function _handleRiskResponse(bytes memory result) internal {
@@ -283,6 +292,14 @@ contract CFOAgent is IAgentCallback {
     // ═══════════════════════════════════════════════════════════
     //                   ADMIN FUNCTIONS
     // ═══════════════════════════════════════════════════════════
+
+    /**
+     * @notice Set the on-chain price oracle address
+     * @param _oracle Address of the deployed PriceOracle
+     */
+    function setOracle(address _oracle) external onlyOwner {
+        oracle = PriceOracle(_oracle);
+    }
 
     /**
      * @notice Update the risk threshold
