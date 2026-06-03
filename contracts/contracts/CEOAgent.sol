@@ -256,15 +256,15 @@ contract CEOAgent is IAgentCallback {
 
     function handleResponse(
         uint256 requestId,
-        AgentResponse[] calldata responses,
+        Response[] calldata responses,
         ResponseStatus status,
-        AgentRequest calldata /* details */
+        Request calldata /* details */
     ) external override onlyAgentRunner {
         if (!pendingRequests[requestId]) revert UnknownRequest(requestId);
         delete pendingRequests[requestId];
         delete requestTimestamps[requestId];
 
-        if (status != ResponseStatus.SUCCESS || responses.length == 0) {
+        if (status != ResponseStatus.Success || responses.length == 0) {
             // Decision failed — record and reset
             currentCycle.phase = CyclePhase.IDLE;
             currentCycle.completedAt = block.timestamp;
@@ -505,16 +505,17 @@ contract CEOAgent is IAgentCallback {
 
     function _calculateDeposit(uint256 agentId) internal view returns (uint256) {
         uint256 baseDeposit = agentRunner.getRequestDeposit();
-        // Try full formula: baseDeposit + agentPrice × subcommitteeSize
-        try agentRunner.getAgentPrice(agentId) returns (uint256 agentPrice) {
-            try agentRunner.getSubcommitteeSize() returns (uint256 subcommitteeSize) {
-                return baseDeposit + (agentPrice * subcommitteeSize);
-            } catch {
-                return baseDeposit;
-            }
-        } catch {
-            return baseDeposit;
+        uint256 perAgentCost;
+        if (agentId == 13174292974160097713) {
+            perAgentCost = 30000000000000000;  // 0.03 STT (JSON API)
+        } else if (agentId == 12847293847561029384) {
+            perAgentCost = 70000000000000000;  // 0.07 STT (LLM Inference)
+        } else if (agentId == 12875401142070969085) {
+            perAgentCost = 100000000000000000; // 0.10 STT (Parse Website)
+        } else {
+            perAgentCost = 100000000000000000; // default: highest cost
         }
+        return baseDeposit + (perAgentCost * 3); // subcommittee size = 3
     }
 
     function _buildSentimentSummary() internal view returns (string memory) {

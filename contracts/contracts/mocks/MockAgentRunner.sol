@@ -6,12 +6,14 @@ import "../interfaces/ISomniaAgentRunner.sol";
 /**
  * @title MockAgentRunner
  * @notice Mock implementation of Somnia Agent Runner for testing
- * @dev Simulates the Agent Runner to enable end-to-end testing of agent contracts
+ * @dev Simulates the Agent Runner to enable end-to-end testing of agent contracts.
+ *      Uses the exact same types (Response, Request, ResponseStatus) as the real
+ *      Somnia platform so callback selectors match.
  */
 contract MockAgentRunner is ISomniaAgentRunner {
     uint256 public nextRequestId = 1;
     uint256 public requestDeposit = 0.01 ether;
-    uint256 public agentPrice = 0.001 ether;
+    uint256 public agentPrice = 0.10 ether;
     uint256 public subcommitteeSize = 3;
 
     struct MockRequest {
@@ -67,21 +69,37 @@ contract MockAgentRunner is ISomniaAgentRunner {
     ) external {
         MockRequest memory req = requests[requestId];
 
-        AgentResponse[] memory responses = new AgentResponse[](1);
-        responses[0] = AgentResponse({
-            requestId: requestId,
-            status: ResponseStatus.SUCCESS,
+        Response[] memory responses = new Response[](1);
+        responses[0] = Response({
+            validator: address(this),
             result: result,
-            errorMessage: ""
+            status: ResponseStatus.Success,
+            receipt: 0,
+            timestamp: block.timestamp,
+            executionCost: 0
         });
 
-        AgentRequest memory details = AgentRequest({
-            requestId: requestId,
+        // Build a minimal Request struct for the callback
+        address[] memory subcommittee = new address[](1);
+        subcommittee[0] = address(this);
+        Response[] memory emptyResponses = new Response[](0);
+
+        Request memory details = Request({
+            id: requestId,
             requester: req.callbackContract,
-            agentId: req.agentId,
-            payload: req.payload,
-            deposit: req.deposit,
-            timestamp: block.timestamp
+            callbackAddress: req.callbackContract,
+            callbackSelector: req.callbackSelector,
+            subcommittee: subcommittee,
+            responses: emptyResponses,
+            responseCount: 1,
+            failureCount: 0,
+            threshold: 1,
+            createdAt: block.timestamp,
+            deadline: block.timestamp + 300,
+            status: ResponseStatus.Success,
+            consensusType: ConsensusType.Majority,
+            remainingBudget: req.deposit,
+            perAgentBudget: req.deposit / 3
         });
 
         (bool success, ) = req.callbackContract.call(
@@ -89,7 +107,7 @@ contract MockAgentRunner is ISomniaAgentRunner {
                 req.callbackSelector,
                 requestId,
                 responses,
-                ResponseStatus.SUCCESS,
+                ResponseStatus.Success,
                 details
             )
         );
@@ -99,29 +117,43 @@ contract MockAgentRunner is ISomniaAgentRunner {
     /**
      * @notice Test helper: simulate a failed response callback
      * @param requestId The request ID to simulate a failure for
-     * @param errorMsg The error message to include
      */
     function simulateFailedResponse(
         uint256 requestId,
-        string calldata errorMsg
+        string calldata /* errorMsg */
     ) external {
         MockRequest memory req = requests[requestId];
 
-        AgentResponse[] memory responses = new AgentResponse[](1);
-        responses[0] = AgentResponse({
-            requestId: requestId,
-            status: ResponseStatus.FAILED,
+        Response[] memory responses = new Response[](1);
+        responses[0] = Response({
+            validator: address(this),
             result: "",
-            errorMessage: errorMsg
+            status: ResponseStatus.Failed,
+            receipt: 0,
+            timestamp: block.timestamp,
+            executionCost: 0
         });
 
-        AgentRequest memory details = AgentRequest({
-            requestId: requestId,
+        address[] memory subcommittee = new address[](1);
+        subcommittee[0] = address(this);
+        Response[] memory emptyResponses = new Response[](0);
+
+        Request memory details = Request({
+            id: requestId,
             requester: req.callbackContract,
-            agentId: req.agentId,
-            payload: req.payload,
-            deposit: req.deposit,
-            timestamp: block.timestamp
+            callbackAddress: req.callbackContract,
+            callbackSelector: req.callbackSelector,
+            subcommittee: subcommittee,
+            responses: emptyResponses,
+            responseCount: 0,
+            failureCount: 1,
+            threshold: 1,
+            createdAt: block.timestamp,
+            deadline: block.timestamp + 300,
+            status: ResponseStatus.Failed,
+            consensusType: ConsensusType.Majority,
+            remainingBudget: req.deposit,
+            perAgentBudget: req.deposit / 3
         });
 
         (bool success, ) = req.callbackContract.call(
@@ -129,7 +161,7 @@ contract MockAgentRunner is ISomniaAgentRunner {
                 req.callbackSelector,
                 requestId,
                 responses,
-                ResponseStatus.FAILED,
+                ResponseStatus.Failed,
                 details
             )
         );

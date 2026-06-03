@@ -66,7 +66,19 @@ export class HealthServer {
   private setupRoutes(): void {
     // Health check
     this.app.get('/health', async (_req, res) => {
-      const status = this.orchestrator.isRunning ? 'healthy' : 'degraded';
+      const lastCycle = this.orchestrator.lastCycle;
+      let status: 'healthy' | 'degraded' | 'error';
+      if (this.orchestrator.isRunning) {
+        status = 'healthy'; // cycle in progress
+      } else if (!lastCycle) {
+        status = this.scheduler.isActive ? 'healthy' : 'degraded'; // no cycle yet
+      } else if (lastCycle.success) {
+        status = 'healthy';
+      } else if ((lastCycle.degradedStepCount ?? 0) > 0) {
+        status = 'degraded'; // steps ran but Agent Runner didn't respond
+      } else {
+        status = 'error';
+      }
       const response: HealthResponse = {
         status,
         uptime: Date.now() - this.startedAt,

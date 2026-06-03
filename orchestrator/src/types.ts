@@ -20,11 +20,14 @@ export interface CycleResult {
   completedAt: Date;
   steps: StepResult[];
   error?: string;
+  degradedStepCount?: number;
 }
 
 export interface StepResult {
   step: CycleStep;
   success: boolean;
+  /** True if the transaction was sent but the expected event never arrived (Agent Runner timeout) */
+  degraded?: boolean;
   txHash?: string;
   duration: number; // ms
   data?: Record<string, unknown>;

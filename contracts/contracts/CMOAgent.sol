@@ -139,10 +139,17 @@ contract CMOAgent is IAgentCallback {
             if (!whitelistedDomains[domain]) revert DomainNotWhitelisted(domain);
         }
 
+        string[] memory options = new string[](0);
         bytes memory payload = abi.encodeWithSignature(
-            "parseWebsite(string,string)",
-            url,
-            "Extract all cryptocurrency market sentiment, price predictions, and trading signals. Include specific asset mentions, price targets, and overall market outlook."
+            "ExtractString(string,string,string[],string,string,bool,uint8,uint8)",
+            "market_sentiment",   // key
+            "Extract cryptocurrency market sentiment, price predictions, and trading signals from the page", // description
+            options,              // options (empty = free-form extraction)
+            "Extract all cryptocurrency market sentiment, price predictions, and trading signals. Include specific asset mentions, price targets, and overall market outlook.", // prompt
+            url,                  // url
+            false,                // resolveUrl
+            uint8(1),             // numPages
+            uint8(50)             // confidenceThreshold
         );
 
         uint256 requiredDeposit = _calculateDeposit(parseWebAgentId);
@@ -176,16 +183,16 @@ contract CMOAgent is IAgentCallback {
 
     function handleResponse(
         uint256 requestId,
-        AgentResponse[] calldata responses,
+        Response[] calldata responses,
         ResponseStatus status,
-        AgentRequest calldata /* details */
+        Request calldata /* details */
     ) external override onlyAgentRunner {
         RequestType reqType = pendingRequests[requestId];
         if (reqType == RequestType.NONE) revert UnknownRequest(requestId);
 
         delete pendingRequests[requestId];
 
-        if (status != ResponseStatus.SUCCESS || responses.length == 0) {
+        if (status != ResponseStatus.Success || responses.length == 0) {
             registry.recordDecision(false);
             return;
         }
@@ -442,16 +449,17 @@ contract CMOAgent is IAgentCallback {
 
     function _calculateDeposit(uint256 agentId) internal view returns (uint256) {
         uint256 baseDeposit = agentRunner.getRequestDeposit();
-        // Try full formula: baseDeposit + agentPrice × subcommitteeSize
-        try agentRunner.getAgentPrice(agentId) returns (uint256 agentPrice) {
-            try agentRunner.getSubcommitteeSize() returns (uint256 subcommitteeSize) {
-                return baseDeposit + (agentPrice * subcommitteeSize);
-            } catch {
-                return baseDeposit;
-            }
-        } catch {
-            return baseDeposit;
+        uint256 perAgentCost;
+        if (agentId == 13174292974160097713) {
+            perAgentCost = 30000000000000000;  // 0.03 STT (JSON API)
+        } else if (agentId == 12847293847561029384) {
+            perAgentCost = 70000000000000000;  // 0.07 STT (LLM Inference)
+        } else if (agentId == 12875401142070969085) {
+            perAgentCost = 100000000000000000; // 0.10 STT (Parse Website)
+        } else {
+            perAgentCost = 100000000000000000; // default: highest cost
         }
+        return baseDeposit + (perAgentCost * 3); // subcommittee size = 3
     }
 
     function _parseSentiment(string memory s) internal pure returns (Sentiment) {

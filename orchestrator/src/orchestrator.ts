@@ -52,6 +52,21 @@ export class Orchestrator {
   get uptime(): number { return Date.now() - this._startedAt; }
 
   /**
+   * Wait for an on-chain event with timeout.
+   * Returns true if the event was received, false on timeout.
+   * Does NOT throw — lets the caller decide how to handle.
+   */
+  private async waitForEvent(eventName: string, timeoutMs?: number): Promise<boolean> {
+    try {
+      await this.events.waitFor(eventName, timeoutMs);
+      return true;
+    } catch {
+      logger.warn(`⚠️ Timeout waiting for ${eventName}`);
+      return false;
+    }
+  }
+
+  /**
    * Run one complete decision cycle.
    */
   async runCycle(): Promise<CycleResult> {
@@ -88,14 +103,9 @@ export class Orchestrator {
         await this.executeStep('FETCHING_PRICES', steps, async () => {
           const txHash = await this.cfo.fetchPrice(priceConfig);
 
-          // Wait for PriceFetched event
-          try {
-            await this.events.waitFor('PriceFetched');
-          } catch {
-            logger.warn(`⚠️ Timeout waiting for PriceFetched (${priceConfig.symbol}), continuing...`);
-          }
+          const eventReceived = await this.waitForEvent('PriceFetched');
 
-          return { txHash, symbol: priceConfig.symbol };
+          return { txHash, symbol: priceConfig.symbol, eventReceived };
         });
       }
 
@@ -103,42 +113,29 @@ export class Orchestrator {
       await this.executeStep('ANALYZING_RISK', steps, async () => {
         const txHash = await this.cfo.analyzeRisk();
 
-        try {
-          await this.events.waitFor('RiskAnalyzed');
-        } catch {
-          logger.warn('⚠️ Timeout waiting for RiskAnalyzed, continuing...');
-        }
+        const eventReceived = await this.waitForEvent('RiskAnalyzed');
 
         const riskScore = await this.cfo.getCurrentRiskScore();
-        return { txHash, riskScore };
+        return { txHash, riskScore, eventReceived };
       });
 
       // ── Step 4: Scan market ───────────────────────────
       await this.executeStep('SCANNING_MARKET', steps, async () => {
         const txHash = await this.cmo.scanMarket();
 
-        // Wait for the chained SentimentAnalyzed event
-        try {
-          await this.events.waitFor('SentimentAnalyzed', config.eventTimeoutSeconds * 1000 * 2); // 2× timeout for chained ops
-        } catch {
-          logger.warn('⚠️ Timeout waiting for SentimentAnalyzed, continuing...');
-        }
+        const eventReceived = await this.waitForEvent('SentimentAnalyzed', config.eventTimeoutSeconds * 1000 * 2);
 
-        return { txHash };
+        return { txHash, eventReceived };
       });
 
       // ── Step 5: CEO Decision ──────────────────────────
       await this.executeStep('CEO_DECISION', steps, async () => {
         const txHash = await this.ceo.initiateDecisionCycle();
 
-        try {
-          await this.events.waitFor('CycleCompleted', config.eventTimeoutSeconds * 1000 * 2); // 2× timeout for full cycle
-        } catch {
-          logger.warn('⚠️ Timeout waiting for CycleCompleted, continuing...');
-        }
+        const eventReceived = await this.waitForEvent('CycleCompleted', config.eventTimeoutSeconds * 1000 * 2);
 
         const metrics = await this.ceo.getPerformanceMetrics();
-        return { txHash, ...metrics };
+        return { txHash, ...metrics, eventReceived };
       });
 
       // ── Step 6: Portfolio Rebalance ──────────────────────
@@ -156,19 +153,39 @@ export class Orchestrator {
       const completedAt = new Date();
       const duration = completedAt.getTime() - startedAt.getTime();
 
+      const succeededSteps = steps.filter(s => s.success).length;
+      const failedSteps = steps.filter(s => !s.success).length;
+      const degradedSteps = steps.filter(s => s.degraded).length;
+
+      // A cycle is only truly successful if no steps failed AND
+      // the CEO_DECISION step actually produced an on-chain decision (not degraded)
+      const ceoStep = steps.find(s => s.step === 'CEO_DECISION');
+      const ceoDecisionMade = ceoStep?.success === true && ceoStep?.degraded !== true;
+
       const result: CycleResult = {
-        success: true,
+        success: failedSteps === 0 && ceoDecisionMade,
         cycleId,
         startedAt,
         completedAt,
         steps,
+        degradedStepCount: degradedSteps,
       };
 
       this._lastCycle = result;
 
+      // Auto-reset CEO if it's stuck (degraded cycle)
+      if (!ceoDecisionMade && (degradedSteps > 0 || failedSteps > 0)) {
+        logger.warn('⚠️ Cycle did not produce an on-chain decision — resetting CEO...');
+        await this.recoverFromError();
+      }
+
+      const statusEmoji = result.success ? '✅' : degradedSteps > 0 ? '⚠️ DEGRADED' : '❌';
       logger.info(`\n${'═'.repeat(50)}`);
-      logger.info(`  ✅ Cycle #${cycleId} Completed in ${(duration / 1000).toFixed(1)}s`);
-      logger.info(`  Steps: ${steps.filter(s => s.success).length}/${steps.length} succeeded`);
+      logger.info(`  ${statusEmoji} Cycle #${cycleId} ${result.success ? 'Completed' : 'Finished with issues'} in ${(duration / 1000).toFixed(1)}s`);
+      logger.info(`  Steps: ${succeededSteps} ok, ${degradedSteps} degraded (event timeout), ${failedSteps} failed`);
+      if (!ceoDecisionMade) {
+        logger.warn(`  ⚠️  Somnia Agent Runner did not respond — no on-chain decision recorded`);
+      }
       logger.info(`${'═'.repeat(50)}\n`);
 
       return result;
@@ -198,6 +215,7 @@ export class Orchestrator {
 
   /**
    * Execute a single step with timing and error capture.
+   * Marks step as degraded if data contains eventReceived: false.
    */
   private async executeStep(
     step: CycleStep,
@@ -209,11 +227,15 @@ export class Orchestrator {
 
     try {
       const data = await fn();
+      const record = (data as Record<string, unknown>) || undefined;
+      const eventReceived = record?.eventReceived;
+
       steps.push({
         step,
         success: true,
+        degraded: eventReceived === false,
         duration: Date.now() - start,
-        data: (data as Record<string, unknown>) || undefined,
+        data: record,
       });
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
@@ -224,11 +246,6 @@ export class Orchestrator {
         duration: Date.now() - start,
         error: errorMsg,
       });
-      // Rethrow for critical steps to abort the cycle
-      if (step === 'CEO_DECISION' || step === 'ANALYZING_RISK') {
-        throw error;
-      }
-      // Non-critical steps: continue to next step
     }
   }
 

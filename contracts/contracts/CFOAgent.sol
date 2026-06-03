@@ -209,19 +209,18 @@ contract CFOAgent is IAgentCallback {
      */
     function handleResponse(
         uint256 requestId,
-        AgentResponse[] calldata responses,
+        Response[] calldata responses,
         ResponseStatus status,
-        AgentRequest calldata /* details */
+        Request calldata /* details */
     ) external override onlyAgentRunner {
         RequestType reqType = pendingRequests[requestId];
         if (reqType == RequestType.NONE) revert UnknownRequest(requestId);
 
         delete pendingRequests[requestId];
 
-        if (status != ResponseStatus.SUCCESS || responses.length == 0) {
+        if (status != ResponseStatus.Success || responses.length == 0) {
             registry.recordDecision(false);
-            string memory errMsg = responses.length > 0 ? responses[0].errorMessage : "No response";
-            emit RiskAnalyzed(0, string(abi.encodePacked("FAILED: ", errMsg)), block.timestamp);
+            emit RiskAnalyzed(0, "FAILED: Agent Runner returned non-success status", block.timestamp);
             return;
         }
 
@@ -350,16 +349,17 @@ contract CFOAgent is IAgentCallback {
 
     function _calculateDeposit(uint256 agentId) internal view returns (uint256) {
         uint256 baseDeposit = agentRunner.getRequestDeposit();
-        // Try full formula: baseDeposit + agentPrice × subcommitteeSize
-        try agentRunner.getAgentPrice(agentId) returns (uint256 agentPrice) {
-            try agentRunner.getSubcommitteeSize() returns (uint256 subcommitteeSize) {
-                return baseDeposit + (agentPrice * subcommitteeSize);
-            } catch {
-                return baseDeposit;
-            }
-        } catch {
-            return baseDeposit;
+        uint256 perAgentCost;
+        if (agentId == 13174292974160097713) {
+            perAgentCost = 30000000000000000;  // 0.03 STT (JSON API)
+        } else if (agentId == 12847293847561029384) {
+            perAgentCost = 70000000000000000;  // 0.07 STT (LLM Inference)
+        } else if (agentId == 12875401142070969085) {
+            perAgentCost = 100000000000000000; // 0.10 STT (Parse Website)
+        } else {
+            perAgentCost = 100000000000000000; // default: highest cost
         }
+        return baseDeposit + (perAgentCost * 3); // subcommittee size = 3
     }
 
     function _buildPriceReport() internal view returns (string memory) {

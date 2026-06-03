@@ -121,12 +121,27 @@ export function createContracts(wallet: ethers.Wallet): Contracts {
 // Deposit Calculation Helper
 // ---------------------------------------------------------------------------
 
+// Per-agent execution costs from official Somnia docs (in wei)
+// These are the PER_AGENT_EXECUTION_COST values; multiplied by subcommittee
+// size to form the "execution reward" on top of the platform reserve.
+const PER_AGENT_COSTS: Record<string, bigint> = {
+  '13174292974160097713': ethers.parseEther('0.03'), // JSON API Request Agent
+  '12847293847561029384': ethers.parseEther('0.07'), // LLM Inference Agent
+  '12875401142070969085': ethers.parseEther('0.10'), // LLM Parse Website Agent
+};
+const SUBCOMMITTEE_SIZE = 3n;
+
 /**
- * Calculate the total deposit required to invoke an on-chain agent request.
+ * Calculate the total deposit required for an on-chain agent request.
  *
- * Formula:  `baseFee + (agentPrice × subcommitteeSize)`
+ * Formula (from official docs):
+ *   `deposit = reserve + (perAgentCost × subcommitteeSize)`
  *
- * @param contracts    - The contracts bundle.
+ * The reserve covers gas refunds / callback gas / keeper payments.
+ * The reward incentivises validators to actually execute the request.
+ * Without the reward, runners may skip the request.
+ *
+ * @param contracts     - The contracts bundle.
  * @param agentIdGetter - An async getter that returns the target agent's ID
  *                        (e.g. `() => cfo.jsonApiAgentId()`).
  */
@@ -135,16 +150,21 @@ export async function calculateDeposit(
   agentIdGetter: () => Promise<bigint>,
 ): Promise<bigint> {
   try {
-    // In Somnia Testnet, getAgentPrice and getSubcommitteeSize are not implemented and revert.
-    // The only required fee is returned by getRequestDeposit().
-    const deposit: bigint = await contracts.agentRunner.getRequestDeposit();
-    logger.debug(`Deposit calculation: getRequestDeposit=${ethers.formatEther(deposit)} STT`);
-    return deposit;
+    const reserve: bigint = await contracts.agentRunner.getRequestDeposit();
+    const agentId = await agentIdGetter();
+    const perAgentCost = PER_AGENT_COSTS[agentId.toString()] ?? ethers.parseEther('0.10');
+
+    const totalDeposit = reserve + perAgentCost * SUBCOMMITTEE_SIZE;
+
+    logger.debug(
+      `Deposit: reserve=${ethers.formatEther(reserve)} + reward=${ethers.formatEther(perAgentCost * SUBCOMMITTEE_SIZE)} = ${ethers.formatEther(totalDeposit)} STT (agent ${agentId})`,
+    );
+    return totalDeposit;
   } catch (error) {
-    // Fallback if RPC call itself fails
-    const fallback = ethers.parseEther('0.05'); // 0.05 STT (getRequestDeposit returns 0.03)
+    // Fallback: 0.33 STT (highest deposit — Parse Website cost, safe default)
+    const fallback = ethers.parseEther('0.33');
     logger.warn(
-      `⚠️ Failed to get request deposit from contract, using fallback: ${ethers.formatEther(fallback)} STT`,
+      `⚠️ Failed to calculate deposit from contract, using fallback: ${ethers.formatEther(fallback)} STT`,
     );
     return fallback;
   }

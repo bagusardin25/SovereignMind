@@ -188,6 +188,7 @@ export function useVaultDeposit() {
       abi: VAULT_SHARES_ABI,
       functionName: 'deposit',
       value: amount,
+      gas: BigInt(500_000),
     });
   };
 
@@ -205,6 +206,7 @@ export function useVaultWithdraw() {
       abi: VAULT_SHARES_ABI,
       functionName: 'withdraw',
       args: [shares],
+      gas: BigInt(800_000),
     });
   };
 

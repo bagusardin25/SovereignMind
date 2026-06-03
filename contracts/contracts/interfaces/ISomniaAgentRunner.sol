@@ -4,35 +4,54 @@ pragma solidity ^0.8.28;
 /**
  * @title ISomniaAgentRunner
  * @notice Interface for Somnia's native Agent Runner platform
- * @dev Smart contracts use this interface to interact with Somnia's three base agents:
- *      - JSON API Request Agent: Fetches data from HTTP endpoints
- *      - LLM Inference Agent: Runs deterministic AI inference (Qwen3-30B)
- *      - LLM Parse Website Agent: Scrapes and extracts structured data from websites
+ * @dev Types match the canonical Somnia platform contracts exactly.
+ *      The function selector for handleResponse depends on these struct
+ *      layouts — any mismatch prevents the callback from firing.
+ *
+ *      Official docs shared types (all 3 agents use the same):
+ *        - JSON API Request Agent  (ID: 13174292974160097713)
+ *        - LLM Inference Agent     (ID: 12847293847561029384)
+ *        - LLM Parse Website Agent (ID: 12875401142070969085)
  */
 
-/// @notice Status of an agent response
+enum ConsensusType { Majority, Threshold }
+
+/// @notice Status of an agent request — values MUST match the platform
 enum ResponseStatus {
-    PENDING,
-    SUCCESS,
-    FAILED
+    None,       // 0 - Default zero value (uninitialized storage)
+    Pending,    // 1 - Awaiting responses
+    Success,    // 2 - Consensus reached normally
+    Failed,     // 3 - Validators reported failure
+    TimedOut    // 4 - Request timed out
 }
 
-/// @notice Represents a single response from the agent runner
-struct AgentResponse {
-    uint256 requestId;
-    ResponseStatus status;
+/// @notice A single validator response — field order MUST match the platform
+struct Response {
+    address validator;
     bytes result;
-    string errorMessage;
+    ResponseStatus status;
+    uint256 receipt;
+    uint256 timestamp;
+    uint256 executionCost;
 }
 
-/// @notice Represents metadata about the original request
-struct AgentRequest {
-    uint256 requestId;
+/// @notice Full request metadata — field order MUST match the platform
+struct Request {
+    uint256 id;
     address requester;
-    uint256 agentId;
-    bytes payload;
-    uint256 deposit;
-    uint256 timestamp;
+    address callbackAddress;
+    bytes4 callbackSelector;
+    address[] subcommittee;
+    Response[] responses;
+    uint256 responseCount;
+    uint256 failureCount;
+    uint256 threshold;
+    uint256 createdAt;
+    uint256 deadline;
+    ResponseStatus status;
+    ConsensusType consensusType;
+    uint256 remainingBudget;
+    uint256 perAgentBudget;
 }
 
 interface ISomniaAgentRunner {
@@ -52,8 +71,8 @@ interface ISomniaAgentRunner {
     ) external payable returns (uint256 requestId);
 
     /**
-     * @notice Returns the minimum deposit required for a request
-     * @return Minimum deposit in wei (covers gas refunds, callback gas, keeper payments)
+     * @notice Returns the minimum deposit required for a request (reserve floor)
+     * @return Minimum deposit in wei
      */
     function getRequestDeposit() external view returns (uint256);
 
@@ -65,7 +84,7 @@ interface ISomniaAgentRunner {
     function getAgentPrice(uint256 agentId) external view returns (uint256);
 
     /**
-     * @notice Returns the current subcommittee size (number of validators executing the request)
+     * @notice Returns the current subcommittee size
      * @return Number of validators in the subcommittee
      */
     function getSubcommitteeSize() external view returns (uint256);
@@ -73,20 +92,22 @@ interface ISomniaAgentRunner {
 
 /**
  * @title IAgentCallback
- * @notice Interface that contracts must implement to receive agent responses
+ * @notice Interface that contracts must implement to receive agent responses.
+ *         The function signature must produce the same selector as the
+ *         platform's IAgentRequesterHandler.handleResponse.
  */
 interface IAgentCallback {
     /**
-     * @notice Called by the Agent Runner when a response is ready
+     * @notice Called by the Agent Runner when consensus is reached
      * @param requestId The ID of the original request
-     * @param responses Array of responses from validator subcommittee
+     * @param responses Array of validator responses
      * @param status Overall status of the request
      * @param details Original request metadata
      */
     function handleResponse(
         uint256 requestId,
-        AgentResponse[] calldata responses,
+        Response[] calldata responses,
         ResponseStatus status,
-        AgentRequest calldata details
+        Request calldata details
     ) external;
 }

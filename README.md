@@ -217,17 +217,17 @@ Add Somnia Testnet to your wallet:
 
 | Contract | Address | Status |
 |----------|---------|--------|
-| AgentRegistry | `0x9C58a49649De1c10785577E6EFc18b425f870191` | ✅ Deployed (v3) |
-| TreasuryVault | `0x1F0f008feFA0c1a69909f7137462ab9A9689DC18` | ✅ Deployed (v3) |
-| CEOAgent | `0xaB246FD3a4f4aa5aac953913DFAB606f3bE754F9` | ✅ Deployed (v3) |
-| CFOAgent | `0xD31170Cd86A1441476DcCcdebdA0D3215c86e0Bb` | ✅ Deployed (v3) |
-| CMOAgent | `0xA925a43dAb833a6b1B38B9fbF0254f3E2bF1EEC5` | ✅ Deployed (v3) |
-| PriceOracle | `0xbf5321f2661f0A943c6856b594D6E44De0230951` | ✅ Deployed (v4) |
-| SyntheticSwapRouter | `0xCf62407713169aBb866A2074BfA9C4a19Abf1853` | ✅ Deployed (v4) |
-| VaultShares | `0x5c5a8dE6D026eB336a68D9DE7971Cb91cf441111` | ✅ Deployed (v4) |
-| sBTC | `0xF874216b4bAf6c1D182DdBA786c4Df4Bf2Ef6fc6` | ✅ Deployed (v4) |
-| sETH | `0x94ad5B669387A1d0c0801f62f61e4D6e6ef4268e` | ✅ Deployed (v4) |
-| sSOL | `0x309A23ff4b4BEC0B0dA359Ba009a9E411A29250a` | ✅ Deployed (v4) |
+| AgentRegistry | `0xc7aaa0fbef5660E2AF3592a4D80F278f48e989a2` | ✅ Deployed (v3) |
+| TreasuryVault | `0x67f363ef90FC2f1C4AFD530f18C706d9A0012497` | ✅ Deployed (v3) |
+| CEOAgent | `0x22CbB6f3ef01478b68846291390D91C2eEE92e0B` | ✅ Deployed (v3) |
+| CFOAgent | `0xCa324fC74A3D8C52D9128BC158ef62a6004fa7De` | ✅ Deployed (v3) |
+| CMOAgent | `0x80Ac28fc43899dB56a5db28b3767fd5Bf61BdECB` | ✅ Deployed (v3) |
+| PriceOracle | `0xc01BDABB279dCBf89F093b8efB4294E10763B119` | ✅ Deployed (v4) |
+| SyntheticSwapRouter | `0x4c92c0EdF00a95702a1268DC01196b7f7144405d` | ✅ Deployed (v4) |
+| VaultShares | `0x2029d8E6333A43E17d400b4f8EDF4694Af79aEe6` | ✅ Deployed (v4) |
+| sBTC | `0xcb79A18D66343072D312D2416a3d4bcd4C86d19a` | ✅ Deployed (v4) |
+| sETH | `0x6Fb11bA7c20e10F8db34a99DCbe29473bFDac155` | ✅ Deployed (v4) |
+| sSOL | `0x24aBB4203C69695c59bf8BD4FAe26C18f72eA126` | ✅ Deployed (v4) |
 | AgentRunner | `0x037Bb9C718F3f7fe5eCBDB0b600D607b52706776` | 🔗 Somnia Platform |
 
 ---

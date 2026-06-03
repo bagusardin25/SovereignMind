@@ -3,34 +3,16 @@
 // ============================================================
 // LiveAgentConsole — Real-time terminal for agent logs
 // ============================================================
-// Pulls REAL on-chain activity from CEOAgent + TreasuryVault
-// decisions via useDecisionData. No mock data.
+// Reads REAL on-chain events (PriceFetched, RiskAnalyzed,
+// WebScraped, SentimentAnalyzed, DecisionMade) from CFO, CMO, CEO.
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount } from 'wagmi';
 import { Terminal, Play, Square, RefreshCw } from 'lucide-react';
 import { AGENT_COLORS, formatRelativeTime } from '@/lib/constants';
 import GlassCard from '@/components/ui/GlassCard';
-import { useDecisionData } from '@/hooks/useDecisionData';
-import type { ActivityEvent, AgentRole } from '@/lib/types';
-
-// Map a Decision into the ActivityEvent shape used by the console
-function decisionToEvent(d: {
-  id: string;
-  agentRole: AgentRole;
-  action: string;
-  rationale: string;
-  timestamp: number;
-}): ActivityEvent {
-  return {
-    id: d.id,
-    agentRole: d.agentRole,
-    action: d.action.toUpperCase(),
-    description: d.rationale || `${d.action} on-chain`,
-    timestamp: d.timestamp,
-  };
-}
+import { useAgentEvents } from '@/hooks/useAgentEvents';
 
 export default function LiveAgentConsole() {
   const [isLive, setIsLive] = useState(true);
@@ -38,8 +20,8 @@ export default function LiveAgentConsole() {
   const consoleContainerRef = useRef<HTMLDivElement>(null);
   const { isConnected } = useAccount();
 
-  // Real on-chain decisions (CEO + TreasuryVault)
-  const { decisions, isLoading } = useDecisionData(20);
+  // Real on-chain events from CFO, CMO, CEO contracts
+  const { events: logs, isLoading } = useAgentEvents();
 
   // Re-render relative time every 30s
   useEffect(() => {
@@ -47,31 +29,24 @@ export default function LiveAgentConsole() {
     return () => window.clearInterval(id);
   }, []);
 
-  // Polling refresh every 15s for new on-chain activity
+  // Force re-render when isLive toggles (triggers refetch via refreshTick)
   useEffect(() => {
     if (!isLive) return;
     const id = window.setInterval(() => {
-      // wagmi query key includes block number; refetch by triggering a tick
       setRefreshTick((t) => t + 1);
     }, 15_000);
     return () => window.clearInterval(id);
   }, [isLive]);
 
-  // Sort decisions newest-first and take last 50
-  const logs = useMemo<ActivityEvent[]>(() => {
-    void refreshTick; // include in deps to force re-compute on tick
-    return [...decisions]
-      .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, 50)
-      .map(decisionToEvent);
-  }, [decisions, refreshTick]);
-
-  // Auto-scroll inside container only
+  // Auto-scroll inside container
   useEffect(() => {
     if (consoleContainerRef.current) {
       consoleContainerRef.current.scrollTop = consoleContainerRef.current.scrollHeight;
     }
   }, [logs]);
+
+  // Suppress unused var warning
+  void refreshTick;
 
   return (
     <GlassCard className="overflow-hidden flex flex-col" padding="none">
