@@ -9,7 +9,7 @@
 <h3 align="center">Autonomous On-Chain Agentic Venture Guild</h3>
 
 <p align="center">
-  <em>An on-chain verified autonomous executive suite powered by Somnia Agentic L1 native primitives — where AI agents make transparent, consensus-verified treasury decisions. A minimal off-chain orchestrator handles cycle scheduling and transaction signing, while all agent intelligence runs on-chain via Somnia's native Agent Runner.</em>
+  <em>An autonomous executive suite where AI agents make transparent, blockchain-anchored treasury decisions. Built on Somnia L1 with contracts deployed natively, agent intelligence runs through Somnia's Agent Runner, and a minimal off-chain orchestrator handles cycle scheduling and transaction signing.</em>
 </p>
 
 <p align="center">
@@ -29,7 +29,7 @@
 
 ## 📖 Overview
 
-**SovereignMind** deploys a collaborative network of autonomous AI agents as a "virtual executive suite" on-chain, built entirely on **Somnia Agentic L1 native primitives**. Three specialized agents — **CEO**, **CFO**, and **CMO** — are implemented as Solidity smart contracts that leverage Somnia's three native base agents:
+**SovereignMind** deploys a collaborative network of autonomous AI agents as a "virtual executive suite" on-chain, with contracts deployed natively on **Somnia L1**. Three specialized agents — **CEO**, **CFO**, and **CMO** — are implemented as Solidity smart contracts that leverage Somnia's three native base agents:
 
 | Agent | Role | Somnia Primitives Used |
 |-------|------|------------------------|
@@ -37,7 +37,7 @@
 | 🟣 **CFO Agent** | Financial analysis, risk scoring & treasury execution | JSON API Request Agent + LLM Inference Agent |
 | 🔷 **CMO Agent** | Market intelligence & sentiment analysis | LLM Parse Website Agent + LLM Inference Agent |
 
-Every decision produces a **public execution receipt** verifiable via Somnia's consensus mechanism — making SovereignMind a fully transparent, on-chain verified autonomous treasury manager.
+Every decision produces a **public execution receipt** verifiable via Somnia's consensus mechanism — making SovereignMind a transparent, blockchain-anchored autonomous treasury manager. Admin authority is gated behind `onlyOwner` and intended for multisig custody.
 
 ---
 
@@ -436,8 +436,31 @@ SovereignMind/
 | Somnia Docs | [docs.somnia.network](https://docs.somnia.network) |
 | Somnia Testnet RPC | `https://dream-rpc.somnia.network` |
 | Somnia Block Explorer | [shannon.somnia.network](https://shannon.somnia.network) |
-| Somnia Receipts API | [receipts.net.somnia.host](https://receipts.net.somnia.host) |
+| Live Metrics Dashboard | [/metrics](https://sovereignmind-app.vercel.app/metrics) |
 | Somnia Agent Dashboard | [agents.somnia.network](https://agents.somnia.network) |
+| Security Review | [SECURITY.md](./SECURITY.md) |
+| Multisig Setup Guide | [MULTISIG.md](./MULTISIG.md) |
+
+---
+
+## 💬 Testimonials
+
+> **Note to contributors:** SovereignMind is in active beta. If you've interacted with the platform and want to share feedback, add a testimonial below using the template at the bottom of this section.
+
+<!-- Add testimonials below this line -->
+
+<!-- ### "Quote here."
+> **Name** — [@handle](https://twitter.com/handle), [role/affiliation]
+> 
+> Optional: detailed feedback here in 2-3 sentences.
+-->
+
+<!-- Testimonial template - copy and fill in:
+### "Your quote here (1-2 sentences)."
+> **Your Name** — [@twitter_handle](https://twitter.com/handle), *Role / Affiliation*
+>
+> Optional: longer context about what you tested, what impressed you, what could improve. Keep it honest and specific.
+-->
 
 ---
 
@@ -456,5 +479,5 @@ This project is built for the Somnia Agentathon 2026 hackathon.
 ---
 
 <p align="center">
-  <strong>SovereignMind</strong> — Autonomous. Transparent. On-Chain.
+  <strong>SovereignMind</strong> — Autonomous. Transparent. Blockchain-Anchored.
 </p>

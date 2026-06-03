@@ -642,4 +642,69 @@ describe("Agent Integration Tests", function () {
       expect(await vault.getBalance()).to.equal(ethers.parseEther("10"));
     });
   });
+
+  describe("CMO URL Whitelist", function () {
+    async function getScanCost(): Promise<bigint> {
+      const deposit = await mockRunner.getRequestDeposit();
+      const agentPrice = await mockRunner.getAgentPrice(LLM_PARSE_WEBSITE_AGENT_ID);
+      const subcommitteeSize = await mockRunner.getSubcommitteeSize();
+      return deposit + agentPrice * subcommitteeSize;
+    }
+
+    it("Should allow scan when whitelist disabled (default)", async function () {
+      const cost = await getScanCost();
+      // Default state: whitelistEnabled is false
+      expect(await cmo.whitelistEnabled()).to.equal(false);
+      // Should not revert
+      await cmo.scanMarket("https://any-domain.example/path", { value: cost });
+    });
+
+    it("Should block non-whitelisted domain when whitelist enabled", async function () {
+      await cmo.setWhitelistEnabled(true);
+      await cmo.addWhitelistedDomain("coingecko.com");
+      const cost = await getScanCost();
+      await expect(
+        cmo.scanMarket("https://attacker.com/prompt-injection", { value: cost })
+      ).to.be.revertedWithCustomError(cmo, "DomainNotWhitelisted");
+    });
+
+    it("Should allow whitelisted domain case-insensitively", async function () {
+      await cmo.setWhitelistEnabled(true);
+      await cmo.addWhitelistedDomain("coingecko.com");
+      const cost = await getScanCost();
+      // Uppercase scheme + host should still pass
+      await cmo.scanMarket("HTTPS://COINGECKO.COM/en/coins/somnia", { value: cost });
+    });
+
+    it("Should reject URLs without a domain", async function () {
+      await cmo.setWhitelistEnabled(true);
+      const cost = await getScanCost();
+      await expect(
+        cmo.scanMarket("", { value: cost })
+      ).to.be.revertedWithCustomError(cmo, "InvalidUrl");
+    });
+
+    it("Should reject empty domain in addWhitelistedDomain", async function () {
+      await expect(
+        cmo.addWhitelistedDomain("")
+      ).to.be.revertedWithCustomError(cmo, "InvalidDomain");
+    });
+
+    it("Should allow toggling whitelist on and off", async function () {
+      await cmo.setWhitelistEnabled(true);
+      expect(await cmo.whitelistEnabled()).to.equal(true);
+      await cmo.setWhitelistEnabled(false);
+      expect(await cmo.whitelistEnabled()).to.equal(false);
+    });
+
+    it("Should track whitelisted domain count", async function () {
+      await cmo.addWhitelistedDomain("coingecko.com");
+      await cmo.addWhitelistedDomain("cointelegraph.com");
+      await cmo.addWhitelistedDomain("coindesk.com");
+      expect(await cmo.getWhitelistedDomainCount()).to.equal(3);
+      const list = await cmo.getWhitelistedDomains();
+      expect(list.length).to.equal(3);
+      expect(list[0]).to.equal("coingecko.com");
+    });
+  });
 });

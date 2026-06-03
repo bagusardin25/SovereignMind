@@ -63,6 +63,12 @@ contract CMOAgent is IAgentCallback {
     uint256 public bearishCount;
     uint256 public neutralCount;
 
+    // Domain whitelist for scanMarket URL inputs
+    // @dev Prevents prompt injection via attacker-controlled URLs
+    mapping(string => bool) public whitelistedDomains;
+    string[] public domainList;
+    bool public whitelistEnabled;
+
     // ═══════════════════════════════════════════════════════════
     //                        EVENTS
     // ═══════════════════════════════════════════════════════════
@@ -70,6 +76,9 @@ contract CMOAgent is IAgentCallback {
     event SentimentAnalyzed(string source, Sentiment sentiment, uint256 confidence, uint256 timestamp);
     event MarketAlert(Sentiment sentiment, uint256 confidence, string recommendation, uint256 timestamp);
     event ScanStarted(uint256 indexed requestId, string source, uint256 timestamp);
+    event DomainWhitelisted(string domain, uint256 timestamp);
+    event DomainRemovedFromWhitelist(string domain, uint256 timestamp);
+    event WhitelistToggled(bool enabled, uint256 timestamp);
 
     // ═══════════════════════════════════════════════════════════
     //                        ERRORS
@@ -78,6 +87,9 @@ contract CMOAgent is IAgentCallback {
     error OnlyOwner();
     error UnknownRequest(uint256 requestId);
     error InsufficientDeposit();
+    error DomainNotWhitelisted(string domain);
+    error InvalidDomain();
+    error InvalidUrl();
 
     // ═══════════════════════════════════════════════════════════
     //                      MODIFIERS
@@ -119,6 +131,13 @@ contract CMOAgent is IAgentCallback {
      * @param url The URL to scrape for market data
      */
     function scanMarket(string calldata url) external payable onlyOwner {
+        // Domain whitelist check (defense-in-depth vs prompt injection)
+        if (whitelistEnabled) {
+            string memory domain = _extractDomain(url);
+            if (bytes(domain).length == 0) revert InvalidUrl();
+            if (!whitelistedDomains[domain]) revert DomainNotWhitelisted(domain);
+        }
+
         bytes memory payload = abi.encodeWithSignature(
             "parseWebsite(string,string)",
             url,
@@ -281,6 +300,51 @@ contract CMOAgent is IAgentCallback {
         llmAgentId = _llmAgentId;
     }
 
+    /**
+     * @notice Add a domain to the URL whitelist
+     * @param domain The domain to whitelist (e.g. "coingecko.com", "cointelegraph.com")
+     */
+    function addWhitelistedDomain(string calldata domain) external onlyOwner {
+        if (bytes(domain).length == 0) revert InvalidDomain();
+        if (!whitelistedDomains[domain]) {
+            whitelistedDomains[domain] = true;
+            domainList.push(domain);
+        }
+        emit DomainWhitelisted(domain, block.timestamp);
+    }
+
+    /**
+     * @notice Remove a domain from the URL whitelist
+     * @param domain The domain to remove
+     */
+    function removeWhitelistedDomain(string calldata domain) external onlyOwner {
+        whitelistedDomains[domain] = false;
+        emit DomainRemovedFromWhitelist(domain, block.timestamp);
+    }
+
+    /**
+     * @notice Toggle the whitelist enforcement on/off
+     * @param enabled True to enforce whitelist on scanMarket, false to allow any URL
+     */
+    function setWhitelistEnabled(bool enabled) external onlyOwner {
+        whitelistEnabled = enabled;
+        emit WhitelistToggled(enabled, block.timestamp);
+    }
+
+    /**
+     * @notice Get the list of all whitelisted domains
+     */
+    function getWhitelistedDomains() external view returns (string[] memory) {
+        return domainList;
+    }
+
+    /**
+     * @notice Get the count of whitelisted domains
+     */
+    function getWhitelistedDomainCount() external view returns (uint256) {
+        return domainList.length;
+    }
+
     // ═══════════════════════════════════════════════════════════
     //                    VIEW FUNCTIONS
     // ═══════════════════════════════════════════════════════════
@@ -327,6 +391,53 @@ contract CMOAgent is IAgentCallback {
     // ═══════════════════════════════════════════════════════════
     //                  INTERNAL HELPERS
     // ═══════════════════════════════════════════════════════════
+
+    /**
+     * @dev Extract the host portion of a URL. Naive parser — sufficient for
+     *      whitelist matching where the operator controls whitelisted entries.
+     *      Format: scheme://host[:port]/path → returns host (lowercased)
+     *      Examples:
+     *        "https://coingecko.com/en/coins/somnia" → "coingecko.com"
+     *        "HTTPS://CoinGecko.COM/path" → "coingecko.com"
+     *        "coingecko.com" (no scheme) → "coingecko.com"
+     */
+    function _extractDomain(string memory url) internal pure returns (string memory) {
+        bytes memory b = bytes(url);
+        if (b.length == 0) return "";
+
+        // Find the start of the host (after "://" if present)
+        uint256 hostStart = 0;
+        for (uint256 i = 0; i + 2 < b.length; i++) {
+            if (b[i] == 0x3A /* : */ && b[i + 1] == 0x2F /* / */ && b[i + 2] == 0x2F /* / */) {
+                hostStart = i + 3;
+                break;
+            }
+        }
+
+        // Find the end of the host (next '/' or ':' or end of string)
+        uint256 hostEnd = b.length;
+        for (uint256 i = hostStart; i < b.length; i++) {
+            if (b[i] == 0x2F /* / */ || b[i] == 0x3A /* : */) {
+                hostEnd = i;
+                break;
+            }
+        }
+
+        if (hostEnd <= hostStart) return "";
+
+        // Extract and lowercase the host
+        bytes memory host = new bytes(hostEnd - hostStart);
+        for (uint256 i = 0; i < host.length; i++) {
+            bytes1 c = b[hostStart + i];
+            // ASCII A-Z → a-z
+            if (c >= 0x41 && c <= 0x5A) {
+                host[i] = bytes1(uint8(c) + 32);
+            } else {
+                host[i] = c;
+            }
+        }
+        return string(host);
+    }
 
     function _calculateDeposit(uint256 agentId) internal view returns (uint256) {
         uint256 baseDeposit = agentRunner.getRequestDeposit();

@@ -568,6 +568,7 @@ export default function LandingPage() {
         <div className="flex flex-wrap gap-x-8 gap-y-4 md:justify-end items-start font-label-caps text-label-caps">
           <Link href="/docs" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">Documentation</Link>
           <Link href="https://shannon.somnia.network" target="_blank" rel="noopener noreferrer" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">Block Explorer</Link>
+          <Link href="/metrics" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">Live Metrics</Link>
           <Link href="https://agents.somnia.network" target="_blank" rel="noopener noreferrer" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">Agent Dashboard</Link>
           <Link href="https://github.com/bagusardin25/SovereignMind" target="_blank" rel="noopener noreferrer" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">GitHub</Link>
           <Link href="/dashboard" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">Terminal</Link>
