@@ -125,9 +125,7 @@ export default function LandingPage() {
         {/* Right Links */}
         <div className="flex justify-end items-center gap-2 md:gap-4 font-body-md text-[13px] text-[var(--color-on-surface)]/80 md:w-1/3 min-w-0">
           <Link
-            href="https://docs.somnia.network"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/docs"
             className="hidden md:inline hover:text-white transition-colors font-medium"
           >
             Docs
@@ -568,7 +566,7 @@ export default function LandingPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-x-8 gap-y-4 md:justify-end items-start font-label-caps text-label-caps">
-          <Link href="https://docs.somnia.network" target="_blank" rel="noopener noreferrer" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">Documentation</Link>
+          <Link href="/docs" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">Documentation</Link>
           <Link href="https://shannon.somnia.network" target="_blank" rel="noopener noreferrer" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">Block Explorer</Link>
           <Link href="https://receipts.net.somnia.host" target="_blank" rel="noopener noreferrer" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">Receipts API</Link>
           <Link href="https://agents.somnia.network" target="_blank" rel="noopener noreferrer" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">Agent Dashboard</Link>
