@@ -1,68 +1,65 @@
+// ============================================================
+// SovereignMind — ABI Sync Script
+// ============================================================
+// Copies contract ABIs from Hardhat artifacts to frontend and
+// orchestrator. Run after every contract change.
+//
+// Usage:
+//   cd contracts
+//   npx hardhat run scripts/copy-abis.ts
+// ============================================================
+
 import * as fs from "fs";
 import * as path from "path";
 
-const CONTRACTS = [
-  "AgentRegistry",
-  "TreasuryVault",
-  "CEOAgent",
-  "CFOAgent",
-  "CMOAgent",
+const ROOT = path.resolve(__dirname, "..", "..");
+const ARTIFACTS = path.join(ROOT, "contracts", "artifacts", "contracts");
+
+const TARGETS = [
+  { name: "AgentRegistry", source: "AgentRegistry.sol/AgentRegistry.json" },
+  { name: "CEOAgent", source: "CEOAgent.sol/CEOAgent.json" },
+  { name: "CFOAgent", source: "CFOAgent.sol/CFOAgent.json" },
+  { name: "CMOAgent", source: "CMOAgent.sol/CMOAgent.json" },
+  { name: "TreasuryVault", source: "TreasuryVault.sol/TreasuryVault.json" },
 ];
 
-const ARTIFACTS_DIR = path.join(__dirname, "..", "artifacts", "contracts");
-const OUTPUT_DIR = path.join(
-  __dirname,
-  "..",
-  "..",
-  "frontend",
-  "src",
-  "lib",
-  "somnia",
-  "abis"
-);
+const DESTINATIONS = [
+  path.join(ROOT, "frontend", "src", "lib", "somnia", "abis"),
+  path.join(ROOT, "orchestrator", "src", "abis"),
+];
 
-function main() {
-  console.log("═══════════════════════════════════════");
-  console.log("  Copying ABIs to Frontend");
-  console.log("═══════════════════════════════════════\n");
+async function main() {
+  console.log("Syncing ABIs from artifacts to frontend + orchestrator\n");
 
-  // Ensure output directory exists
-  if (!fs.existsSync(OUTPUT_DIR)) {
-    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-    console.log("📁 Created output directory:", OUTPUT_DIR, "\n");
-  }
-
-  let successCount = 0;
-  let skippedCount = 0;
-
-  for (const contractName of CONTRACTS) {
-    const artifactPath = path.join(
-      ARTIFACTS_DIR,
-      `${contractName}.sol`,
-      `${contractName}.json`
-    );
-
+  for (const target of TARGETS) {
+    const artifactPath = path.join(ARTIFACTS, target.source);
     if (!fs.existsSync(artifactPath)) {
-      console.log(
-        `⚠️  Artifact not found: ${contractName} (run 'npx hardhat compile' first)`
-      );
-      skippedCount++;
-      continue;
+      console.error(`❌ Missing artifact: ${artifactPath}`);
+      console.error(`   Run 'npx hardhat compile' first.`);
+      process.exit(1);
+    }
+    const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
+    const abi = artifact.abi;
+    if (!abi) {
+      console.error(`❌ No ABI in artifact: ${target.name}`);
+      process.exit(1);
+    }
+    const abiJson = JSON.stringify(abi, null, 2) + "\n";
+
+    for (const destDir of DESTINATIONS) {
+      const destPath = path.join(destDir, `${target.name}.json`);
+      fs.mkdirSync(destDir, { recursive: true });
+      fs.writeFileSync(destPath, abiJson, "utf8");
     }
 
-    const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf-8"));
-    const abi = artifact.abi;
-
-    const outputPath = path.join(OUTPUT_DIR, `${contractName}.json`);
-    fs.writeFileSync(outputPath, JSON.stringify(abi, null, 2));
-    console.log(`✅ ${contractName}.json (${abi.length} ABI entries)`);
-    successCount++;
+    console.log(`✅ ${target.name} — ${abi.length} entries`);
   }
 
-  console.log("\n═══════════════════════════════════════");
-  console.log(`  Done! ${successCount} copied, ${skippedCount} skipped`);
-  console.log("  Output:", OUTPUT_DIR);
-  console.log("═══════════════════════════════════════");
+  console.log("\n✔ ABIs synced. Verify with:");
+  console.log("  diff frontend/src/lib/somnia/abis/CEOAgent.json orchestrator/src/abis/CEOAgent.json");
 }
 
-main();
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

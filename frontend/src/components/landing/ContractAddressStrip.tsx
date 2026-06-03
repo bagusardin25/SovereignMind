@@ -124,8 +124,16 @@ export default function ContractAddressStrip() {
       </div>
 
       <p className="font-body-md text-[12px] text-white/30 mt-6 text-center">
-        Addresses shown are placeholders pending Phase 2 deployment to Somnia Testnet (Chain ID:{' '}
-        {SOMNIA_TESTNET.id}).
+        Deployed on Somnia Testnet (Chain ID: {SOMNIA_TESTNET.id}) —{' '}
+        <a
+          href="https://github.com/bagusardin25/SovereignMind/blob/main/contracts/deployed-addresses.json"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-white/50"
+        >
+          verify deployment record
+        </a>
+        .
       </p>
     </section>
   );

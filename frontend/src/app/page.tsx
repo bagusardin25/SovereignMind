@@ -31,15 +31,15 @@ import { CONTRACT_ADDRESSES, SOMNIA_TESTNET } from '@/lib/constants';
 const faqs = [
   {
     q: "What is SovereignMind?",
-    a: "SovereignMind is an autonomous on-chain Venture Guild powered by AI Executive Agents operating entirely on Somnia Agentic L1. Three specialized agents — CEO, CFO, and CMO — are implemented as Solidity smart contracts leveraging Somnia's native agent primitives."
+    a: "SovereignMind is a hybrid AI-agent venture architecture. The CEO, CFO, and CMO decision logic lives in Solidity smart contracts deployed on Somnia Agentic L1, leveraging its native agent primitives (LLM Inference, JSON API Request, LLM Parse Website). A minimal off-chain Node.js orchestrator handles cycle scheduling and transaction signing."
   },
   {
     q: "How do the AI agents make decisions?",
-    a: "Our architecture relies on three core agents (CEO_Prime, CFO_Quant, CMO_Pulse). They utilize Somnia's native deterministic LLM Inference, JSON API Request, and LLM Parse Website capabilities to fetch live data, assess risks, analyze market sentiment, and reach algorithmic consensus — all on-chain."
+    a: "Our architecture relies on three core agents (CEO_Prime, CFO_Quant, CMO_Pulse). They utilize Somnia's native deterministic LLM Inference, JSON API Request, and LLM Parse Website capabilities to fetch live data, assess risks, analyze market sentiment, and reach algorithmic consensus. Agent compute runs through Somnia's agent runner; the orchestrator signs the resulting on-chain transactions."
   },
   {
     q: "Can humans intervene in the treasury management?",
-    a: "No, the treasury and protocol owned liquidity are managed completely autonomously. The CFO_Quant agent uses real-time market data via Somnia JSON API Request Agent to execute on-chain rebalancing without human intervention."
+    a: "Treasury and protocol-owned liquidity are managed through automated agent decision cycles scheduled by a Node.js orchestrator (node-cron). The CFO_Quant agent uses real-time market data via the Somnia JSON API Request Agent. The off-chain operator wallet retains admin authority (onlyOwner) to set objectives, thresholds, and override decisions if needed."
   },
   {
     q: "What are on-chain execution receipts?",
@@ -271,9 +271,9 @@ export default function LandingPage() {
                 <span className="text-white">Now On-Chain</span>
               </h1>
               
-              <p className="font-body-md text-[15px] md:text-[18px] text-[#dee2ec] italic mb-10 leading-relaxed max-w-[450px] font-light">
-                The first fully on-chain autonomous Venture Guild powered by Somnia L1 primitives. Monitor AI executive decisions and track algorithmic consensus without human intervention.
-              </p>
+          <p className="font-body-md text-[15px] md:text-[18px] text-[#dee2ec] italic mb-10 leading-relaxed max-w-[450px] font-light">
+            AI-executive treasury management on Somnia L1. CEO, CFO, and CMO agents run deterministic inference on Somnia&apos;s agent runner and reach consensus on-chain — with a minimal Node.js orchestrator handling cycle scheduling.
+          </p>
               
               <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-4 justify-center md:justify-start">
                 <Link href="/dashboard" className="w-full sm:w-auto block group">
@@ -402,7 +402,7 @@ export default function LandingPage() {
         >
           <h2 className="font-display-lg text-display-lg md:text-[80px] leading-none mb-4 glow-text text-white">HOW IT WORKS</h2>
           <p className="font-body-lg text-body-lg text-[var(--color-on-surface)]/80 max-w-2xl">
-            Fully transparent, trustless treasury management — every decision verifiable on-chain.
+            Transparent, blockchain-anchored treasury management — every agent decision recorded on-chain and verifiable on the Somnia Block Explorer.
           </p>
         </motion.div>
 
@@ -456,7 +456,7 @@ export default function LandingPage() {
               </div>
               <h3 className="font-display-lg text-[20px] text-white mb-3">BFT Consensus</h3>
               <p className="font-body-md text-[14px] text-[var(--color-on-surface)]/60 leading-relaxed">
-                All agent compute runs through Somnia&apos;s validator nodes with BFT consensus on deterministic LLM outputs — pinned model weights and synchronized seeds.
+                All agent compute runs through Somnia&apos;s agent runner; CFO and CMO return data which the CEO consumes on-chain to reach consensus. Results are deterministic given the same inputs.
               </p>
             </div>
           </motion.div>
@@ -559,7 +559,7 @@ export default function LandingPage() {
           <div className="flex flex-col gap-6">
           <span className="font-display-lg text-display-lg text-[var(--color-on-surface)] text-[32px] leading-none">SovereignMind</span>
           <p className="font-body-md text-[13px] text-[var(--color-on-surface)]/40 max-w-sm leading-relaxed">
-            Autonomous On-Chain Agentic Venture Guild — built for the Somnia Agentathon 2026.
+            On-chain AI-executive Venture Guild with off-chain cycle orchestration — built for the Somnia Agentathon 2026.
           </p>
           <p className="font-label-caps text-label-caps text-[var(--color-on-surface)]/50">
             © 2026 SOVEREIGNMIND. ALL RIGHTS RESERVED.
@@ -568,7 +568,6 @@ export default function LandingPage() {
         <div className="flex flex-wrap gap-x-8 gap-y-4 md:justify-end items-start font-label-caps text-label-caps">
           <Link href="/docs" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">Documentation</Link>
           <Link href="https://shannon.somnia.network" target="_blank" rel="noopener noreferrer" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">Block Explorer</Link>
-          <Link href="https://receipts.net.somnia.host" target="_blank" rel="noopener noreferrer" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">Receipts API</Link>
           <Link href="https://agents.somnia.network" target="_blank" rel="noopener noreferrer" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">Agent Dashboard</Link>
           <Link href="https://github.com/bagusardin25/SovereignMind" target="_blank" rel="noopener noreferrer" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">GitHub</Link>
           <Link href="/dashboard" className="text-[var(--color-on-surface)]/50 hover:text-[var(--color-primary)] transition-colors">Terminal</Link>

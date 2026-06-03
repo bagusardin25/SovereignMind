@@ -146,6 +146,11 @@ export class HealthServer {
 
   listen(port?: number): void {
     const p = port || config.healthPort;
+    const isProduction = process.env.NODE_ENV === 'production' || !!process.env.RAILWAY_ENVIRONMENT;
+    if (isProduction && !process.env.AUTH_TOKEN) {
+      logger.error('❌ FATAL: AUTH_TOKEN must be set in production. Refusing to start with mutating endpoints wide open.');
+      process.exit(1);
+    }
     this.app.listen(p, () => {
       logger.info(`📊 Health server listening on http://localhost:${p}`);
       logger.info(`   GET  /health   — Health check`);
