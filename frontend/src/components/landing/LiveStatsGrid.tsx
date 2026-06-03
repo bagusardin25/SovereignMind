@@ -7,11 +7,12 @@
 // ============================================================
 
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowUpRight, Activity } from 'lucide-react';
+import { ArrowUpRight, Activity, Target } from 'lucide-react';
 import { useAccount } from 'wagmi';
 import { useAgentData } from '@/hooks/useAgentData';
 import { useDecisionData } from '@/hooks/useDecisionData';
 import { useTreasuryData } from '@/hooks/useTreasuryData';
+import { useCEOCurrentObjective } from '@/hooks/useCEOAgent';
 import { formatCompact, formatRelativeTime } from '@/lib/constants';
 
 type Stat = {
@@ -37,6 +38,7 @@ export default function LiveStatsGrid() {
   const { agents, totalDecisions, agentCount, systemHealth } = useAgentData();
   const { decisions } = useDecisionData(5);
   const { treasury } = useTreasuryData();
+  const { data: currentObjective } = useCEOCurrentObjective();
 
   // Derive stats from on-chain data
   const stats = useMemo<Stat[]>(() => {
@@ -132,6 +134,27 @@ export default function LiveStatsGrid() {
           </div>
         ))}
       </div>
+
+      {/* Current strategic objective — set by operator via setObjective() */}
+      {(() => {
+        const objective: unknown = currentObjective;
+        if (typeof objective !== 'string' || objective.length === 0) return null;
+        return (
+          <div className="glass-dark rounded-xl p-3 border-l-2 border-l-[var(--color-primary)]/60">
+            <div className="flex items-start gap-2">
+              <Target size={12} className="text-[var(--color-primary)] mt-0.5 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="font-label-caps text-[9px] tracking-widest text-white/40 uppercase mb-1">
+                  Current Objective
+                </p>
+                <p className="font-body-md text-[12px] text-white/80 line-clamp-2">
+                  {objective}
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Last decision strip */}
       {lastDecision && (

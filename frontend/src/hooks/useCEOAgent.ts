@@ -105,3 +105,15 @@ export function useCEOCycleInterval() {
     functionName: 'decisionCycleInterval',
   });
 }
+
+/**
+ * Reads the current strategic objective set by the operator via setObjective().
+ * @returns wagmi query result containing the objective string (or empty if never set).
+ */
+export function useCEOCurrentObjective() {
+  return useReadContract({
+    address: contracts.ceoAgent.address,
+    abi: contracts.ceoAgent.abi,
+    functionName: 'currentObjective',
+  });
+}

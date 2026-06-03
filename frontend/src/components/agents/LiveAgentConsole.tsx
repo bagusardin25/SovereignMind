@@ -3,77 +3,75 @@
 // ============================================================
 // LiveAgentConsole — Real-time terminal for agent logs
 // ============================================================
+// Pulls REAL on-chain activity from CEOAgent + TreasuryVault
+// decisions via useDecisionData. No mock data.
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount } from 'wagmi';
-import { Terminal, Play, Square } from 'lucide-react';
-import { AGENT_COLORS } from '@/lib/constants';
-import type { ActivityEvent, AgentRole } from '@/lib/types';
+import { Terminal, Play, Square, RefreshCw } from 'lucide-react';
+import { AGENT_COLORS, formatRelativeTime } from '@/lib/constants';
 import GlassCard from '@/components/ui/GlassCard';
+import { useDecisionData } from '@/hooks/useDecisionData';
+import type { ActivityEvent, AgentRole } from '@/lib/types';
 
-// Helper to generate a random mock event for the live simulation
-const generateRandomEvent = (): ActivityEvent => {
-  const roles: AgentRole[] = ['CEO', 'CFO', 'CMO'];
-  const actions = {
-    CEO: ['Objective Evaluated', 'Task Delegated', 'Synthesis Complete', 'Decision Made'],
-    CFO: ['Data Fetched', 'Risk Model Updated', 'Threshold Checked', 'Rebalance Triggered'],
-    CMO: ['Sources Scraped', 'Sentiment Parsed', 'Signal Emitted', 'News Indexed'],
-  };
-  
-  const role = roles[Math.floor(Math.random() * roles.length)];
-  const actionList = actions[role];
-  const action = actionList[Math.floor(Math.random() * actionList.length)];
-  
+// Map a Decision into the ActivityEvent shape used by the console
+function decisionToEvent(d: {
+  id: string;
+  agentRole: AgentRole;
+  action: string;
+  rationale: string;
+  timestamp: number;
+}): ActivityEvent {
   return {
-    id: `act-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-    agentRole: role,
-    action,
-    description: `[${role}] executed: ${action} with success.`,
-    timestamp: Date.now(),
+    id: d.id,
+    agentRole: d.agentRole,
+    action: d.action.toUpperCase(),
+    description: d.rationale || `${d.action} on-chain`,
+    timestamp: d.timestamp,
   };
-};
-
-// Generate a batch of initial seed events so the console isn't empty on load
-function generateSeedEvents(count: number): ActivityEvent[] {
-  const events: ActivityEvent[] = [];
-  const now = Date.now();
-  for (let i = 0; i < count; i++) {
-    const evt = generateRandomEvent();
-    // Stagger timestamps so they appear to have happened recently
-    evt.id = `seed-${i}`;
-    evt.timestamp = now - (count - i) * 8000; // ~8 seconds apart
-    events.push(evt);
-  }
-  return events;
 }
 
 export default function LiveAgentConsole() {
-  const [logs, setLogs] = useState<ActivityEvent[]>(() => generateSeedEvents(5));
   const [isLive, setIsLive] = useState(true);
+  const [refreshTick, setRefreshTick] = useState(0);
   const consoleContainerRef = useRef<HTMLDivElement>(null);
   const { isConnected } = useAccount();
 
-  // Auto-scroll inside container only to prevent page jumping
+  // Real on-chain decisions (CEO + TreasuryVault)
+  const { decisions, isLoading } = useDecisionData(20);
+
+  // Re-render relative time every 30s
+  useEffect(() => {
+    const id = window.setInterval(() => setRefreshTick((t) => t + 1), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  // Polling refresh every 15s for new on-chain activity
+  useEffect(() => {
+    if (!isLive) return;
+    const id = window.setInterval(() => {
+      // wagmi query key includes block number; refetch by triggering a tick
+      setRefreshTick((t) => t + 1);
+    }, 15_000);
+    return () => window.clearInterval(id);
+  }, [isLive]);
+
+  // Sort decisions newest-first and take last 50
+  const logs = useMemo<ActivityEvent[]>(() => {
+    void refreshTick; // include in deps to force re-compute on tick
+    return [...decisions]
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, 50)
+      .map(decisionToEvent);
+  }, [decisions, refreshTick]);
+
+  // Auto-scroll inside container only
   useEffect(() => {
     if (consoleContainerRef.current) {
       consoleContainerRef.current.scrollTop = consoleContainerRef.current.scrollHeight;
     }
   }, [logs]);
-
-  // Simulate live feed
-  useEffect(() => {
-    if (!isLive) return;
-
-    const interval = setInterval(() => {
-      // Add a new log every 3-8 seconds
-      if (Math.random() > 0.4) {
-        setLogs((prev) => [...prev, generateRandomEvent()].slice(-50)); // Keep last 50
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [isLive]);
 
   return (
     <GlassCard className="overflow-hidden flex flex-col" padding="none">
@@ -82,11 +80,11 @@ export default function LiveAgentConsole() {
         <div className="flex items-center gap-2">
           <Terminal size={16} className="text-[--color-muted-foreground]" />
           <h3 className="text-sm font-semibold text-[--color-foreground]">Live Agent Console</h3>
-          
+
           <div className="flex items-center gap-1.5 ml-4 px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
             <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
             <span className="text-[10px] font-medium text-[--color-muted-foreground]">
-              {isLive ? (isConnected ? 'ON-CHAIN' : 'CONNECTED') : 'PAUSED'}
+              {isLive ? (isConnected ? 'ON-CHAIN' : 'RPC') : 'PAUSED'}
             </span>
           </div>
         </div>
@@ -94,9 +92,16 @@ export default function LiveAgentConsole() {
         {/* Controls */}
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setRefreshTick((t) => t + 1)}
+            className="p-1.5 rounded-md hover:bg-white/10 text-[--color-muted-foreground] hover:text-white transition-colors"
+            title="Refresh now"
+          >
+            <RefreshCw size={14} />
+          </button>
+          <button
             onClick={() => setIsLive(!isLive)}
             className="p-1.5 rounded-md hover:bg-white/10 text-[--color-muted-foreground] hover:text-white transition-colors"
-            title={isLive ? "Pause Feed" : "Resume Feed"}
+            title={isLive ? 'Pause auto-refresh' : 'Resume auto-refresh'}
           >
             {isLive ? <Square size={14} /> : <Play size={14} />}
           </button>
@@ -104,11 +109,21 @@ export default function LiveAgentConsole() {
       </div>
 
       {/* Terminal Output */}
-      <div 
+      <div
         ref={consoleContainerRef}
-        className="h-[300px] overflow-y-auto p-4 font-mono text-xs bg-[#0a0a0a]/80" 
+        className="h-[300px] overflow-y-auto p-4 font-mono text-xs bg-[#0a0a0a]/80"
         style={{ scrollbarWidth: 'thin' }}
       >
+        {isLoading && logs.length === 0 && (
+          <div className="text-white/30 italic">Querying on-chain events…</div>
+        )}
+
+        {!isLoading && logs.length === 0 && (
+          <div className="text-white/30 italic">
+            No on-chain activity yet. Trigger a decision cycle to populate this feed.
+          </div>
+        )}
+
         <AnimatePresence initial={false}>
           {logs.map((log) => {
             const colors = AGENT_COLORS[log.agentRole];
@@ -127,14 +142,17 @@ export default function LiveAgentConsole() {
                 className="mb-2 leading-relaxed break-words"
               >
                 <span className="text-white/30 mr-3">[{time}]</span>
-                <span 
+                <span
                   className="font-bold mr-2"
                   style={{ color: colors.primary }}
                 >
                   {log.agentRole}
                 </span>
                 <span className="text-white/70 mr-2">{log.action}</span>
-                <span className="text-white/40">{'->'} {log.description}</span>
+                <span className="text-white/40">
+                  {'->'} {log.description}{' '}
+                  <span className="text-white/20">· {formatRelativeTime(log.timestamp)}</span>
+                </span>
               </motion.div>
             );
           })}

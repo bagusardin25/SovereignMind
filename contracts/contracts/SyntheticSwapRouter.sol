@@ -230,9 +230,10 @@ contract SyntheticSwapRouter is ReentrancyGuard, AccessControl {
     /**
      * @dev syntheticAmount = (sttAmount × sttPriceUSD) / assetPriceUSD
      *      Both prices are 8-decimal so the result inherits 18-decimal from sttAmount.
+     *      Uses getPriceFresh() to revert on stale prices (prevents manipulation).
      */
     function _quoteSyntheticForSTT(string calldata symbol, uint256 sttAmount) internal view returns (uint256) {
-        (uint256 assetPrice, ) = oracle.getPrice(symbol);
+        (uint256 assetPrice, ) = oracle.getPriceFresh(symbol);
         uint256 sttPrice = oracle.sttPriceUSD();
         if (assetPrice == 0) revert ZeroPrice();
         return (sttAmount * sttPrice) / assetPrice;
@@ -241,9 +242,10 @@ contract SyntheticSwapRouter is ReentrancyGuard, AccessControl {
     /**
      * @dev sttAmount = (syntheticAmount × assetPriceUSD) / sttPriceUSD
      *      Both prices are 8-decimal so the result inherits 18-decimal from syntheticAmount.
+     *      Uses getPriceFresh() to revert on stale prices.
      */
     function _quoteSTTForSynthetic(string calldata symbol, uint256 syntheticAmount) internal view returns (uint256) {
-        (uint256 assetPrice, ) = oracle.getPrice(symbol);
+        (uint256 assetPrice, ) = oracle.getPriceFresh(symbol);
         uint256 sttPrice = oracle.sttPriceUSD();
         if (sttPrice == 0) revert ZeroPrice();
         return (syntheticAmount * assetPrice) / sttPrice;

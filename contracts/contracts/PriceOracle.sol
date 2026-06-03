@@ -18,6 +18,11 @@ contract PriceOracle is AccessControl {
     /// @notice Role required to push price updates
     bytes32 public constant UPDATER_ROLE = keccak256("UPDATER_ROLE");
 
+    /// @notice Maximum age (seconds) for a price to be considered fresh
+    /// @dev 1 hour — beyond this, queries revert with StalePrice to prevent
+    ///      valuation/NAV calculations from using out-of-date market data
+    uint256 public constant MAX_PRICE_AGE = 1 hours;
+
     // ═══════════════════════════════════════════════════════════
     //                       STRUCTS
     // ═══════════════════════════════════════════════════════════
@@ -60,6 +65,9 @@ contract PriceOracle is AccessControl {
 
     /// @notice Thrown when querying a symbol that has never been updated
     error PriceNotAvailable(string symbol);
+
+    /// @notice Thrown when querying a price that is older than MAX_PRICE_AGE
+    error StalePrice(string symbol, uint256 updatedAt, uint256 now);
 
     // ═══════════════════════════════════════════════════════════
     //                      CONSTRUCTOR
@@ -115,6 +123,35 @@ contract PriceOracle is AccessControl {
         Price memory p = prices[symbol];
         if (p.updatedAt == 0) revert PriceNotAvailable(symbol);
         return (p.price, p.updatedAt);
+    }
+
+    /**
+     * @notice Get the latest price for a symbol, reverting if older than MAX_PRICE_AGE
+     * @dev Use this in valuation/NAV paths to prevent stale-price manipulation
+     * @param symbol Token identifier
+     * @return price     USD price with 8 decimals
+     * @return updatedAt Timestamp of last update
+     */
+    function getPriceFresh(string calldata symbol) external view returns (uint256 price, uint256 updatedAt) {
+        Price memory p = prices[symbol];
+        if (p.updatedAt == 0) revert PriceNotAvailable(symbol);
+        if (block.timestamp > p.updatedAt + MAX_PRICE_AGE) {
+            revert StalePrice(symbol, p.updatedAt, block.timestamp);
+        }
+        return (p.price, p.updatedAt);
+    }
+
+    /**
+     * @notice Check whether a symbol's price is stale (older than MAX_PRICE_AGE)
+     * @param symbol Token identifier
+     * @return isStale True if price is older than MAX_PRICE_AGE or never set
+     * @return age     Age in seconds (0 if never set)
+     */
+    function isPriceStale(string calldata symbol) external view returns (bool isStale, uint256 age) {
+        Price memory p = prices[symbol];
+        if (p.updatedAt == 0) return (true, 0);
+        age = block.timestamp - p.updatedAt;
+        isStale = age > MAX_PRICE_AGE;
     }
 
     /**

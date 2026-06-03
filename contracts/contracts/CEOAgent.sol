@@ -80,6 +80,18 @@ contract CEOAgent is IAgentCallback {
     uint256 public totalCycleTime;    // Sum of all cycle durations
     uint256 public completedCycles;
 
+    // Current strategic objective (readable on-chain, updated via setObjective)
+    string public currentObjective;
+
+    // Execution targets for REBALANCE/ALLOCATE (defaults to owner)
+    address public rebalanceTarget;
+    address public allocationTarget;
+
+    // Execution size in basis points (100 = 1%) of treasury balance
+    uint256 public rebalanceBps = 100;    // 1% of balance
+    uint256 public allocationBps = 50;    // 0.5% of balance
+    uint256 public constant BPS_DENOMINATOR = 10_000;
+
     // ═══════════════════════════════════════════════════════════
     //                        EVENTS
     // ═══════════════════════════════════════════════════════════
@@ -107,6 +119,8 @@ contract CEOAgent is IAgentCallback {
     error InsufficientDeposit();
     error InvalidDecisionId();
     error RequestNotTimedOut();
+    error InvalidAmount();
+    error InvalidBps();
 
     // ═══════════════════════════════════════════════════════════
     //                      MODIFIERS
@@ -139,6 +153,8 @@ contract CEOAgent is IAgentCallback {
         cmoAgent = CMOAgent(payable(_cmoAgent));
         llmAgentId = _llmAgentId;
         owner = msg.sender;
+        rebalanceTarget = msg.sender;
+        allocationTarget = msg.sender;
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -313,17 +329,38 @@ contract CEOAgent is IAgentCallback {
             treasury.recordDecision("hold", rationale);
             success = true;
         } else if (action == DecisionAction.REBALANCE) {
-            // Execute actual rebalance on treasury (native STT self-rebalance)
-            try treasury.executeRebalance(address(0), address(0), 0, rationale) {
-                success = true;
-            } catch {
-                // Fallback to just recording if execution fails
+            // Execute a real rebalance: move `rebalanceBps` of treasury balance
+            // to `rebalanceTarget` (defaults to owner). Uses try/catch so a
+            // revert still records the intent on-chain.
+            uint256 balance = treasury.getBalance();
+            uint256 amount = (balance * rebalanceBps) / BPS_DENOMINATOR;
+            if (rebalanceTarget == address(0) || amount == 0 || balance < amount) {
                 treasury.recordDecision("rebalance", rationale);
                 success = true;
+            } else {
+                try treasury.executeRebalance(address(0), rebalanceTarget, amount, rationale) {
+                    success = true;
+                } catch {
+                    treasury.recordDecision("rebalance", rationale);
+                    success = true;
+                }
             }
         } else if (action == DecisionAction.ALLOCATE) {
-            treasury.recordDecision("allocate", rationale);
-            success = true;
+            // Execute a real allocation: send `allocationBps` of treasury balance
+            // to `allocationTarget` (defaults to owner).
+            uint256 balance = treasury.getBalance();
+            uint256 amount = (balance * allocationBps) / BPS_DENOMINATOR;
+            if (allocationTarget == address(0) || amount == 0 || balance < amount) {
+                treasury.recordDecision("allocate", rationale);
+                success = true;
+            } else {
+                try treasury.executeAllocation(address(0), allocationTarget, amount, rationale) {
+                    success = true;
+                } catch {
+                    treasury.recordDecision("allocate", rationale);
+                    success = true;
+                }
+            }
         }
 
         decisions[decisionId].executed = success;
@@ -353,11 +390,46 @@ contract CEOAgent is IAgentCallback {
     }
 
     /**
-     * @notice Set a strategic objective (emitted as event for off-chain tracking)
+     * @notice Set a strategic objective (emitted as event and stored for on-chain read)
      * @param objective The strategic objective string
      */
     function setObjective(string calldata objective) external onlyOwner {
+        currentObjective = objective;
         emit ObjectiveSet(objective, block.timestamp);
+    }
+
+    /**
+     * @notice Set the destination address for REBALANCE operations
+     * @param target Address to receive rebalanced funds (address(0) disables rebalancing)
+     */
+    function setRebalanceTarget(address target) external onlyOwner {
+        rebalanceTarget = target;
+    }
+
+    /**
+     * @notice Set the destination address for ALLOCATE operations
+     * @param target Address to receive allocated funds (address(0) disables allocating)
+     */
+    function setAllocationTarget(address target) external onlyOwner {
+        allocationTarget = target;
+    }
+
+    /**
+     * @notice Set the rebalance size in basis points (100 = 1%, max 1000 = 10%)
+     * @param bps Basis points (clamped to 1..1000)
+     */
+    function setRebalanceBps(uint256 bps) external onlyOwner {
+        if (bps == 0 || bps > 1000) revert InvalidBps();
+        rebalanceBps = bps;
+    }
+
+    /**
+     * @notice Set the allocation size in basis points (100 = 1%, max 1000 = 10%)
+     * @param bps Basis points (clamped to 1..1000)
+     */
+    function setAllocationBps(uint256 bps) external onlyOwner {
+        if (bps == 0 || bps > 1000) revert InvalidBps();
+        allocationBps = bps;
     }
 
     /**
