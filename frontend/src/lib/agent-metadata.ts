@@ -72,14 +72,21 @@ export const CMO_SENTIMENTS: MarketSignal[] = ['neutral', 'bullish', 'bearish'];
 
 // ----- Utility Functions -----
 
-/** Calculate uptime percentage from registration timestamp */
-export function calculateUptime(registeredAtSeconds: bigint): number {
+/** Calculate uptime percentage from registration timestamp and optional last activity */
+export function calculateUptime(registeredAtSeconds: bigint, lastActionSeconds?: number): number {
   const now = Math.floor(Date.now() / 1000);
   const registered = Number(registeredAtSeconds);
-  if (registered <= 0 || registered >= now) return 99.9;
-  const totalTime = now - registered;
-  // Assume 99.9% uptime since registration (we can't know actual downtime on-chain)
-  return Math.min(99.9, Math.max(0, ((totalTime) / totalTime) * 99.9));
+  if (registered <= 0 || registered >= now) return 0;
+
+  if (lastActionSeconds && lastActionSeconds > 0 && lastActionSeconds <= now) {
+    const hoursSinceLastAction = (now - lastActionSeconds) / 3600;
+    const score = Math.max(0, 99.9 - hoursSinceLastAction * 5);
+    return Math.round(score * 10) / 10;
+  }
+
+  const hoursSinceRegistration = (now - registered) / 3600;
+  const score = Math.max(0, 99.9 - hoursSinceRegistration * 2);
+  return Math.round(score * 10) / 10;
 }
 
 /** Convert bigint timestamp (seconds) to JS timestamp (milliseconds) */

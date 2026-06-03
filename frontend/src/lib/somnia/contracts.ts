@@ -12,30 +12,47 @@ import TreasuryVaultABI from './abis/TreasuryVault.json';
 import CEOAgentABI from './abis/CEOAgent.json';
 import CFOAgentABI from './abis/CFOAgent.json';
 import CMOAgentABI from './abis/CMOAgent.json';
+import PriceOracleABI from './abis/PriceOracle.json';
+import SyntheticSwapRouterABI from './abis/SyntheticSwapRouter.json';
+import VaultSharesABI from './abis/VaultShares.json';
 import deployedAddresses from './deployed-addresses.json';
 
-export type ContractName = 'agentRegistry' | 'treasuryVault' | 'ceoAgent' | 'cfoAgent' | 'cmoAgent';
+export type ContractName = 'agentRegistry' | 'treasuryVault' | 'ceoAgent' | 'cfoAgent' | 'cmoAgent' | 'priceOracle' | 'syntheticSwapRouter' | 'vaultShares';
+
+const addr = deployedAddresses.contracts;
 
 export const contracts = {
   agentRegistry: {
-    address: deployedAddresses.contracts.agentRegistry as `0x${string}`,
+    address: addr.agentRegistry as `0x${string}`,
     abi: AgentRegistryABI,
   },
   treasuryVault: {
-    address: deployedAddresses.contracts.treasuryVault as `0x${string}`,
+    address: addr.treasuryVault as `0x${string}`,
     abi: TreasuryVaultABI,
   },
   ceoAgent: {
-    address: deployedAddresses.contracts.ceoAgent as `0x${string}`,
+    address: addr.ceoAgent as `0x${string}`,
     abi: CEOAgentABI,
   },
   cfoAgent: {
-    address: deployedAddresses.contracts.cfoAgent as `0x${string}`,
+    address: addr.cfoAgent as `0x${string}`,
     abi: CFOAgentABI,
   },
   cmoAgent: {
-    address: deployedAddresses.contracts.cmoAgent as `0x${string}`,
+    address: addr.cmoAgent as `0x${string}`,
     abi: CMOAgentABI,
+  },
+  priceOracle: {
+    address: (addr.priceOracle || '') as `0x${string}`,
+    abi: PriceOracleABI,
+  },
+  syntheticSwapRouter: {
+    address: (addr.syntheticSwapRouter || '') as `0x${string}`,
+    abi: SyntheticSwapRouterABI,
+  },
+  vaultShares: {
+    address: (addr.vaultShares || '') as `0x${string}`,
+    abi: VaultSharesABI,
   },
 } as const;
 

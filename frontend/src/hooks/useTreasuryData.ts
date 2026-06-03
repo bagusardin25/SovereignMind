@@ -50,8 +50,8 @@ export function useTreasuryData(recentCount: number = 20) {
     const sttBalance = balanceWei ? parseFloat(formatEther(balanceWei)) : 0;
     const sttDeposited = depositedWei ? parseFloat(formatEther(depositedWei)) : 0;
 
-    // Calculate change based on deposits vs current balance
-    const change24h = sttDeposited > 0
+    // Calculate return since inception: (current balance - total deposits) / total deposits
+    const returnSinceInception = sttDeposited > 0
       ? Math.round(((sttBalance - sttDeposited) / sttDeposited) * 10000) / 100
       : 0;
 
@@ -62,7 +62,7 @@ export function useTreasuryData(recentCount: number = 20) {
         balance: sttBalance,
         price: 1, // STT is native token, value in STT
         value: sttBalance,
-        change24h,
+        change24h: returnSinceInception,
         allocation: 100,
         color: '#6C5CE7',
       },
@@ -70,7 +70,7 @@ export function useTreasuryData(recentCount: number = 20) {
 
     return {
       totalValue: sttBalance,
-      change24h,
+      change24h: returnSinceInception,
       holdings,
     };
   }, [balance, totalDeposited]);

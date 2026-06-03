@@ -37,16 +37,18 @@ import {
   usePortfolioAllocation,
   useVaultDeposit,
   useVaultWithdraw,
-  vaultSharesAddress
 } from '@/hooks/useVaultShares';
+import { contracts } from '@/lib/somnia/contracts';
 
 export default function PortfolioPage() {
-  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'invest' | 'withdraw'>('invest');
   const [investAmount, setInvestAmount] = useState('10');
   const [withdrawShares, setWithdrawShares] = useState('10');
 
   const { address, isConnected } = useAccount();
+
+  const vaultSharesAddress = contracts.vaultShares.address || undefined;
+  const isDeployed = !!vaultSharesAddress;
 
   // Read User STT Balance
   const { data: sttBalanceData, refetch: refetchSttBalance } = useBalance({
@@ -81,11 +83,6 @@ export default function PortfolioPage() {
     }
   }, [vaultDeposit.isSuccess, vaultWithdraw.isSuccess]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
-
   // Compute User values
   const formattedUserShares = userShares ? formatEther(userShares) : '0';
   const formattedSharePrice = sharePrice ? formatEther(sharePrice) : '1';
@@ -94,40 +91,6 @@ export default function PortfolioPage() {
     ? (userShares * sharePrice) / parseEther('1')
     : BigInt(0);
   const formattedUserPortfolioValue = formatEther(userPortfolioValue);
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <Skeleton width="220px" height="28px" className="mb-2" />
-            <Skeleton width="400px" height="14px" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <SkeletonMetric key={i} />
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <div className="glass rounded-2xl p-6">
-              <SkeletonTable rows={4} />
-            </div>
-          </div>
-          <div>
-            <div className="glass rounded-2xl p-6 flex flex-col gap-4">
-              <Skeleton width="100%" height="40px" />
-              <Skeleton width="100%" height="80px" />
-              <Skeleton width="100%" height="45px" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Handle Action Max click
   const handleMaxInvest = () => {

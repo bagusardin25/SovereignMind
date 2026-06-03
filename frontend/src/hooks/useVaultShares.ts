@@ -1,10 +1,12 @@
 'use client';
 
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { CONTRACT_ADDRESSES } from '../lib/constants';
+import { contracts } from '@/lib/somnia/contracts';
 
-// We'll import ABI from deployed-addresses after deploy
-// For now, use inline ABI
+const vaultSharesAddress = contracts.vaultShares.address || undefined;
+
+// Inline ABI with `as const` for proper wagmi v2 type inference.
+// JSON ABIs lose const-ness, causing useReadContract to return `{}`.
 const VAULT_SHARES_ABI = [
   {
     name: 'deposit',
@@ -95,8 +97,6 @@ const VAULT_SHARES_ABI = [
     outputs: [{ name: '', type: 'string[]' }],
   },
 ] as const;
-
-const vaultSharesAddress = (CONTRACT_ADDRESSES as any)?.vaultShares as `0x${string}` | undefined;
 
 // ─── Read Hooks ────────────────────────────────────────
 
@@ -210,5 +210,3 @@ export function useVaultWithdraw() {
 
   return { withdraw, txHash: hash, isPending, isConfirming, isSuccess, error };
 }
-
-export { VAULT_SHARES_ABI, vaultSharesAddress };

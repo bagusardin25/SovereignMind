@@ -4,7 +4,7 @@
 // Agent Detail Page — Individual agent deep-dive
 // ============================================================
 
-import { use, useState, useEffect } from 'react';
+import { use } from 'react';
 import { useAccount } from 'wagmi';
 import { useAgentData } from '@/hooks/useAgentData';
 import { useDecisionData } from '@/hooks/useDecisionData';
@@ -48,8 +48,8 @@ export default function AgentDetailPage({
 }) {
   const { role: roleParam } = use(params);
   const role = roleParam.toUpperCase() as AgentRole;
-  const { agents } = useAgentData();
-  const { decisions: allDecisions } = useDecisionData(20);
+  const { agents, isLoading: agentsLoading } = useAgentData();
+  const { decisions: allDecisions, isLoading: decisionsLoading } = useDecisionData(20);
   const agent = agents.find((a) => a.role === role);
   const colors = AGENT_COLORS[role] || AGENT_COLORS.CEO;
   const agentDecisions = allDecisions.filter((d) => d.agentRole === role);
@@ -61,16 +61,12 @@ export default function AgentDetailPage({
     description: d.rationale.length > 120 ? `${d.rationale.slice(0, 120)}...` : d.rationale,
     timestamp: d.timestamp,
   }));
-  const [isLoading, setIsLoading] = useState(true);
   const { isConnected } = useAccount();
 
   // Use real contract address
   const contractAddr = agent?.contractAddress || '';
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 600);
-    return () => clearTimeout(timer);
-  }, []);
+  const isLoading = agentsLoading || decisionsLoading;
 
   if (!agent) {
     return (

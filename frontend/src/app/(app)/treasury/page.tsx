@@ -35,9 +35,9 @@ import AllocationChart from '@/components/treasury/AllocationChart';
 import TransactionList from '@/components/treasury/TransactionList';
 import { formatSTT } from '@/lib/constants';
 import { toast } from '@/components/ui/Toast';
+import PortfolioSection from '@/components/treasury/PortfolioSection';
 
 export default function TreasuryPage() {
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('All');
   const { isConnected } = useAccount();
@@ -61,7 +61,7 @@ export default function TreasuryPage() {
   }, []);
 
   // Composite on-chain treasury data
-  const { treasury, transactions, totalOperations } = useTreasuryData();
+  const { treasury, transactions, totalOperations, isLoading } = useTreasuryData();
 
   const filteredTransactions = transactions.filter((tx) => {
     if (filterType !== 'All') {
@@ -80,11 +80,6 @@ export default function TreasuryPage() {
     }
     return true;
   });
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 600);
-    return () => clearTimeout(timer);
-  }, []);
 
   if (isLoading) {
     return (
@@ -171,6 +166,7 @@ export default function TreasuryPage() {
           label="Total Value"
           value={`${treasury.totalValue.toFixed(4)} STT`}
           change={treasury.change24h}
+          changeLabel="since inception"
           icon={<Wallet size={22} />}
           accentColor="#3b82f6"
           delay={0}
@@ -335,6 +331,9 @@ export default function TreasuryPage() {
           </GlassCard>
         </div>
       </div>
+
+      {/* Synthetic Portfolio Section (v4) */}
+      <PortfolioSection />
 
       {/* Recent Transactions */}
       <div>

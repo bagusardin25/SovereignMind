@@ -21,6 +21,10 @@ const TARGETS = [
   { name: "CFOAgent", source: "CFOAgent.sol/CFOAgent.json" },
   { name: "CMOAgent", source: "CMOAgent.sol/CMOAgent.json" },
   { name: "TreasuryVault", source: "TreasuryVault.sol/TreasuryVault.json" },
+  { name: "PriceOracle", source: "PriceOracle.sol/PriceOracle.json" },
+  { name: "SyntheticToken", source: "SyntheticToken.sol/SyntheticToken.json" },
+  { name: "SyntheticSwapRouter", source: "SyntheticSwapRouter.sol/SyntheticSwapRouter.json" },
+  { name: "VaultShares", source: "VaultShares.sol/VaultShares.json" },
 ];
 
 const DESTINATIONS = [

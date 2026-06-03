@@ -11,7 +11,7 @@ import { Check, Copy, ExternalLink, FileCode2 } from 'lucide-react';
 import { CONTRACT_ADDRESSES, SOMNIA_TESTNET, truncateAddress } from '@/lib/constants';
 
 type ContractEntry = {
-  key: keyof typeof CONTRACT_ADDRESSES;
+  key: keyof Omit<typeof CONTRACT_ADDRESSES, 'syntheticTokens'>;
   label: string;
   description: string;
 };

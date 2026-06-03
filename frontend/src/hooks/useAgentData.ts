@@ -15,6 +15,7 @@ import { useOrchestrator } from './useOrchestrator';
 import { contracts } from '@/lib/somnia/contracts';
 import {
   AGENT_METADATA,
+  calculateUptime,
   cyclePhaseToStatus,
   CYCLE_PHASE_NAMES,
 } from '@/lib/agent-metadata';
@@ -74,13 +75,6 @@ function buildAgent(
   const isDeactivated = isRegistered && data.isActive === false;
   const effectiveStatus: AgentStatus = isDeactivated ? 'error' : status;
 
-// Mock response times based on role
-  const mockAvgResponseTimes: Record<AgentRole, number> = {
-    CEO: 1250,
-    CFO: 850,
-    CMO: 920,
-  };
-
   return {
     id: `agent-${role.toLowerCase()}`,
     role,
@@ -91,10 +85,12 @@ function buildAgent(
     lastAction: lastAction > 0 ? 'Contract interaction' : null,
     lastActionTimestamp: lastAction > 0 ? lastAction : null,
     contractAddress: meta.contractAddress,
-    uptime: registeredAt > 0 ? Math.min(99.9, ((now - registeredAt) / now) * 100) : 99.9,
+    uptime: registeredAt > 0
+      ? calculateUptime(BigInt(Math.floor(registeredAt / 1000)), lastAction > 0 ? Math.floor(lastAction / 1000) : undefined)
+      : 0,
     decisionsCount: decisions,
-    successRate: decisions > 0 ? Math.round((success / decisions) * 1000) / 10 : 100,
-    avgResponseTime: mockAvgResponseTimes[role] || 1000,
+    successRate: decisions > 0 ? Math.round((success / decisions) * 1000) / 10 : 0,
+    avgResponseTime: 0,
     objective: meta.objective,
   };
 }

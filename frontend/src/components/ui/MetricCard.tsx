@@ -12,6 +12,7 @@ interface MetricCardProps {
   label: string;
   value: string;
   change?: number; // percentage
+  changeLabel?: string; // e.g. "24h", "since inception"
   icon: React.ReactNode;
   accentColor?: string;
   delay?: number;
@@ -21,6 +22,7 @@ export default function MetricCard({
   label,
   value,
   change,
+  changeLabel = '24h',
   icon,
   accentColor = '#3b82f6',
   delay = 0,
@@ -66,7 +68,7 @@ export default function MetricCard({
                 >
                   {isPositive ? '+' : ''}{change.toFixed(2)}%
                 </span>
-                <span className="text-xs text-[--color-muted]">24h</span>
+                <span className="text-xs text-[--color-muted]">{changeLabel}</span>
               </div>
             )}
           </div>

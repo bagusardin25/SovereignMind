@@ -58,6 +58,11 @@
   },
   {
     "inputs": [],
+    "name": "NoSignals",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "OnlyAgentRunner",
     "type": "error"
   },

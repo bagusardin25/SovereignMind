@@ -32,23 +32,19 @@ import { AGENT_COLORS, formatRelativeTime } from '@/lib/constants';
 import Link from 'next/link';
 
 export default function DashboardPage() {
-  const [isLoading, setIsLoading] = useState(true);
   const [now, setNow] = useState(() => Date.now());
   const { isConnected } = useAccount();
 
   // Composite on-chain data hooks
-  const { agents, totalDecisions, systemHealth: health } = useAgentData();
+  const { agents, totalDecisions, systemHealth: health, isLoading: agentsLoading } = useAgentData();
   const { decisions } = useDecisionData(10);
-  const { treasury } = useTreasuryData();
+  const { treasury, isLoading: treasuryLoading } = useTreasuryData();
 
   // Live orchestrator backend (Express health API)
   const orchestrator = useOrchestrator();
   const orch = orchestrator.status;
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 600);
-    return () => clearTimeout(timer);
-  }, []);
+  const isLoading = agentsLoading || treasuryLoading;
 
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 30_000);
@@ -159,6 +155,7 @@ export default function DashboardPage() {
           label="Treasury Value"
           value={`${treasury.totalValue.toFixed(4)} STT`}
           change={treasury.change24h || undefined}
+          changeLabel="since inception"
           icon={<Wallet size={22} />}
           accentColor="#cfbcff"
           delay={0}

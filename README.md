@@ -222,6 +222,12 @@ Add Somnia Testnet to your wallet:
 | CEOAgent | `0xaB246FD3a4f4aa5aac953913DFAB606f3bE754F9` | ✅ Deployed (v3) |
 | CFOAgent | `0xD31170Cd86A1441476DcCcdebdA0D3215c86e0Bb` | ✅ Deployed (v3) |
 | CMOAgent | `0xA925a43dAb833a6b1B38B9fbF0254f3E2bF1EEC5` | ✅ Deployed (v3) |
+| PriceOracle | `0xbf5321f2661f0A943c6856b594D6E44De0230951` | ✅ Deployed (v4) |
+| SyntheticSwapRouter | `0xCf62407713169aBb866A2074BfA9C4a19Abf1853` | ✅ Deployed (v4) |
+| VaultShares | `0x5c5a8dE6D026eB336a68D9DE7971Cb91cf441111` | ✅ Deployed (v4) |
+| sBTC | `0xF874216b4bAf6c1D182DdBA786c4Df4Bf2Ef6fc6` | ✅ Deployed (v4) |
+| sETH | `0x94ad5B669387A1d0c0801f62f61e4D6e6ef4268e` | ✅ Deployed (v4) |
+| sSOL | `0x309A23ff4b4BEC0B0dA359Ba009a9E411A29250a` | ✅ Deployed (v4) |
 | AgentRunner | `0x037Bb9C718F3f7fe5eCBDB0b600D607b52706776` | 🔗 Somnia Platform |
 
 ---
@@ -269,6 +275,17 @@ Add Somnia Testnet to your wallet:
 - [x] End-to-end testing (7/7 steps decision cycle succeeded)
 - [x] Optimize contract dynamic deposit calculations to save STT
 
+### Phase 5: Synthetic Portfolio System (v4) ✅ *Completed*
+- [x] `PriceOracle.sol` — On-chain price feed with staleness guards
+- [x] `SyntheticToken.sol` — ERC-20 synthetic assets (sBTC, sETH, sSOL)
+- [x] `SyntheticSwapRouter.sol` — Swap engine between STT and synthetics
+- [x] `VaultShares.sol` — Share-based vault with deposit/withdraw and auto-liquidation
+- [x] Deploy v4 addon to Somnia Testnet (6 new contracts, all roles configured)
+- [x] ABI sync to frontend + orchestrator (single source of truth)
+- [x] Frontend `/portfolio` page with live on-chain vault data
+- [x] Orchestrator `PORTFOLIO_REBALANCE` step integrated
+- [x] 126 Hardhat tests passing (unit + integration + full investment cycle)
+
 ---
 
 ## 📂 Project Structure
@@ -285,6 +302,10 @@ SovereignMind/
 │   │   ├── CEOAgent.sol                  # Orchestrator — LLM Inference Agent
 │   │   ├── CFOAgent.sol                  # Risk & Finance — JSON API + LLM Inference
 │   │   ├── CMOAgent.sol                  # Market Intel — LLM Parse Website + LLM Inference
+│   │   ├── PriceOracle.sol              # On-chain price feed (v4)
+│   │   ├── SyntheticToken.sol           # ERC-20 synthetic assets (v4)
+│   │   ├── SyntheticSwapRouter.sol      # STT ↔ synthetic swap engine (v4)
+│   │   ├── VaultShares.sol              # Share-based vault (v4)
 │   │   ├── interfaces/
 │   │   │   └── ISomniaAgentRunner.sol    # Somnia createRequest()/handleResponse() interface
 │   │   └── mocks/
@@ -292,12 +313,15 @@ SovereignMind/
 │   ├── scripts/
 │   │   ├── deploy.ts                     # Full deployment script for Somnia Testnet
 │   │   ├── deploy-resume.ts              # Resume deployment (deploy CEOAgent + configure roles)
-│   │   ├── copy-abis.ts                  # Copy compiled ABIs to frontend
+│   │   ├── deploy-v4.ts                  # Full v4 deploy (all 10 contracts)
+│   │   ├── deploy-v4-addon.ts            # Incremental v4 addon (4 new contracts + link to v3)
+│   │   ├── copy-abis.ts                  # Sync compiled ABIs to frontend + orchestrator
 │   │   └── check-gas.ts                  # Check wallet balance & estimate gas costs
 │   ├── test/
 │   │   ├── AgentRegistry.test.ts         # AgentRegistry unit tests
 │   │   ├── TreasuryVault.test.ts         # TreasuryVault unit tests
-│   │   └── AgentIntegration.test.ts      # Cross-contract integration tests
+│   │   ├── AgentIntegration.test.ts      # Cross-contract integration tests
+│   │   └── SyntheticPortfolio.test.ts    # v4 portfolio: oracle, swap, vault, full cycle
 │   ├── hardhat.config.ts                 # Hardhat config (Solidity 0.8.28, optimizer, viaIR)
 │   ├── package.json
 │   └── tsconfig.json
@@ -352,12 +376,15 @@ SovereignMind/
     │   │       │   └── page.tsx          # Decision log — chronological history
     │   │       ├── settings/
     │   │       │   └── page.tsx          # Settings — risk, notifications, contract actions
+    │   │       ├── portfolio/
+    │   │       │   └── page.tsx          # Portfolio — VaultShares, synthetic assets (v4)
     │   │       └── docs/                 # Documentation hub
     │   │           ├── getting-started/
     │   │           ├── dashboard/
     │   │           ├── agents/
     │   │           ├── treasury/
     │   │           ├── decisions/
+    │   │           ├── portfolio/
     │   │           └── wallet-setup/
     │   │
     │   ├── components/
@@ -380,7 +407,8 @@ SovereignMind/
     │   │   │   └── DecisionCard.tsx      # Decision entry with rationale
     │   │   ├── treasury/
     │   │   │   ├── AllocationChart.tsx   # SVG donut allocation chart
-    │   │   │   └── TransactionList.tsx   # Transaction history list
+    │   │   │   ├── TransactionList.tsx   # Transaction history list
+    │   │   │   └── PortfolioSection.tsx  # VaultShares overview & management (v4)
     │   │   ├── landing/                  # Landing page specific
     │   │   │   ├── HeroOrb.tsx           # 3D animated hero orb
     │   │   │   ├── FeatureAgentCard.tsx  # Agent feature showcase card
@@ -399,6 +427,7 @@ SovereignMind/
     │   │   ├── useCMOAgent.ts            # Read hooks for CMOAgent contract
     │   │   ├── useTreasuryVault.ts       # Read hooks for TreasuryVault contract
     │   │   ├── useContractActions.ts     # Write hooks for all contracts
+    │   │   ├── useVaultShares.ts         # Read/write hooks for VaultShares (v4)
     │   │   └── useOrchestrator.ts        # Orchestrator backend API hook
     │   │
     │   ├── lib/
@@ -415,7 +444,11 @@ SovereignMind/
     │   │       │   ├── CEOAgent.json
     │   │       │   ├── CFOAgent.json
     │   │       │   ├── CMOAgent.json
-    │   │       │   └── TreasuryVault.json
+    │   │       │   ├── TreasuryVault.json
+    │   │       │   ├── PriceOracle.json      # (v4)
+    │   │       │   ├── SyntheticToken.json   # (v4)
+    │   │       │   ├── SyntheticSwapRouter.json # (v4)
+    │   │       │   └── VaultShares.json      # (v4)
     │   │       ├── contracts.ts          # Contract config (addresses + ABIs)
     │   │       └── deployed-addresses.json # Deployed contract addresses
     │   │

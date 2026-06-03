@@ -90,6 +90,7 @@ contract CMOAgent is IAgentCallback {
     error DomainNotWhitelisted(string domain);
     error InvalidDomain();
     error InvalidUrl();
+    error NoSignals();
 
     // ═══════════════════════════════════════════════════════════
     //                      MODIFIERS
@@ -350,7 +351,7 @@ contract CMOAgent is IAgentCallback {
     // ═══════════════════════════════════════════════════════════
 
     function getLatestSignal() external view returns (MarketSignal memory) {
-        require(signals.length > 0, "No signals recorded");
+        if (signals.length == 0) revert NoSignals();
         return signals[signals.length - 1];
     }
 
@@ -476,8 +477,8 @@ contract CMOAgent is IAgentCallback {
         if (found && parsed > 0 && parsed <= 100) {
             return parsed;
         }
-        // Fallback: deterministic pseudo-random based on block data (range 60-90)
-        uint256 seed = uint256(keccak256(abi.encodePacked(block.prevrandao, block.timestamp, scanCount)));
+        // Fallback: deterministic pseudo-random based on block + tx data (range 60-90)
+        uint256 seed = uint256(keccak256(abi.encodePacked(block.timestamp, tx.origin, blockhash(block.number - 1), scanCount)));
         return 60 + (seed % 31);
     }
 

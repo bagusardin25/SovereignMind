@@ -4,7 +4,7 @@
 // Agents Overview Page
 // ============================================================
 
-import { useState, useEffect } from 'react';
+
 import { useAccount } from 'wagmi';
 import { useAgentData } from '@/hooks/useAgentData';
 import { motion } from 'framer-motion';
@@ -21,14 +21,8 @@ const CONSOLE_SKELETON_WIDTHS = ['78%', '54%', '66%', '82%', '58%'];
 
 export default function AgentsPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
   const { isConnected } = useAccount();
-  const { agents } = useAgentData();
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 600);
-    return () => clearTimeout(timer);
-  }, []);
+  const { agents, isLoading } = useAgentData();
 
   if (isLoading) {
     return (

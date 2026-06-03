@@ -2,13 +2,21 @@
   "network": "somnia_testnet",
   "chainId": 50312,
   "deployer": "0xF8EBBd9c50f2A33A4d8B9964cF39Ed9013CF0381",
-  "deployedAt": "2026-06-02T05:54:35.681Z",
+  "deployedAt": "2026-06-03T14:37:57.140Z",
   "contracts": {
     "agentRegistry": "0x9C58a49649De1c10785577E6EFc18b425f870191",
     "treasuryVault": "0x1F0f008feFA0c1a69909f7137462ab9A9689DC18",
     "ceoAgent": "0xaB246FD3a4f4aa5aac953913DFAB606f3bE754F9",
     "cfoAgent": "0xD31170Cd86A1441476DcCcdebdA0D3215c86e0Bb",
-    "cmoAgent": "0xA925a43dAb833a6b1B38B9fbF0254f3E2bF1EEC5"
+    "cmoAgent": "0xA925a43dAb833a6b1B38B9fbF0254f3E2bF1EEC5",
+    "priceOracle": "0xbf5321f2661f0A943c6856b594D6E44De0230951",
+    "syntheticSwapRouter": "0xCf62407713169aBb866A2074BfA9C4a19Abf1853",
+    "vaultShares": "0x5c5a8dE6D026eB336a68D9DE7971Cb91cf441111",
+    "syntheticTokens": {
+      "sBTC": "0xF874216b4bAf6c1D182DdBA786c4Df4Bf2Ef6fc6",
+      "sETH": "0x94ad5B669387A1d0c0801f62f61e4D6e6ef4268e",
+      "sSOL": "0x309A23ff4b4BEC0B0dA359Ba009a9E411A29250a"
+    }
   },
   "config": {
     "agentRunnerAddress": "0x037Bb9C718F3f7fe5eCBDB0b600D607b52706776",

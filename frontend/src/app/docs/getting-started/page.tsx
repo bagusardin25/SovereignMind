@@ -14,7 +14,7 @@ export default function GettingStartedDoc() {
         Getting Started with SovereignMind
       </h1>
       <p className="text-slate-400 text-base sm:text-lg mb-8 leading-relaxed font-light">
-        Welcome to SovereignMind, the first fully autonomous on-chain Venture Guild operating entirely on the Somnia Agentic L1. This guide covers the fundamental concepts, core architecture, and the agent loop that runs the platform.
+        Welcome to SovereignMind, an on-chain Venture Guild powered by autonomous AI agents on the Somnia Agentic L1. This guide covers the fundamental concepts, core architecture, and the agent loop that runs the platform.
       </p>
 
       {/* Info Callout */}

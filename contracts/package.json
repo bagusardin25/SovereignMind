@@ -6,6 +6,8 @@
     "compile": "hardhat compile",
     "test": "hardhat test",
     "deploy": "hardhat run scripts/deploy.ts --network somnia_testnet",
+    "deploy:v4": "hardhat run scripts/deploy-v4-addon.ts --network somnia",
+    "deploy:full-v4": "hardhat run scripts/deploy-v4.ts --network somnia",
     "deploy:local": "hardhat run scripts/deploy.ts --network hardhat",
     "copy-abis": "ts-node scripts/copy-abis.ts",
     "clean": "hardhat clean"

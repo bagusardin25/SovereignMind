@@ -36,7 +36,7 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "SovereignMind — Autonomous On-Chain Agent Platform",
   description:
-    "SovereignMind deploys a collaborative network of autonomous AI agents as a virtual executive suite — the first fully on-chain Autonomous Venture Guild on Somnia Agentic L1, managing treasury operations with full transparency and consensus verification.",
+    "SovereignMind deploys a collaborative network of autonomous AI agents as a virtual executive suite on Somnia Agentic L1 — with on-chain verified treasury decisions, transparent execution receipts, and consensus verification.",
   keywords: [
     "SovereignMind",
     "Somnia",
