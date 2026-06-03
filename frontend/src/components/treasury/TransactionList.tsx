@@ -24,7 +24,7 @@ const typeConfig = {
     icon: ArrowDownToLine,
     color: '#10b981',
     bg: 'rgba(16, 185, 129, 0.1)',
-    label: 'Deposit',
+    label: 'Fund',
   },
   rebalance: {
     icon: RefreshCw,

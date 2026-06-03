@@ -45,9 +45,9 @@ export default function TreasuryPage() {
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const filterDropdownRef = useRef<HTMLDivElement>(null);
 
-  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
-  const [depositAmount, setDepositAmount] = useState('0.01');
-  const depositTreasury = useDepositToTreasury();
+  const [isFundModalOpen, setIsFundModalOpen] = useState(false);
+  const [fundAmount, setFundAmount] = useState('0.01');
+  const fundTreasury = useDepositToTreasury();
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -64,8 +64,11 @@ export default function TreasuryPage() {
   const { treasury, transactions, totalOperations } = useTreasuryData();
 
   const filteredTransactions = transactions.filter((tx) => {
-    if (filterType !== 'All' && tx.type.toLowerCase() !== filterType.toLowerCase()) {
-      return false;
+    if (filterType !== 'All') {
+      // Map UI filter labels to internal data types
+      const filterMap: Record<string, string> = { fund: 'deposit' };
+      const mappedFilter = filterMap[filterType.toLowerCase()] || filterType.toLowerCase();
+      if (tx.type.toLowerCase() !== mappedFilter) return false;
     }
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -145,14 +148,14 @@ export default function TreasuryPage() {
           </p>
         </div>
         <motion.button
-          onClick={() => setIsDepositModalOpen(true)}
+          onClick={() => setIsFundModalOpen(true)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[--color-success]/10 border border-[--color-success]/20 text-[--color-success] text-sm font-medium hover:bg-[--color-success]/20 transition-all"
           style={{ animation: 'subtle-pulse 3s ease-in-out infinite' }}
         >
           <ArrowDownToLine size={16} />
-          Deposit
+          Fund Treasury
           <style>{`
             @keyframes subtle-pulse {
               0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
@@ -397,7 +400,7 @@ export default function TreasuryPage() {
                     transition={{ duration: 0.15, ease: 'easeOut' }}
                     className="absolute z-20 left-6 top-full mt-1 py-1 w-[120px] rounded-lg border border-[--color-border] bg-[#0f141b] shadow-xl overflow-hidden"
                   >
-                    {['All', 'Deposit', 'Rebalance', 'Withdrawal'].map((type) => (
+                    {['All', 'Fund', 'Rebalance', 'Withdrawal'].map((type) => (
                       <button
                         key={type}
                         type="button"
@@ -424,16 +427,16 @@ export default function TreasuryPage() {
         </GlassCard>
       </div>
 
-      {/* Deposit Modal */}
+      {/* Fund Treasury Modal */}
       <AnimatePresence>
-        {isDepositModalOpen && (
+        {isFundModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-              onClick={() => !depositTreasury.isPending && !depositTreasury.isConfirming && setIsDepositModalOpen(false)}
+              onClick={() => !fundTreasury.isPending && !fundTreasury.isConfirming && setIsFundModalOpen(false)}
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -444,11 +447,11 @@ export default function TreasuryPage() {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-white flex items-center gap-2">
                   <ArrowDownToLine className="text-emerald-400" />
-                  Deposit to Treasury
+                  Fund Treasury
                 </h3>
                 <button
-                  onClick={() => setIsDepositModalOpen(false)}
-                  disabled={depositTreasury.isPending || depositTreasury.isConfirming}
+                  onClick={() => setIsFundModalOpen(false)}
+                  disabled={fundTreasury.isPending || fundTreasury.isConfirming}
                   className="text-white/50 hover:text-white transition-colors disabled:opacity-50"
                 >
                   <X size={20} />
@@ -466,10 +469,10 @@ export default function TreasuryPage() {
                     step="0.001"
                     min="0"
                     placeholder="Amount in STT"
-                    value={depositAmount}
-                    onChange={(e) => setDepositAmount(e.target.value)}
+                    value={fundAmount}
+                    onChange={(e) => setFundAmount(e.target.value)}
                     className="w-full p-4 pr-16 bg-white/5 border border-white/10 rounded-xl text-white text-lg outline-none focus:border-emerald-500/60 transition-colors placeholder:text-white/20"
-                    disabled={depositTreasury.isPending || depositTreasury.isConfirming}
+                    disabled={fundTreasury.isPending || fundTreasury.isConfirming}
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-[--color-muted-foreground]">
                     STT
@@ -478,39 +481,39 @@ export default function TreasuryPage() {
 
                 <button
                   onClick={() => {
-                    if (!depositAmount || Number(depositAmount) <= 0) return;
-                    depositTreasury.deposit(parseEther(depositAmount));
+                    if (!fundAmount || Number(fundAmount) <= 0) return;
+                    fundTreasury.deposit(parseEther(fundAmount));
                   }}
                   disabled={
                     !isConnected ||
-                    depositTreasury.isPending ||
-                    depositTreasury.isConfirming ||
-                    !depositAmount ||
-                    Number(depositAmount) <= 0
+                    fundTreasury.isPending ||
+                    fundTreasury.isConfirming ||
+                    !fundAmount ||
+                    Number(fundAmount) <= 0
                   }
                   className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ background: 'linear-gradient(135deg, #10b981, #34d399)' }}
                 >
-                  {depositTreasury.isPending || depositTreasury.isConfirming ? (
+                  {fundTreasury.isPending || fundTreasury.isConfirming ? (
                     <span className="flex items-center justify-center gap-2">
                       <Loader2 size={16} className="animate-spin" /> Processing...
                     </span>
                   ) : !isConnected ? (
-                    'Connect Wallet to Deposit'
+                    'Connect Wallet to Fund'
                   ) : (
-                    'Confirm Deposit'
+                    'Confirm Funding'
                   )}
                 </button>
 
                 {/* Transaction Status */}
-                {(depositTreasury.isSuccess || depositTreasury.error) && (
-                  <div className={`p-4 rounded-xl text-sm mt-4 ${depositTreasury.isSuccess ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                    {depositTreasury.isSuccess ? (
+                {(fundTreasury.isSuccess || fundTreasury.error) && (
+                  <div className={`p-4 rounded-xl text-sm mt-4 ${fundTreasury.isSuccess ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                    {fundTreasury.isSuccess ? (
                       <div className="flex flex-col items-center gap-2 text-center">
                         <CheckCircle2 size={24} className="text-emerald-400" />
-                        <span className="font-medium">Deposit Successful!</span>
+                        <span className="font-medium">Treasury Funded Successfully!</span>
                         <a
-                          href={`https://shannon.somnia.network/tx/${depositTreasury.txHash}`}
+                          href={`https://shannon.somnia.network/tx/${fundTreasury.txHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs underline underline-offset-2 hover:text-emerald-300 transition-colors"
@@ -522,7 +525,7 @@ export default function TreasuryPage() {
                       <div className="text-center">
                         <span className="font-medium">Transaction Failed</span>
                         <p className="text-xs opacity-80 mt-1 break-all">
-                          {(depositTreasury.error as Error).message?.slice(0, 100)}...
+                          {(fundTreasury.error as Error).message?.slice(0, 100)}...
                         </p>
                       </div>
                     )}

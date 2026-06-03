@@ -5,6 +5,7 @@
 // ============================================================
 
 import { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import GlassCard from '@/components/ui/GlassCard';
 import {
@@ -22,7 +23,6 @@ import { useCEOCycleInterval } from '@/hooks/useCEOAgent';
 import { useCFORiskThreshold } from '@/hooks/useCFOAgent';
 import {
   useInitiateDecisionCycle,
-  useDepositToTreasury,
   useFetchPrice,
   useScanMarket,
   useAnalyzeRisk,
@@ -185,7 +185,6 @@ export default function SettingsPage() {
 
   // ── contract write hooks ──
   const decisionCycle = useInitiateDecisionCycle();
-  const depositTreasury = useDepositToTreasury();
   const fetchPriceHook = useFetchPrice();
   const scanMarketHook = useScanMarket();
   const analyzeRiskHook = useAnalyzeRisk();
@@ -264,7 +263,6 @@ export default function SettingsPage() {
   };
 
   // ── local form state ──
-  const [depositAmount, setDepositAmount] = useState('0.01');
   const [priceSymbol, setPriceSymbol] = useState('STT');
   const [priceApiUrl, setPriceApiUrl] = useState('');
   const [priceJsonPath, setPriceJsonPath] = useState('');
@@ -705,51 +703,27 @@ export default function SettingsPage() {
                 />
               </div>
 
-              {/* ── 2. Deposit to Treasury ── */}
+              {/* ── 2. Fund Treasury (link to Treasury page) ── */}
               <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5">
-                <h4 className="text-sm font-semibold text-white flex items-center gap-2 mb-1">
-                  <DollarSign size={14} className="text-emerald-400" />
-                  Deposit to Treasury
-                </h4>
-                <p className="text-xs text-[--color-muted-foreground] mb-3">
-                  Fund the TreasuryVault with native STT tokens.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="flex-1 relative">
-                    <input
-                      type="number"
-                      step="0.001"
-                      min="0"
-                      placeholder="Amount in STT"
-                      value={depositAmount}
-                      onChange={(e) => setDepositAmount(e.target.value)}
-                      className="w-full p-3 pr-14 bg-white/5 border border-[--color-border] rounded-xl text-white text-sm outline-none focus:border-emerald-500/60 transition-colors placeholder:text-white/20"
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[--color-muted-foreground]">STT</span>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div>
+                    <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                      <DollarSign size={14} className="text-emerald-400" />
+                      Fund Treasury
+                    </h4>
+                    <p className="text-xs text-[--color-muted-foreground] mt-0.5">
+                      Send STT to the TreasuryVault for agent operations.
+                    </p>
                   </div>
-                  <button
-                    onClick={() => {
-                      if (!depositAmount || Number(depositAmount) <= 0) return;
-                      depositTreasury.deposit(parseEther(depositAmount));
-                    }}
-                    disabled={!isConnected || depositTreasury.isPending || depositTreasury.isConfirming || !depositAmount || Number(depositAmount) <= 0}
-                    className={`shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 ${disabledBtnClass}`}
+                  <Link
+                    href="/treasury"
+                    className="shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:brightness-110 active:scale-[0.98] flex items-center gap-2"
                     style={{ background: 'linear-gradient(135deg, #10b981, #34d399)' }}
                   >
-                    {depositTreasury.isPending || depositTreasury.isConfirming ? (
-                      <span className="flex items-center gap-2"><Loader2 size={14} className="animate-spin" /> Depositing…</span>
-                    ) : (
-                      'Deposit'
-                    )}
-                  </button>
+                    Go to Treasury
+                    <ExternalLink size={14} />
+                  </Link>
                 </div>
-                <TxStatus
-                  isPending={depositTreasury.isPending}
-                  isConfirming={depositTreasury.isConfirming}
-                  isSuccess={depositTreasury.isSuccess}
-                  error={depositTreasury.error}
-                  txHash={depositTreasury.txHash}
-                />
               </div>
 
               {/* ── 3. Fetch Price ── */}

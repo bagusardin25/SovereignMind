@@ -1,7 +1,7 @@
 'use client';
 
 // ============================================================
-// Portfolio Page — Vault shares deposit, withdraw and allocation
+// Portfolio Page — Vault shares invest, withdraw and allocation
 // ============================================================
 
 import { useState, useEffect } from 'react';
@@ -42,8 +42,8 @@ import {
 
 export default function PortfolioPage() {
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'deposit' | 'withdraw'>('deposit');
-  const [depositAmount, setDepositAmount] = useState('10');
+  const [activeTab, setActiveTab] = useState<'invest' | 'withdraw'>('invest');
+  const [investAmount, setInvestAmount] = useState('10');
   const [withdrawShares, setWithdrawShares] = useState('10');
 
   const { address, isConnected } = useAccount();
@@ -130,12 +130,12 @@ export default function PortfolioPage() {
   }
 
   // Handle Action Max click
-  const handleMaxDeposit = () => {
+  const handleMaxInvest = () => {
     if (sttBalanceData) {
       const balance = Number(sttBalanceData.formatted);
       // Keep a small buffer for gas
       const max = Math.max(0, balance - 0.1);
-      setDepositAmount(max.toFixed(4));
+      setInvestAmount(max.toFixed(4));
     }
   };
 
@@ -152,7 +152,7 @@ export default function PortfolioPage() {
         <div>
           <h1 className="text-2xl font-bold gradient-text-primary">Autonomous Portfolio</h1>
           <p className="text-sm text-[--color-muted-foreground] mt-1">
-            Deposit STT, receive Vault Shares, and let AI agents manage your exposure to crypto assets 24/7.
+            Invest STT, receive Vault Shares, and let AI agents manage your exposure to crypto assets 24/7.
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs font-mono text-[--color-muted-foreground] bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl self-start sm:self-auto">
@@ -273,7 +273,7 @@ export default function PortfolioPage() {
                   ) : (
                     <tr>
                       <td colSpan={4} className="text-center py-8 text-sm text-[--color-muted-foreground]">
-                        No active portfolio allocation. Deposit STT to start.
+                        No active portfolio allocation. Invest STT to start.
                       </td>
                     </tr>
                   )}
@@ -321,15 +321,15 @@ export default function PortfolioPage() {
             {/* Tabs */}
             <div className="flex border-b border-white/5 bg-white/[0.02]">
               <button
-                onClick={() => setActiveTab('deposit')}
+                onClick={() => setActiveTab('invest')}
                 className={`flex-1 py-4 text-sm font-semibold flex items-center justify-center gap-2 border-b-2 transition-all ${
-                  activeTab === 'deposit'
+                  activeTab === 'invest'
                     ? 'border-emerald-500 text-white bg-white/[0.01]'
                     : 'border-transparent text-[--color-muted-foreground] hover:text-white'
                 }`}
               >
                 <ArrowDownToLine size={16} />
-                Deposit
+                Invest
               </button>
               <button
                 onClick={() => setActiveTab('withdraw')}
@@ -347,16 +347,16 @@ export default function PortfolioPage() {
             {/* Form body */}
             <div className="p-6 space-y-4">
               <AnimatePresence mode="wait">
-                {activeTab === 'deposit' ? (
+                {activeTab === 'invest' ? (
                   <motion.div
-                    key="deposit"
+                    key="invest"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 10 }}
                     className="space-y-4"
                   >
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-[--color-muted-foreground] font-medium">Deposit Asset</span>
+                      <span className="text-[--color-muted-foreground] font-medium">Invest Asset</span>
                       <span className="text-[--color-muted-foreground] font-mono">
                         Balance: {sttBalanceData ? `${Number(sttBalanceData.formatted).toFixed(4)} STT` : '0 STT'}
                       </span>
@@ -368,14 +368,14 @@ export default function PortfolioPage() {
                         step="1"
                         min="0"
                         placeholder="0.00"
-                        value={depositAmount}
-                        onChange={(e) => setDepositAmount(e.target.value)}
+                        value={investAmount}
+                        onChange={(e) => setInvestAmount(e.target.value)}
                         className="w-full p-4 pr-24 bg-white/5 border border-white/10 rounded-xl text-white text-lg font-semibold font-mono outline-none focus:border-emerald-500/60 transition-colors placeholder:text-white/20"
                         disabled={vaultDeposit.isPending || vaultDeposit.isConfirming}
                       />
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
                         <button
-                          onClick={handleMaxDeposit}
+                          onClick={handleMaxInvest}
                           className="px-2 py-1 bg-white/10 hover:bg-white/20 rounded-md text-xs font-semibold text-white transition-all"
                         >
                           MAX
@@ -384,13 +384,13 @@ export default function PortfolioPage() {
                       </div>
                     </div>
 
-                    {/* Deposit Quote Info */}
-                    {depositAmount && Number(depositAmount) > 0 && sharePrice && (
+                    {/* Investment Quote Info */}
+                    {investAmount && Number(investAmount) > 0 && sharePrice && (
                       <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl space-y-1.5 text-xs text-[--color-muted-foreground]">
                         <div className="flex justify-between">
                           <span>Est. Shares Minted:</span>
                           <span className="font-mono text-white font-medium">
-                            {(Number(depositAmount) / Number(formattedSharePrice)).toFixed(4)} smVAULT
+                            {(Number(investAmount) / Number(formattedSharePrice)).toFixed(4)} smVAULT
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -402,15 +402,15 @@ export default function PortfolioPage() {
 
                     <button
                       onClick={() => {
-                        if (!depositAmount || Number(depositAmount) <= 0) return;
-                        vaultDeposit.deposit(parseEther(depositAmount));
+                        if (!investAmount || Number(investAmount) <= 0) return;
+                        vaultDeposit.deposit(parseEther(investAmount));
                       }}
                       disabled={
                         !isConnected ||
                         vaultDeposit.isPending ||
                         vaultDeposit.isConfirming ||
-                        !depositAmount ||
-                        Number(depositAmount) <= 0
+                        !investAmount ||
+                        Number(investAmount) <= 0
                       }
                       className="w-full py-4 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110 flex items-center justify-center gap-2"
                       style={{ background: 'linear-gradient(135deg, #10b981, #34d399)' }}
@@ -418,13 +418,13 @@ export default function PortfolioPage() {
                       {vaultDeposit.isPending || vaultDeposit.isConfirming ? (
                         <>
                           <Loader2 size={16} className="animate-spin" />
-                          Processing Deposit...
+                          Processing Investment...
                         </>
                       ) : !isConnected ? (
-                        'Connect Wallet to Deposit'
+                        'Connect Wallet to Invest'
                       ) : (
                         <>
-                          Deposit STT
+                          Buy Shares
                           <ArrowRight size={16} />
                         </>
                       )}
@@ -434,7 +434,7 @@ export default function PortfolioPage() {
                     {vaultDeposit.txHash && (
                       <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center">
                         <span className="text-xs text-emerald-400 font-semibold flex items-center justify-center gap-1.5">
-                          <CheckCircle2 size={14} /> Deposit transaction submitted!
+                          <CheckCircle2 size={14} /> Investment transaction submitted!
                         </span>
                         <a
                           href={`https://shannon.somnia.network/tx/${vaultDeposit.txHash}`}
