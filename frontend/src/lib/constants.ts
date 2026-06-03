@@ -33,9 +33,6 @@ export const AGENT_RUNNER_ADDRESS = deployedAddresses.config.agentRunnerAddress;
 // Contract Addresses (loaded from deployment output)
 export const CONTRACT_ADDRESSES = deployedAddresses.contracts;
 
-// Somnia Receipts API (placeholder — not currently live; use block explorer instead)
-export const RECEIPTS_API_BASE = 'https://shannon.somnia.network';
-
 // Agent Colors
 export const AGENT_COLORS = {
   CEO: {

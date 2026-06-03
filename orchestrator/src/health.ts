@@ -68,7 +68,9 @@ export class HealthServer {
     this.app.get('/health', async (_req, res) => {
       const lastCycle = this.orchestrator.lastCycle;
       let status: 'healthy' | 'degraded' | 'error';
-      if (this.orchestrator.isRunning) {
+      if (this.orchestrator.circuitBreakerTripped) {
+        status = 'error';
+      } else if (this.orchestrator.isRunning) {
         status = 'healthy'; // cycle in progress
       } else if (!lastCycle) {
         status = this.scheduler.isActive ? 'healthy' : 'degraded'; // no cycle yet
@@ -133,6 +135,12 @@ export class HealthServer {
       res.json({ message: 'Scheduler resumed' });
     });
 
+    // Reset circuit breaker
+    this.app.post('/reset-circuit-breaker', this.authMiddleware.bind(this), (_req, res) => {
+      this.orchestrator.resetCircuitBreaker();
+      res.json({ message: 'Circuit breaker reset', consecutiveFailures: 0 });
+    });
+
     // Balance report
     this.app.get('/balances', async (_req, res) => {
       try {
@@ -153,6 +161,8 @@ export class HealthServer {
       nextCycleAt: this.scheduler.nextCycleAt,
       uptime: this.orchestrator.uptime,
       balances: null,
+      circuitBreakerTripped: this.orchestrator.circuitBreakerTripped,
+      consecutiveFailures: this.orchestrator.consecutiveFailures,
     };
   }
 
@@ -171,6 +181,7 @@ export class HealthServer {
       logger.info(`   POST /trigger  — Manual cycle trigger`);
       logger.info(`   POST /stop     — Stop scheduler`);
       logger.info(`   POST /resume   — Resume scheduler`);
+      logger.info(`   POST /reset-circuit-breaker — Reset circuit breaker`);
     });
   }
 }

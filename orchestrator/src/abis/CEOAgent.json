@@ -57,6 +57,17 @@
     "type": "error"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "minimum",
+        "type": "uint256"
+      }
+    ],
+    "name": "IntervalTooShort",
+    "type": "error"
+  },
+  {
     "inputs": [],
     "name": "InvalidAmount",
     "type": "error"
@@ -244,6 +255,19 @@
   {
     "inputs": [],
     "name": "BPS_DENOMINATOR",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MIN_CYCLE_INTERVAL",
     "outputs": [
       {
         "internalType": "uint256",

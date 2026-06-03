@@ -121,10 +121,8 @@ export function createContracts(wallet: ethers.Wallet): Contracts {
 // Deposit Calculation Helper
 // ---------------------------------------------------------------------------
 
-// Per-agent execution costs from official Somnia docs (in wei)
-// These are the PER_AGENT_EXECUTION_COST values; multiplied by subcommittee
-// size to form the "execution reward" on top of the platform reserve.
-const PER_AGENT_COSTS: Record<string, bigint> = {
+// Fallback per-agent execution costs (used only if on-chain query fails)
+const FALLBACK_PER_AGENT_COSTS: Record<string, bigint> = {
   '13174292974160097713': ethers.parseEther('0.03'), // JSON API Request Agent
   '12847293847561029384': ethers.parseEther('0.07'), // LLM Inference Agent
   '12875401142070969085': ethers.parseEther('0.10'), // LLM Parse Website Agent
@@ -137,13 +135,8 @@ const SUBCOMMITTEE_SIZE = 3n;
  * Formula (from official docs):
  *   `deposit = reserve + (perAgentCost × subcommitteeSize)`
  *
- * The reserve covers gas refunds / callback gas / keeper payments.
- * The reward incentivises validators to actually execute the request.
- * Without the reward, runners may skip the request.
- *
- * @param contracts     - The contracts bundle.
- * @param agentIdGetter - An async getter that returns the target agent's ID
- *                        (e.g. `() => cfo.jsonApiAgentId()`).
+ * Reads per-agent cost from on-chain `getAgentPrice()` when possible,
+ * falling back to hardcoded values if the call fails.
  */
 export async function calculateDeposit(
   contracts: Contracts,
@@ -152,7 +145,14 @@ export async function calculateDeposit(
   try {
     const reserve: bigint = await contracts.agentRunner.getRequestDeposit();
     const agentId = await agentIdGetter();
-    const perAgentCost = PER_AGENT_COSTS[agentId.toString()] ?? ethers.parseEther('0.10');
+
+    let perAgentCost: bigint;
+    try {
+      perAgentCost = await contracts.agentRunner.getAgentPrice(agentId);
+    } catch {
+      perAgentCost = FALLBACK_PER_AGENT_COSTS[agentId.toString()] ?? ethers.parseEther('0.10');
+      logger.debug(`getAgentPrice failed, using fallback: ${ethers.formatEther(perAgentCost)} STT`);
+    }
 
     const totalDeposit = reserve + perAgentCost * SUBCOMMITTEE_SIZE;
 

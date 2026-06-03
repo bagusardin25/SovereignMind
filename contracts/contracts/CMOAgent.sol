@@ -450,14 +450,10 @@ contract CMOAgent is IAgentCallback {
     function _calculateDeposit(uint256 agentId) internal view returns (uint256) {
         uint256 baseDeposit = agentRunner.getRequestDeposit();
         uint256 perAgentCost;
-        if (agentId == 13174292974160097713) {
-            perAgentCost = 30000000000000000;  // 0.03 STT (JSON API)
-        } else if (agentId == 12847293847561029384) {
-            perAgentCost = 70000000000000000;  // 0.07 STT (LLM Inference)
-        } else if (agentId == 12875401142070969085) {
-            perAgentCost = 100000000000000000; // 0.10 STT (Parse Website)
-        } else {
-            perAgentCost = 100000000000000000; // default: highest cost
+        try agentRunner.getAgentPrice(agentId) returns (uint256 price) {
+            perAgentCost = price;
+        } catch {
+            perAgentCost = 100000000000000000; // 0.10 STT fallback
         }
         return baseDeposit + (perAgentCost * 3); // subcommittee size = 3
     }
@@ -469,7 +465,7 @@ contract CMOAgent is IAgentCallback {
         return Sentiment.NEUTRAL;
     }
 
-    function _extractConfidence(string memory s) internal view returns (uint256) {
+    function _extractConfidence(string memory s) internal pure returns (uint256) {
         // Try to parse a number from the response
         bytes memory b = bytes(s);
         uint256 parsed = 0;
@@ -485,9 +481,8 @@ contract CMOAgent is IAgentCallback {
         if (found && parsed > 0 && parsed <= 100) {
             return parsed;
         }
-        // Fallback: deterministic pseudo-random based on block + tx data (range 60-90)
-        uint256 seed = uint256(keccak256(abi.encodePacked(block.timestamp, tx.origin, blockhash(block.number - 1), scanCount)));
-        return 60 + (seed % 31);
+        // Fallback: fixed default confidence when LLM doesn't return a number
+        return 70;
     }
 
     // ═══════════════════════════════════════════════════════════

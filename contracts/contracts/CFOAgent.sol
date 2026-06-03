@@ -350,14 +350,10 @@ contract CFOAgent is IAgentCallback {
     function _calculateDeposit(uint256 agentId) internal view returns (uint256) {
         uint256 baseDeposit = agentRunner.getRequestDeposit();
         uint256 perAgentCost;
-        if (agentId == 13174292974160097713) {
-            perAgentCost = 30000000000000000;  // 0.03 STT (JSON API)
-        } else if (agentId == 12847293847561029384) {
-            perAgentCost = 70000000000000000;  // 0.07 STT (LLM Inference)
-        } else if (agentId == 12875401142070969085) {
-            perAgentCost = 100000000000000000; // 0.10 STT (Parse Website)
-        } else {
-            perAgentCost = 100000000000000000; // default: highest cost
+        try agentRunner.getAgentPrice(agentId) returns (uint256 price) {
+            perAgentCost = price;
+        } catch {
+            perAgentCost = 100000000000000000; // 0.10 STT fallback
         }
         return baseDeposit + (perAgentCost * 3); // subcommittee size = 3
     }

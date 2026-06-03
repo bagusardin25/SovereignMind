@@ -53,6 +53,8 @@ export interface OrchestratorStatus {
   nextCycleAt: Date | null;
   uptime: number;
   balances: BalanceReport | null;
+  circuitBreakerTripped?: boolean;
+  consecutiveFailures?: number;
 }
 
 export interface PriceConfig {

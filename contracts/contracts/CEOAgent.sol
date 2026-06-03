@@ -72,6 +72,7 @@ contract CEOAgent is IAgentCallback {
 
     // Cycle management
     uint256 public decisionCycleInterval = 10 minutes; // Configurable interval
+    uint256 public constant MIN_CYCLE_INTERVAL = 2 minutes; // Prevents spam exploitation
     uint256 public lastCycleTimestamp;
     uint256 public cycleCount;
     CycleInfo public currentCycle;
@@ -121,6 +122,7 @@ contract CEOAgent is IAgentCallback {
     error RequestNotTimedOut();
     error InvalidAmount();
     error InvalidBps();
+    error IntervalTooShort(uint256 minimum);
 
     // ═══════════════════════════════════════════════════════════
     //                      MODIFIERS
@@ -153,8 +155,10 @@ contract CEOAgent is IAgentCallback {
         cmoAgent = CMOAgent(payable(_cmoAgent));
         llmAgentId = _llmAgentId;
         owner = msg.sender;
-        rebalanceTarget = msg.sender;
-        allocationTarget = msg.sender;
+        // Default to address(0) — REBALANCE/ALLOCATE will only record decisions
+        // until explicit targets are set via setRebalanceTarget/setAllocationTarget
+        rebalanceTarget = address(0);
+        allocationTarget = address(0);
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -377,6 +381,7 @@ contract CEOAgent is IAgentCallback {
      * @param newInterval New interval in seconds
      */
     function setCycleInterval(uint256 newInterval) external onlyOwner {
+        if (newInterval < MIN_CYCLE_INTERVAL) revert IntervalTooShort(MIN_CYCLE_INTERVAL);
         uint256 old = decisionCycleInterval;
         decisionCycleInterval = newInterval;
         emit CycleIntervalUpdated(old, newInterval);
@@ -506,14 +511,10 @@ contract CEOAgent is IAgentCallback {
     function _calculateDeposit(uint256 agentId) internal view returns (uint256) {
         uint256 baseDeposit = agentRunner.getRequestDeposit();
         uint256 perAgentCost;
-        if (agentId == 13174292974160097713) {
-            perAgentCost = 30000000000000000;  // 0.03 STT (JSON API)
-        } else if (agentId == 12847293847561029384) {
-            perAgentCost = 70000000000000000;  // 0.07 STT (LLM Inference)
-        } else if (agentId == 12875401142070969085) {
-            perAgentCost = 100000000000000000; // 0.10 STT (Parse Website)
-        } else {
-            perAgentCost = 100000000000000000; // default: highest cost
+        try agentRunner.getAgentPrice(agentId) returns (uint256 price) {
+            perAgentCost = price;
+        } catch {
+            perAgentCost = 100000000000000000; // 0.10 STT fallback
         }
         return baseDeposit + (perAgentCost * 3); // subcommittee size = 3
     }

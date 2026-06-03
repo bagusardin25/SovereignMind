@@ -88,3 +88,7 @@ jobs:
       - name: Type-check
         working-directory: orchestrator
         run: npx tsc --noEmit
+
+      - name: Run tests
+        working-directory: orchestrator
+        run: npm test

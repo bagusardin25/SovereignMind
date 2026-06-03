@@ -29,6 +29,11 @@ export class Orchestrator {
   private _lastCycle: CycleResult | null = null;
   private _startedAt = Date.now();
 
+  // Circuit breaker — pauses after repeated failures to stop burning STT
+  private static readonly MAX_CONSECUTIVE_FAILURES = 3;
+  private _consecutiveFailures = 0;
+  private _circuitBreakerTripped = false;
+
   constructor(deps: {
     cfo: CFOService;
     cmo: CMOService;
@@ -50,18 +55,41 @@ export class Orchestrator {
   get cycleCount(): number { return this._cycleCount; }
   get lastCycle(): CycleResult | null { return this._lastCycle; }
   get uptime(): number { return Date.now() - this._startedAt; }
+  get circuitBreakerTripped(): boolean { return this._circuitBreakerTripped; }
+  get consecutiveFailures(): number { return this._consecutiveFailures; }
+
+  /**
+   * Manually reset the circuit breaker after operator investigation.
+   */
+  resetCircuitBreaker(): void {
+    this._circuitBreakerTripped = false;
+    this._consecutiveFailures = 0;
+    logger.info('🔧 Circuit breaker manually reset');
+  }
 
   /**
    * Wait for an on-chain event with timeout.
+   * Retries once on timeout before giving up.
    * Returns true if the event was received, false on timeout.
    * Does NOT throw — lets the caller decide how to handle.
    */
   private async waitForEvent(eventName: string, timeoutMs?: number): Promise<boolean> {
+    const timeout = timeoutMs ?? config.eventTimeoutSeconds * 1000;
+
+    // First attempt
     try {
-      await this.events.waitFor(eventName, timeoutMs);
+      await this.events.waitFor(eventName, timeout);
       return true;
     } catch {
-      logger.warn(`⚠️ Timeout waiting for ${eventName}`);
+      logger.warn(`⚠️ Timeout waiting for ${eventName}, retrying once...`);
+    }
+
+    // Retry once
+    try {
+      await this.events.waitFor(eventName, timeout);
+      return true;
+    } catch {
+      logger.warn(`⚠️ Retry also timed out for ${eventName}`);
       return false;
     }
   }
@@ -70,6 +98,19 @@ export class Orchestrator {
    * Run one complete decision cycle.
    */
   async runCycle(): Promise<CycleResult> {
+    // Circuit breaker — stop burning STT on repeated failures
+    if (this._circuitBreakerTripped) {
+      logger.error(`🚨 Circuit breaker ACTIVE — ${this._consecutiveFailures} consecutive failures. Skipping cycle. Call resetCircuitBreaker() to resume.`);
+      return {
+        success: false,
+        cycleId: this._cycleCount,
+        startedAt: new Date(),
+        completedAt: new Date(),
+        steps: [],
+        error: `Circuit breaker tripped (${this._consecutiveFailures} consecutive failures)`,
+      };
+    }
+
     if (this._isRunning) {
       logger.warn('⚠️ Cycle already in progress, skipping');
       return {
@@ -173,6 +214,19 @@ export class Orchestrator {
 
       this._lastCycle = result;
 
+      // Circuit breaker tracking
+      if (result.success) {
+        this._consecutiveFailures = 0;
+      } else {
+        this._consecutiveFailures++;
+        if (this._consecutiveFailures >= Orchestrator.MAX_CONSECUTIVE_FAILURES) {
+          this._circuitBreakerTripped = true;
+          logger.error(`🚨 CIRCUIT BREAKER TRIPPED — ${this._consecutiveFailures} consecutive failures. Pausing to prevent further STT loss.`);
+        } else {
+          logger.warn(`⚠️ Consecutive failures: ${this._consecutiveFailures}/${Orchestrator.MAX_CONSECUTIVE_FAILURES}`);
+        }
+      }
+
       // Auto-reset CEO if it's stuck (degraded cycle)
       if (!ceoDecisionMade && (degradedSteps > 0 || failedSteps > 0)) {
         logger.warn('⚠️ Cycle did not produce an on-chain decision — resetting CEO...');
@@ -206,6 +260,16 @@ export class Orchestrator {
       };
 
       this._lastCycle = result;
+
+      // Circuit breaker tracking (cycle-level error)
+      this._consecutiveFailures++;
+      if (this._consecutiveFailures >= Orchestrator.MAX_CONSECUTIVE_FAILURES) {
+        this._circuitBreakerTripped = true;
+        logger.error(`🚨 CIRCUIT BREAKER TRIPPED — ${this._consecutiveFailures} consecutive failures. Pausing to prevent further STT loss.`);
+      } else {
+        logger.warn(`⚠️ Consecutive failures: ${this._consecutiveFailures}/${Orchestrator.MAX_CONSECUTIVE_FAILURES}`);
+      }
+
       return result;
     } finally {
       this._isRunning = false;

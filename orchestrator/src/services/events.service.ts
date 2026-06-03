@@ -61,6 +61,8 @@ export class EventService {
 
   /**
    * Wait for a specific event to be emitted.
+   * Uses real-time listener first, falls back to log polling if the
+   * WebSocket/RPC listener times out (common on Somnia testnet).
    *
    * @param eventName - The Solidity event name (e.g. `"PriceFetched"`).
    * @param timeoutMs - Optional override for the default timeout (ms).
@@ -70,14 +72,45 @@ export class EventService {
   async waitFor(eventName: string, timeoutMs?: number): Promise<unknown[]> {
     const timeout = timeoutMs ?? config.eventTimeoutSeconds * 1000;
     const contract = this.getContractForEvent(eventName);
+    const startBlock = await contract.runner?.provider?.getBlockNumber() ?? 0;
 
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
+      let settled = false;
+
+      const timer = setTimeout(async () => {
+        if (settled) return;
         contract.removeAllListeners(eventName);
-        reject(new Error(`Timeout (${timeout}ms) waiting for event: ${eventName}`));
+
+        // Fallback: poll recent logs via queryFilter
+        try {
+          logger.debug(`🔍 Polling fallback for ${eventName} from block ${startBlock}...`);
+          const filter = contract.filters[eventName]?.();
+          if (filter) {
+            const events = await contract.queryFilter(filter, Math.max(0, startBlock - 5));
+            if (events.length > 0 && !settled) {
+              settled = true;
+              const latest = events[events.length - 1] as ethers.EventLog;
+              const args = latest.args ? Array.from(latest.args) : [];
+              logger.info(`📡 Event found via polling: ${eventName}`, {
+                args: args.map((a) => (typeof a === 'bigint' ? a.toString() : a)),
+              });
+              resolve(args);
+              return;
+            }
+          }
+        } catch (pollError) {
+          logger.debug(`Polling fallback failed for ${eventName}: ${pollError}`);
+        }
+
+        if (!settled) {
+          settled = true;
+          reject(new Error(`Timeout (${timeout}ms) waiting for event: ${eventName}`));
+        }
       }, timeout);
 
       contract.once(eventName, (...args: unknown[]) => {
+        if (settled) return;
+        settled = true;
         clearTimeout(timer);
         logger.info(`📡 Event received: ${eventName}`, {
           args: args
