@@ -45,7 +45,7 @@ export default function DocsLayout({
       <Particles color="rgba(207, 188, 255, 0.15)" quantity={50} lineDistance={130} className="fixed inset-0 z-0 pointer-events-none" />
 
       {/* Docs Header */}
-      <header className="sticky top-0 z-40 w-full bg-[#0f141b]/90 backdrop-blur-md border-b border-white/10 shadow-lg h-16 flex items-center justify-between px-6 md:px-12">
+      <header className="sticky top-0 z-40 w-full bg-[#0f141b]/90 backdrop-blur-md border-b border-white/10 shadow-lg h-16 flex items-center justify-between px-4 md:px-12">
         <div className="flex items-center gap-3">
           <Link href="/" className="font-display-lg text-[20px] tracking-tight flex items-center gap-2">
             <span className="text-white font-bold">Sovereign</span>
@@ -61,7 +61,7 @@ export default function DocsLayout({
             href="https://github.com/bagusardin25/SovereignMind"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[var(--color-on-surface)]/60 hover:text-white transition-colors"
+            className="hidden sm:block text-[var(--color-on-surface)]/60 hover:text-white transition-colors"
             aria-label="GitHub Repository"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -71,7 +71,7 @@ export default function DocsLayout({
           </Link>
           <Link
             href="/dashboard"
-            className="flex items-center gap-1.5 bg-[var(--color-primary)]/10 hover:bg-[var(--color-primary)] text-[var(--color-primary)] hover:text-[var(--color-on-primary)] font-label-caps text-[11px] tracking-wider uppercase px-4 py-2 rounded-lg border border-[var(--color-primary)]/30 hover:border-[var(--color-primary)] transition-all duration-300 shadow-[0_0_15px_rgba(207,188,255,0.1)] hover:shadow-[0_0_25px_rgba(207,188,255,0.5)] whitespace-nowrap group"
+            className="hidden sm:flex items-center gap-1.5 bg-[var(--color-primary)]/10 hover:bg-[var(--color-primary)] text-[var(--color-primary)] hover:text-[var(--color-on-primary)] font-label-caps text-[11px] tracking-wider uppercase px-4 py-2 rounded-lg border border-[var(--color-primary)]/30 hover:border-[var(--color-primary)] transition-all duration-300 shadow-[0_0_15px_rgba(207,188,255,0.1)] hover:shadow-[0_0_25px_rgba(207,188,255,0.5)] whitespace-nowrap group"
           >
             <span className="font-extrabold flex items-center gap-1.5">
               Launch App
@@ -89,7 +89,7 @@ export default function DocsLayout({
       </header>
 
       {/* Docs Body wrapper */}
-      <div className="flex-1 flex max-w-[1400px] w-full mx-auto relative px-4 md:px-8 z-10">
+      <div className="flex-1 flex max-w-[1400px] w-full mx-auto relative px-2 sm:px-4 md:px-8 z-10">
         
         {/* Desktop Left Navigation */}
         <aside className="hidden md:block w-64 shrink-0 py-10 pr-6 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto border-r border-white/10 scrollbar-thin">
@@ -168,8 +168,8 @@ export default function DocsLayout({
         </AnimatePresence>
 
         {/* Main Content Pane */}
-        <main className="flex-1 min-w-0 py-10 px-2 sm:px-6 md:px-12 lg:max-w-4xl">
-          <div className="glass-dark bg-[var(--color-surface-container-low)]/80 backdrop-blur-2xl rounded-3xl p-6 sm:p-10 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+        <main className="flex-1 min-w-0 py-6 sm:py-10 px-0 sm:px-6 md:px-12 lg:max-w-4xl">
+          <div className="glass-dark bg-[var(--color-surface-container-low)]/80 backdrop-blur-2xl rounded-3xl p-4 sm:p-8 md:p-10 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
             <div className="prose prose-invert max-w-none prose-slate prose-headings:font-display-lg prose-p:font-body-md prose-p:text-[var(--color-on-surface)]/80 prose-a:text-[var(--color-primary)] prose-a:no-underline hover:prose-a:underline">
               {children}
             </div>
