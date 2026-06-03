@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Menu, X, ArrowUpRight, BookOpen, ChevronRight } from 'lucide-react';
+import { Menu, X, ArrowUpRight, ChevronRight, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Particles from '@/components/ui/Particles';
 
 const docsMenu = [
   { label: 'Getting Started', href: '/docs/getting-started' },
@@ -38,15 +39,18 @@ export default function DocsLayout({
   }, [mobileMenuOpen]);
 
   return (
-    <div className="min-h-screen bg-[#070b12] text-slate-100 flex flex-col selection:bg-purple-500/30 selection:text-purple-200">
+    <div className="min-h-screen bg-[var(--color-background)] text-[var(--color-on-surface)] flex flex-col selection:bg-[var(--color-primary)]/30 selection:text-white relative font-body-md overflow-x-hidden">
       
+      {/* Interactive Plexus Particle Background (same as Landing) */}
+      <Particles color="rgba(207, 188, 255, 0.15)" quantity={50} lineDistance={130} className="fixed inset-0 z-0 pointer-events-none" />
+
       {/* Docs Header */}
-      <header className="sticky top-0 z-40 w-full bg-[#070b12]/80 backdrop-blur-md border-b border-slate-800/80 h-16 flex items-center justify-between px-6 md:px-12">
+      <header className="sticky top-0 z-40 w-full bg-[#0f141b]/90 backdrop-blur-md border-b border-white/10 shadow-lg h-16 flex items-center justify-between px-6 md:px-12">
         <div className="flex items-center gap-3">
           <Link href="/" className="font-display-lg text-[20px] tracking-tight flex items-center gap-2">
             <span className="text-white font-bold">Sovereign</span>
-            <span className="text-slate-400 font-light">Mind</span>
-            <span className="text-[10px] font-mono uppercase bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded border border-purple-500/30">
+            <span className="text-white/50 font-light">Mind</span>
+            <span className="text-[10px] font-label-caps uppercase bg-[var(--color-primary)]/10 text-[var(--color-primary)] px-2 py-0.5 rounded border border-[var(--color-primary)]/30 ml-2">
               Docs
             </span>
           </Link>
@@ -57,7 +61,7 @@ export default function DocsLayout({
             href="https://github.com/bagusardin25/SovereignMind"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-slate-400 hover:text-white transition-colors"
+            className="text-[var(--color-on-surface)]/60 hover:text-white transition-colors"
             aria-label="GitHub Repository"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -67,14 +71,16 @@ export default function DocsLayout({
           </Link>
           <Link
             href="/dashboard"
-            className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs tracking-wider uppercase px-4 py-2 rounded-lg border border-purple-500/30 transition-all duration-300"
+            className="flex items-center gap-1.5 bg-[var(--color-primary)]/10 hover:bg-[var(--color-primary)] text-[var(--color-primary)] hover:text-[var(--color-on-primary)] font-label-caps text-[11px] tracking-wider uppercase px-4 py-2 rounded-lg border border-[var(--color-primary)]/30 hover:border-[var(--color-primary)] transition-all duration-300 shadow-[0_0_15px_rgba(207,188,255,0.1)] hover:shadow-[0_0_25px_rgba(207,188,255,0.5)] whitespace-nowrap group"
           >
-            Launch App
-            <ArrowUpRight size={14} />
+            <span className="font-extrabold flex items-center gap-1.5">
+              Launch App
+              <ArrowUpRight size={13} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
+            </span>
           </Link>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden text-slate-400 hover:text-white transition-colors p-1"
+            className="md:hidden text-[var(--color-on-surface)]/60 hover:text-white transition-colors p-1"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
@@ -83,11 +89,11 @@ export default function DocsLayout({
       </header>
 
       {/* Docs Body wrapper */}
-      <div className="flex-1 flex max-w-[1400px] w-full mx-auto relative px-4 md:px-8">
+      <div className="flex-1 flex max-w-[1400px] w-full mx-auto relative px-4 md:px-8 z-10">
         
         {/* Desktop Left Navigation */}
-        <aside className="hidden md:block w-64 shrink-0 py-10 pr-6 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto border-r border-slate-800/60">
-          <div className="mb-4 text-xs font-semibold tracking-wider text-slate-500 uppercase px-3">
+        <aside className="hidden md:block w-64 shrink-0 py-10 pr-6 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto border-r border-white/10 scrollbar-thin">
+          <div className="mb-4 font-label-caps text-[11px] font-semibold tracking-wider text-[var(--color-on-surface)]/50 uppercase px-3">
             Guides & Reference
           </div>
           <nav className="space-y-1">
@@ -97,14 +103,14 @@ export default function DocsLayout({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all duration-150 ${
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[14px] transition-all duration-200 ${
                     isActive
-                      ? 'bg-purple-500/10 text-purple-300 font-semibold border-l-2 border-purple-500 pl-4'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 pl-3'
+                      ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)] font-bold border-l-2 border-[var(--color-primary)] pl-4 shadow-[0_0_15px_rgba(207,188,255,0.05)]'
+                      : 'text-[var(--color-on-surface)]/60 hover:text-white hover:bg-white/5 pl-3'
                   }`}
                 >
                   <span>{item.label}</span>
-                  {isActive && <ChevronRight size={14} className="text-purple-400" />}
+                  {isActive && <ChevronRight size={14} className="text-[var(--color-primary)]" />}
                 </Link>
               );
             })}
@@ -121,7 +127,7 @@ export default function DocsLayout({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
-                className="fixed inset-0 top-16 z-30 bg-black/60 backdrop-blur-sm md:hidden"
+                className="fixed inset-0 top-16 z-30 bg-[#0f141b]/80 backdrop-blur-sm md:hidden"
                 onClick={() => setMobileMenuOpen(false)}
               />
 
@@ -131,9 +137,9 @@ export default function DocsLayout({
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-                className="fixed left-0 top-16 bottom-0 w-72 z-35 bg-[#0b0f17] border-r border-slate-800/80 p-6 overflow-y-auto md:hidden"
+                className="fixed left-0 top-16 bottom-0 w-72 z-35 bg-[var(--color-surface-container)] border-r border-white/10 p-6 overflow-y-auto md:hidden"
               >
-                <div className="mb-4 text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                <div className="mb-4 font-label-caps text-[11px] font-semibold tracking-wider text-[var(--color-on-surface)]/50 uppercase px-1">
                   Guides & Reference
                 </div>
                 <nav className="space-y-1">
@@ -144,14 +150,14 @@ export default function DocsLayout({
                         key={item.href}
                         href={item.href}
                         onClick={() => setMobileMenuOpen(false)}
-                        className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all duration-150 ${
+                        className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-[14px] transition-all duration-200 ${
                           isActive
-                            ? 'bg-purple-500/10 text-purple-300 font-semibold border-l-2 border-purple-500 pl-4'
-                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 pl-3'
+                            ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)] font-bold border-l-2 border-[var(--color-primary)] pl-4'
+                            : 'text-[var(--color-on-surface)]/60 hover:text-white hover:bg-white/5 pl-3'
                         }`}
                       >
                         <span>{item.label}</span>
-                        {isActive && <ChevronRight size={14} className="text-purple-400" />}
+                        {isActive && <ChevronRight size={14} className="text-[var(--color-primary)]" />}
                       </Link>
                     );
                   })}
@@ -163,8 +169,10 @@ export default function DocsLayout({
 
         {/* Main Content Pane */}
         <main className="flex-1 min-w-0 py-10 px-2 sm:px-6 md:px-12 lg:max-w-4xl">
-          <div className="prose prose-invert max-w-none prose-slate">
-            {children}
+          <div className="glass-dark bg-[var(--color-surface-container-low)]/80 backdrop-blur-2xl rounded-3xl p-6 sm:p-10 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+            <div className="prose prose-invert max-w-none prose-slate prose-headings:font-display-lg prose-p:font-body-md prose-p:text-[var(--color-on-surface)]/80 prose-a:text-[var(--color-primary)] prose-a:no-underline hover:prose-a:underline">
+              {children}
+            </div>
           </div>
         </main>
 
