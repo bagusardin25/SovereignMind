@@ -10,7 +10,7 @@ import { useMemo } from 'react';
 import { useAgentInfo, useAgentCount, useTotalDecisions } from './useAgentRegistry';
 import { useCEOCurrentPhase, useCEOPerformanceMetrics, useCEODecisionCount } from './useCEOAgent';
 import { useCFOAnalysisCount, useCFOLatestRisk } from './useCFOAgent';
-import { useCMOSignalCount, useCMOLatestSignal } from './useCMOAgent';
+import { useCMOSignalCount, useCMOScanCount } from './useCMOAgent';
 import { useOrchestrator } from './useOrchestrator';
 import { contracts } from '@/lib/somnia/contracts';
 import {
@@ -114,7 +114,7 @@ export function useAgentData() {
 
   // CMO-specific
   const cmoSignalCount = useCMOSignalCount();
-  const cmoLatestSignal = useCMOLatestSignal();
+  const cmoScanCount = useCMOScanCount();
 
   // Aggregates
   const { data: totalDecisions } = useTotalDecisions();
@@ -141,8 +141,8 @@ export function useAgentData() {
     const cfoTask = cfoHasData ? 'Risk analysis active' : 'Awaiting analysis task';
     const cfoDecisions = cfoAnalysisCount.data != null ? Number(cfoAnalysisCount.data) : undefined;
 
-    // CMO agent
-    const cmoHasData = cmoLatestSignal.data != null;
+    // CMO agent — use scanCount (returns 0 instead of reverting like getLatestSignal)
+    const cmoHasData = cmoScanCount.data != null && Number(cmoScanCount.data) > 0;
     const cmoStatus: AgentStatus = cmoHasData ? 'active' : 'idle';
     const cmoTask = cmoHasData ? 'Market monitoring active' : 'Awaiting scan task';
     const cmoDecisions = cmoSignalCount.data != null ? Number(cmoSignalCount.data) : undefined;
@@ -156,7 +156,7 @@ export function useAgentData() {
     ceoInfo.data, cfoInfo.data, cmoInfo.data,
     ceoPhase.data, ceoDecisionCount.data,
     cfoAnalysisCount.data, cfoLatestRisk.data,
-    cmoSignalCount.data, cmoLatestSignal.data,
+    cmoSignalCount.data, cmoScanCount.data,
   ]);
 
   // Build system health from on-chain + orchestrator

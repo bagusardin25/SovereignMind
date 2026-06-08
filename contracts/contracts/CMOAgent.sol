@@ -155,7 +155,7 @@ contract CMOAgent is IAgentCallback {
         uint256 requiredDeposit = _calculateDeposit(parseWebAgentId);
         if (msg.value < requiredDeposit) revert InsufficientDeposit();
 
-        uint256 requestId = agentRunner.createRequest{value: msg.value}(
+        uint256 requestId = agentRunner.createRequest{value: requiredDeposit}(
             parseWebAgentId,
             address(this),
             this.handleResponse.selector,

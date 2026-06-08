@@ -55,6 +55,8 @@ export interface OrchestratorStatus {
   balances: BalanceReport | null;
   circuitBreakerTripped?: boolean;
   consecutiveFailures?: number;
+  totalSttSpent?: number;
+  sessionBudgetExceeded?: boolean;
 }
 
 export interface PriceConfig {

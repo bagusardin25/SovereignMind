@@ -74,6 +74,24 @@ export class EventService {
     const contract = this.getContractForEvent(eventName);
     const startBlock = await contract.runner?.provider?.getBlockNumber() ?? 0;
 
+    // Immediate poll to catch events emitted BEFORE listener was set up
+    try {
+      const filter = contract.filters[eventName]?.();
+      if (filter) {
+        const events = await contract.queryFilter(filter, Math.max(0, startBlock - 10));
+        if (events.length > 0) {
+          const latest = events[events.length - 1] as ethers.EventLog;
+          const args = latest.args ? Array.from(latest.args) : [];
+          logger.info(`📡 Event found via initial poll: ${eventName}`, {
+            args: args.map((a) => (typeof a === 'bigint' ? a.toString() : a)),
+          });
+          return args;
+        }
+      }
+    } catch (pollError) {
+      logger.debug(`Initial poll failed for ${eventName}: ${pollError}`);
+    }
+
     return new Promise((resolve, reject) => {
       let settled = false;
 

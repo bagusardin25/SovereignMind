@@ -35,9 +35,9 @@ export interface PortfolioStatus {
 export class PortfolioService {
   private vaultShares: ethers.Contract;
   private swapRouter: ethers.Contract;
-  private wallet: ethers.Wallet;
+  private wallet: ethers.Signer;
 
-  constructor(wallet: ethers.Wallet) {
+  constructor(wallet: ethers.Signer) {
     this.wallet = wallet;
     this.vaultShares = new ethers.Contract(
       config.addresses.vaultShares || ethers.ZeroAddress,

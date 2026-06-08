@@ -32,12 +32,13 @@ async function main(): Promise<void> {
   // ── 1. Initialize blockchain connection ───────────────
   logger.info('🔗 Connecting to Somnia Testnet...');
   const provider = new ethers.JsonRpcProvider(config.rpcUrl);
-  const wallet = new ethers.Wallet(config.privateKey, provider);
+  const rawWallet = new ethers.Wallet(config.privateKey, provider);
+  const wallet = new ethers.NonceManager(rawWallet);
 
   const network = await provider.getNetwork();
-  const balance = await provider.getBalance(wallet.address);
+  const balance = await provider.getBalance(rawWallet.address);
   logger.info(`   Network: ${network.name} (chainId: ${network.chainId})`);
-  logger.info(`   Wallet:  ${wallet.address}`);
+  logger.info(`   Wallet:  ${rawWallet.address}`);
   logger.info(`   Balance: ${ethers.formatEther(balance)} STT`);
 
   // ── 2. Initialize contracts ───────────────────────────

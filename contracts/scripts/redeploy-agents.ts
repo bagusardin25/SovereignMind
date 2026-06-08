@@ -3,23 +3,27 @@ import fs from "fs";
 import path from "path";
 
 /**
- * Redeploy only the 3 agent contracts (CFO, CMO, CEO) with fixed _calculateDeposit.
- * Keeps existing AgentRegistry and TreasuryVault.
+ * Redeploy only the 3 agent contracts (CFO, CMO, CEO) with fixed
+ * scanMarket value forwarding. Keeps existing AgentRegistry and TreasuryVault.
  */
 async function main() {
   const [deployer] = await ethers.getSigners();
   console.log("Deploying with:", deployer.address);
   console.log("Balance:", ethers.formatEther(await ethers.provider.getBalance(deployer.address)), "STT\n");
 
-  // Existing contracts (unchanged)
-  const REGISTRY = "0x41A6a0c76ddAD6F5dAeC70F7aaFA439eba1AC0c3";
-  const TREASURY = "0x8f1c9bd9cc0EF059D0175fF05153D2fEe8Be7f9d";
-  const AGENT_RUNNER = "0x037Bb9C718F3f7fe5eCBDB0b600D607b52706776";
+  // Load existing deployed addresses
+  const existingPath = path.join(__dirname, "..", "deployed-addresses.json");
+  const existing = JSON.parse(fs.readFileSync(existingPath, "utf-8"));
+  const addr = existing.contracts;
+
+  const REGISTRY = addr.agentRegistry;
+  const TREASURY = addr.treasuryVault;
+  const AGENT_RUNNER = existing.config.agentRunnerAddress;
 
   // Agent IDs (from Somnia platform)
-  const JSON_API_AGENT_ID = BigInt(process.env.JSON_API_AGENT_ID || "1");
-  const LLM_INFERENCE_AGENT_ID = BigInt(process.env.LLM_INFERENCE_AGENT_ID || "2");
-  const LLM_PARSE_WEBSITE_AGENT_ID = BigInt(process.env.LLM_PARSE_WEBSITE_AGENT_ID || "3");
+  const JSON_API_AGENT_ID = BigInt(existing.config.jsonApiAgentId);
+  const LLM_INFERENCE_AGENT_ID = BigInt(existing.config.llmInferenceAgentId);
+  const LLM_PARSE_WEBSITE_AGENT_ID = BigInt(existing.config.llmParseWebsiteAgentId);
 
   // ── 1. Deploy CFOAgent ──────────────────────────────────────
   console.log("📊 Deploying CFOAgent...");
@@ -110,27 +114,25 @@ async function main() {
   }
 
   // ── 6. Save addresses ───────────────────────────────────────
+  const outputPath = path.join(__dirname, "..", "deployed-addresses.json");
   const addresses = {
-    agentRegistry: REGISTRY,
-    treasuryVault: TREASURY,
-    agentRunner: AGENT_RUNNER,
-    ceoAgent: ceoAddress,
-    cfoAgent: cfoAddress,
-    cmoAgent: cmoAddress,
-    network: "somnia_testnet",
-    chainId: 50312,
+    ...existing,
     deployedAt: new Date().toISOString(),
-    note: "v2 redeploy — fixed _calculateDeposit for real AgentRunner",
+    contracts: {
+      ...addr,
+      ceoAgent: ceoAddress,
+      cfoAgent: cfoAddress,
+      cmoAgent: cmoAddress,
+    },
   };
 
-  const outputPath = path.join(__dirname, "..", "deployed-addresses.json");
   fs.writeFileSync(outputPath, JSON.stringify(addresses, null, 2));
   console.log("\n📁 Addresses saved to deployed-addresses.json");
 
   // Also copy to frontend
-  const frontendPath = path.join(__dirname, "..", "..", "frontend", "deployed-addresses.json");
+  const frontendPath = path.join(__dirname, "..", "..", "frontend", "src", "lib", "somnia", "deployed-addresses.json");
   fs.writeFileSync(frontendPath, JSON.stringify(addresses, null, 2));
-  console.log("📁 Addresses copied to frontend/deployed-addresses.json");
+  console.log("📁 Addresses copied to frontend/src/lib/somnia/deployed-addresses.json");
 
   console.log("\n" + "═".repeat(50));
   console.log("  ✅ Agent Redeploy Complete!");
@@ -138,9 +140,7 @@ async function main() {
   console.log(`  CEOAgent: ${ceoAddress}`);
   console.log(`  CFOAgent: ${cfoAddress}`);
   console.log(`  CMOAgent: ${cmoAddress}`);
-  console.log("\n⚠️  Update these addresses in:");
-  console.log("  - frontend/src/lib/constants.ts");
-  console.log("  - orchestrator/.env");
+  console.log("\n⚠️  Update orchestrator/.env with the new agent addresses above.");
 }
 
 main().catch((error) => {

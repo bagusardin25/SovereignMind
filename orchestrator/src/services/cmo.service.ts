@@ -41,15 +41,22 @@ export class CMOService {
     const scanUrl = url ?? config.marketScanUrl;
     logger.info(`🌐 Scanning market: ${scanUrl}`);
 
-    // Deposit covers the first request (parseWeb agent)
-    const deposit = await calculateDeposit(
+    // Deposit must cover BOTH requests:
+    //   1. parseWeb agent (paid via msg.value in scanMarket)
+    //   2. LLM sentiment analysis (chained internally, paid from CMO contract balance)
+    const parseWebDeposit = await calculateDeposit(
       this.contracts,
       () => this.contracts.cmo.parseWebAgentId(),
     );
-    logger.debug(`Deposit required: ${ethers.formatEther(deposit)} STT`);
+    const llmDeposit = await calculateDeposit(
+      this.contracts,
+      () => this.contracts.cmo.llmAgentId(),
+    );
+    const totalDeposit = parseWebDeposit + llmDeposit;
+    logger.debug(`Deposit required: ${ethers.formatEther(parseWebDeposit)} (parseWeb) + ${ethers.formatEther(llmDeposit)} (LLM) = ${ethers.formatEther(totalDeposit)} STT`);
 
     const tx = await this.contracts.cmo.scanMarket(scanUrl, {
-      value: deposit,
+      value: totalDeposit,
     });
     await tx.wait();
     logger.info(`✅ Market scan tx sent: ${tx.hash}`);

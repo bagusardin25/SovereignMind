@@ -57,6 +57,7 @@ function createMockEvents(options?: { failCount?: number }): Partial<EventServic
 
 function createMockFunding(): Partial<FundingService> {
   return {
+    syncNonce: vi.fn().mockResolvedValue(undefined),
     ensureMinBalances: vi.fn().mockResolvedValue(undefined),
     getBalanceReport: vi.fn().mockResolvedValue({
       wallet: { address: '0x0', balance: '10' },

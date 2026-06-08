@@ -13,12 +13,26 @@ import type { BalanceReport } from '../types';
  * fall below the configured minimum.
  */
 export class FundingService {
-  private wallet: ethers.Wallet;
+  private wallet: ethers.Signer;
   private provider: ethers.Provider;
 
-  constructor(wallet: ethers.Wallet, provider: ethers.Provider) {
+  constructor(wallet: ethers.Signer, provider: ethers.Provider) {
     this.wallet = wallet;
     this.provider = provider;
+  }
+
+  /**
+   * Reset the NonceManager's internal nonce counter so the next transaction
+   * re-fetches the correct pending nonce from the network.
+   * Call this at the start of each cycle to prevent stale nonce errors.
+   */
+  async syncNonce(): Promise<void> {
+    if (this.wallet instanceof ethers.NonceManager) {
+      // Reset forces NonceManager to re-fetch pending nonce from network on next tx
+      this.wallet.reset();
+      const nextNonce = await this.wallet.getNonce('pending');
+      logger.debug(`🔢 Nonce synced: next=${nextNonce}`);
+    }
   }
 
   // -----------------------------------------------------------------------
@@ -43,7 +57,8 @@ export class FundingService {
    * and every managed agent contract.
    */
   async getBalanceReport(): Promise<BalanceReport> {
-    const walletBalance = await this.provider.getBalance(this.wallet.address);
+    const walletAddress = await this.wallet.getAddress();
+    const walletBalance = await this.provider.getBalance(walletAddress);
 
     const agents = await Promise.all(
       this.agentContracts.map(async ({ name, address }) => {
@@ -59,7 +74,7 @@ export class FundingService {
 
     return {
       wallet: {
-        address: this.wallet.address,
+        address: walletAddress,
         balance: ethers.formatEther(walletBalance),
       },
       agents,
@@ -79,7 +94,8 @@ export class FundingService {
   async ensureMinBalances(): Promise<void> {
     const minBalance = ethers.parseEther(config.minAgentBalanceSTT);
     const fundAmount = ethers.parseEther(config.autoFundAmountSTT);
-    const walletBalance = await this.provider.getBalance(this.wallet.address);
+    const walletAddress = await this.wallet.getAddress();
+    const walletBalance = await this.provider.getBalance(walletAddress);
 
     for (const { name, address } of this.agentContracts) {
       const balance = await this.provider.getBalance(address);

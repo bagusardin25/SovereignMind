@@ -90,7 +90,7 @@ export interface Contracts {
  * @param wallet - An ethers `Wallet` connected to a provider.
  * @returns A `Contracts` bundle ready for service consumption.
  */
-export function createContracts(wallet: ethers.Wallet): Contracts {
+export function createContracts(signer: ethers.Signer): Contracts {
   // Load full ABIs from compiled artifacts
   const registryABI = loadABI('AgentRegistry');
   const treasuryABI = loadABI('TreasuryVault');
@@ -108,12 +108,12 @@ export function createContracts(wallet: ethers.Wallet): Contracts {
   logger.info('📦 Contract instances created for all SovereignMind contracts');
 
   return {
-    registry: new ethers.Contract(config.addresses.agentRegistry, registryABI, wallet),
-    treasury: new ethers.Contract(config.addresses.treasuryVault, treasuryABI, wallet),
-    ceo: new ethers.Contract(config.addresses.ceoAgent, ceoABI, wallet),
-    cfo: new ethers.Contract(config.addresses.cfoAgent, cfoABI, wallet),
-    cmo: new ethers.Contract(config.addresses.cmoAgent, cmoABI, wallet),
-    agentRunner: new ethers.Contract(config.addresses.agentRunner, agentRunnerABI, wallet),
+    registry: new ethers.Contract(config.addresses.agentRegistry, registryABI, signer),
+    treasury: new ethers.Contract(config.addresses.treasuryVault, treasuryABI, signer),
+    ceo: new ethers.Contract(config.addresses.ceoAgent, ceoABI, signer),
+    cfo: new ethers.Contract(config.addresses.cfoAgent, cfoABI, signer),
+    cmo: new ethers.Contract(config.addresses.cmoAgent, cmoABI, signer),
+    agentRunner: new ethers.Contract(config.addresses.agentRunner, agentRunnerABI, signer),
   };
 }
 

@@ -97,6 +97,13 @@ export class HealthServer {
         res.json({
           ...this.getStatus(),
           balances,
+          budget: {
+            totalSpent: this.orchestrator.totalSttSpent,
+            limit: config.maxSessionBudgetSTT,
+            remaining: Math.max(0, config.maxSessionBudgetSTT - this.orchestrator.totalSttSpent),
+            exceeded: this.orchestrator.sessionBudgetExceeded,
+            minWalletBalance: config.minWalletBalanceSTT,
+          },
           scheduler: {
             isActive: this.scheduler.isActive,
             nextCycleAt: this.scheduler.nextCycleAt,
@@ -163,6 +170,8 @@ export class HealthServer {
       balances: null,
       circuitBreakerTripped: this.orchestrator.circuitBreakerTripped,
       consecutiveFailures: this.orchestrator.consecutiveFailures,
+      totalSttSpent: this.orchestrator.totalSttSpent,
+      sessionBudgetExceeded: this.orchestrator.sessionBudgetExceeded,
     };
   }
 

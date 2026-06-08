@@ -42,6 +42,11 @@ export const config = {
   autoFundAmountSTT: optional('AUTO_FUND_AMOUNT_STT', '0.1'),
   eventTimeoutSeconds: parseInt(optional('EVENT_TIMEOUT_SECONDS', '120')),
 
+  // Budget guards — prevent runaway STT burning
+  maxSessionBudgetSTT: parseFloat(optional('MAX_SESSION_BUDGET_STT', '5')),
+  minWalletBalanceSTT: parseFloat(optional('MIN_WALLET_BALANCE_STT', '1')),
+  maxConsecutiveFailures: parseInt(optional('MAX_CONSECUTIVE_FAILURES', '2')),
+
   // Tokens — each mapped to CoinGecko API
   trackedTokens: optional('TRACKED_TOKENS', 'bitcoin,ethereum,solana')
     .split(',')
