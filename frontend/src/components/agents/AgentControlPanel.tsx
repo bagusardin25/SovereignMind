@@ -237,7 +237,7 @@ export default function AgentControlPanel({
           <Shield size={20} className="text-[--color-agent-ceo]" />
         </div>
         <div>
-          <h3 className="font-bold text-[--color-foreground]">Agent Control Panel</h3>
+          <h3 className="font-bold text-lg text-[--color-foreground]">Agent Control Panel</h3>
           <p className="text-xs text-[--color-muted-foreground]">Owner-only operations</p>
         </div>
         {isPaused && (
@@ -260,14 +260,14 @@ export default function AgentControlPanel({
             value={objective}
             onChange={(e) => setObjective(e.target.value)}
             placeholder="Define the strategic objective for the agent guild..."
-            className="flex-1 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-[--color-border] text-sm text-[--color-foreground] placeholder:text-[--color-muted] focus:outline-none focus:border-[--color-agent-ceo]/50 focus:ring-1 focus:ring-[--color-agent-ceo]/20 transition-all"
+            className="flex-1 px-4 py-3 rounded-xl bg-white/[0.05] border border-white/10 text-sm text-[--color-foreground] placeholder:text-[--color-muted] focus:outline-none focus:border-[--color-agent-ceo]/50 focus:ring-1 focus:ring-[--color-agent-ceo]/20 transition-all shadow-inner"
           />
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02, boxShadow: "0 0 15px rgba(255, 255, 255, 0.1)" }}
+            whileTap={{ scale: 0.98 }}
             onClick={handleSetObjective}
             disabled={objectivePending || objectiveConfirming}
-            className="px-4 py-2.5 rounded-xl bg-[--color-agent-ceo] text-white text-sm font-medium hover:bg-[--color-agent-ceo-light] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-6 py-3 rounded-xl bg-white/10 border border-white/10 hover:bg-white/20 text-white text-sm font-bold shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <AnimatePresence mode="wait">
               {objectivePending || objectiveConfirming ? (
@@ -312,10 +312,10 @@ export default function AgentControlPanel({
             return (
               <div
                 key={role}
-                className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-300 hover:-translate-y-0.5 ${
                   enabled
-                    ? 'bg-white/[0.03] border-[--color-border]'
-                    : 'bg-[--color-warning]/5 border-[--color-warning]/20'
+                    ? 'bg-gradient-to-br from-white/[0.05] to-transparent border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.02)]'
+                    : 'bg-red-500/5 border-red-500/20 grayscale-[0.5]'
                 }`}
               >
                 <div>
@@ -334,13 +334,13 @@ export default function AgentControlPanel({
                     });
                   }}
                   disabled={isMutating || !orchestrator.isOnline}
-                  className={`relative w-11 h-6 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                    enabled ? 'bg-[--color-success]' : 'bg-[--color-muted]'
+                  className={`relative w-12 h-6 rounded-full transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-inner ${
+                    enabled ? 'bg-[--color-agent-ceo] shadow-[0_0_10px_rgba(255,255,255,0.2)]' : 'bg-white/10'
                   }`}
                 >
                   <span
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
-                      enabled ? 'translate-x-5' : 'translate-x-0'
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-300 ${
+                      enabled ? 'translate-x-6' : 'translate-x-0'
                     }`}
                   />
                 </button>
@@ -355,11 +355,11 @@ export default function AgentControlPanel({
         {/* Run Cycle → orchestrator */}
         <div>
           <motion.button
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.02, boxShadow: "0 0 15px rgba(255, 255, 255, 0.1)" }}
             whileTap={{ scale: 0.98 }}
             onClick={handleRunCycle}
             disabled={!orchestrator.isOnline || !!isRunningCycle}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[--color-success]/10 border border-[--color-success]/20 text-[--color-success] text-sm font-medium hover:bg-[--color-success]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 px-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-bold shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/10"
           >
             {isRunningCycle ? (
               <Loader2 size={16} className="animate-spin" />
@@ -376,14 +376,14 @@ export default function AgentControlPanel({
         {/* Pause / Resume → TreasuryVault */}
         <div>
           <motion.button
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.02, boxShadow: "0 0 15px rgba(255, 255, 255, 0.1)" }}
             whileTap={{ scale: 0.98 }}
             onClick={handleTogglePause}
             disabled={!isConnected || pausePending || pauseConfirming}
-            className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`w-full flex items-center justify-center gap-2 px-4 py-4 rounded-xl text-sm font-bold shadow-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
               isPaused
-                ? 'bg-[--color-success]/10 border border-[--color-success]/20 text-[--color-success] hover:bg-[--color-success]/20'
-                : 'bg-[--color-warning]/10 border border-[--color-warning]/20 text-[--color-warning] hover:bg-[--color-warning]/20'
+                ? 'bg-[--color-agent-ceo]/20 border border-[--color-agent-ceo]/30 text-white hover:bg-[--color-agent-ceo]/30'
+                : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'
             }`}
           >
             {pausePending || pauseConfirming ? (
@@ -411,14 +411,14 @@ export default function AgentControlPanel({
 
       {/* Emergency Stop → TreasuryVault.pause() */}
       <motion.button
-        whileHover={{ scale: 1.02 }}
+        whileHover={{ scale: 1.02, boxShadow: emergencyConfirm ? "0 0 30px rgba(239, 68, 68, 0.4)" : "0 0 15px rgba(255, 255, 255, 0.1)" }}
         whileTap={{ scale: 0.98 }}
         onClick={handleEmergencyStop}
         disabled={!isConnected || emergencyPending || emergencyConfirming}
-        className={`w-full mt-3 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+        className={`w-full mt-4 flex items-center justify-center gap-2 px-4 py-4 rounded-xl text-sm font-bold shadow-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
           emergencyConfirm
-            ? 'bg-[--color-error]/30 border-2 border-[--color-error] text-[--color-error] animate-pulse'
-            : 'bg-[--color-error]/10 border border-[--color-error]/30 text-[--color-error] hover:bg-[--color-error]/20'
+            ? 'bg-red-500/80 border-2 border-red-500 text-white animate-pulse'
+            : 'bg-white/5 border border-white/10 text-red-400 hover:bg-red-500/20 hover:text-red-300'
         }`}
       >
         {emergencyPending || emergencyConfirming ? (

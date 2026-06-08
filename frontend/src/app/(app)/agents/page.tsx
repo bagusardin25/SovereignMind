@@ -82,11 +82,17 @@ export default function AgentsPage() {
   return (
     <div className="space-y-6">
       {/* Page Title */}
-      <div>
-        <h1 className="text-2xl font-bold gradient-text-primary">Agent Guild</h1>
-        <p className="text-sm text-[--color-muted-foreground] mt-1">
-          Monitor and control your autonomous AI agent network
-        </p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2">
+        <div className="space-y-1">
+          <h1 className="text-4xl font-extrabold tracking-tight">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 drop-shadow-sm">
+              Agent Guild
+            </span>
+          </h1>
+          <p className="text-sm md:text-base text-[--color-muted-foreground] max-w-2xl">
+            Monitor and control your autonomous AI agent network. Adjust strategies, toggle agents, and view real-time operations.
+          </p>
+        </div>
       </div>
 
       {/* Agent Control Panel */}
@@ -292,10 +298,11 @@ export default function AgentsPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 1 }}
-          className="mt-6 p-4 rounded-xl bg-gradient-to-r from-[--color-agent-ceo]/5 via-[--color-agent-cfo]/5 to-[--color-agent-cmo]/5 border border-[--color-border] text-center"
+          className="mt-8 p-5 rounded-xl bg-gradient-to-r from-[--color-agent-ceo]/10 via-[--color-agent-cfo]/10 to-[--color-agent-cmo]/10 border border-white/10 text-center shadow-[0_0_30px_rgba(255,255,255,0.02)] backdrop-blur-sm relative overflow-hidden"
         >
-          <p className="text-xs text-[--color-muted-foreground]">
-            ⚡ All agent compute powered by <span className="font-semibold text-[--color-foreground]">Somnia Agentic L1</span> — 
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite]" />
+          <p className="text-sm text-[--color-muted-foreground] relative z-10">
+            ⚡ All agent compute powered by <span className="font-bold text-[--color-foreground] tracking-wide">Somnia Agentic L1</span> — 
             BFT consensus on deterministic LLM outputs
           </p>
         </motion.div>
