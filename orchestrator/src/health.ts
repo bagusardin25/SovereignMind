@@ -8,7 +8,9 @@ import { logger } from './logger';
 import { Orchestrator } from './orchestrator';
 import { Scheduler } from './scheduler';
 import { FundingService } from './services/funding.service';
-import type { HealthResponse, OrchestratorStatus } from './types';
+import type { HealthResponse, OrchestratorStatus, AgentRole } from './types';
+
+const VALID_ROLES: AgentRole[] = ['CFO', 'CMO', 'CEO'];
 
 export class HealthServer {
   private app: express.Application;
@@ -109,6 +111,7 @@ export class HealthServer {
             nextCycleAt: this.scheduler.nextCycleAt,
             intervalMinutes: config.cycleIntervalMinutes,
           },
+          disabledAgents: Array.from(this.orchestrator.disabledAgents),
         });
       } catch (error) {
         res.status(500).json({ error: String(error) });
@@ -146,6 +149,39 @@ export class HealthServer {
     this.app.post('/reset-circuit-breaker', this.authMiddleware.bind(this), (_req, res) => {
       this.orchestrator.resetCircuitBreaker();
       res.json({ message: 'Circuit breaker reset', consecutiveFailures: 0 });
+    });
+
+    // ── Agent Toggle Endpoints ──────────────────────────────
+
+    // Get agent toggle state
+    this.app.get('/agents', (_req, res) => {
+      const agents: Record<string, { enabled: boolean }> = {};
+      for (const role of VALID_ROLES) {
+        agents[role] = { enabled: this.orchestrator.isAgentEnabled(role) };
+      }
+      res.json(agents);
+    });
+
+    // Disable an agent
+    this.app.post('/agents/:role/disable', this.authMiddleware.bind(this), (req, res) => {
+      const role = String(req.params.role).toUpperCase() as AgentRole;
+      if (!VALID_ROLES.includes(role)) {
+        res.status(400).json({ error: `Invalid role: ${req.params.role}. Must be one of: ${VALID_ROLES.join(', ')}` });
+        return;
+      }
+      this.orchestrator.disableAgent(role);
+      res.json({ message: `Agent ${role} disabled`, disabled: Array.from(this.orchestrator.disabledAgents) });
+    });
+
+    // Enable an agent
+    this.app.post('/agents/:role/enable', this.authMiddleware.bind(this), (req, res) => {
+      const role = String(req.params.role).toUpperCase() as AgentRole;
+      if (!VALID_ROLES.includes(role)) {
+        res.status(400).json({ error: `Invalid role: ${req.params.role}. Must be one of: ${VALID_ROLES.join(', ')}` });
+        return;
+      }
+      this.orchestrator.enableAgent(role);
+      res.json({ message: `Agent ${role} enabled`, disabled: Array.from(this.orchestrator.disabledAgents) });
     });
 
     // Balance report
@@ -191,6 +227,9 @@ export class HealthServer {
       logger.info(`   POST /stop     — Stop scheduler`);
       logger.info(`   POST /resume   — Resume scheduler`);
       logger.info(`   POST /reset-circuit-breaker — Reset circuit breaker`);
+      logger.info(`   GET  /agents               — Agent toggle state`);
+      logger.info(`   POST /agents/:role/disable  — Disable an agent`);
+      logger.info(`   POST /agents/:role/enable   — Enable an agent`);
     });
   }
 }

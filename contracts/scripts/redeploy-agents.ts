@@ -77,7 +77,7 @@ async function main() {
   const CEO_ROLE = ethers.id("CEO_ROLE");
 
   try {
-    const tx1 = await registry.registerAgent(cfoAddress, CFO_ROLE, "CFOAgent v2");
+    const tx1 = await registry.registerAgent(CFO_ROLE, cfoAddress);
     await tx1.wait();
     console.log("   ✅ CFOAgent registered");
   } catch (e: any) {
@@ -85,7 +85,7 @@ async function main() {
   }
 
   try {
-    const tx2 = await registry.registerAgent(cmoAddress, CMO_ROLE, "CMOAgent v2");
+    const tx2 = await registry.registerAgent(CMO_ROLE, cmoAddress);
     await tx2.wait();
     console.log("   ✅ CMOAgent registered");
   } catch (e: any) {
@@ -93,7 +93,7 @@ async function main() {
   }
 
   try {
-    const tx3 = await registry.registerAgent(ceoAddress, CEO_ROLE, "CEOAgent v2");
+    const tx3 = await registry.registerAgent(CEO_ROLE, ceoAddress);
     await tx3.wait();
     console.log("   ✅ CEOAgent registered");
   } catch (e: any) {

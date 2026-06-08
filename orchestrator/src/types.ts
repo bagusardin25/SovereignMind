@@ -13,6 +13,8 @@ export type CycleStep =
   | 'COMPLETED'
   | 'ERROR';
 
+export type AgentRole = 'CFO' | 'CMO' | 'CEO';
+
 export interface CycleResult {
   success: boolean;
   cycleId: number;

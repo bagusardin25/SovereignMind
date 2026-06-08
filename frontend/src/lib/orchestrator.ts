@@ -56,6 +56,7 @@ export interface OrchestratorStatus {
 export interface StatusResponse extends OrchestratorStatus {
   balances: BalanceReport | null;
   scheduler: { isActive: boolean; nextCycleAt: string | null; intervalMinutes: number };
+  disabledAgents: string[];
 }
 
 export interface HealthResponse {
@@ -84,4 +85,38 @@ export async function triggerCycle(): Promise<{ message: string; cycleId: number
     throw new Error(body.error || `Trigger failed: ${res.status}`);
   }
   return res.json();
+}
+
+// ── Agent Toggle ─────────────────────────────────────────────
+
+export type OrchestratorAgentRole = 'CFO' | 'CMO' | 'CEO';
+
+export interface AgentToggleState {
+  CFO: { enabled: boolean };
+  CMO: { enabled: boolean };
+  CEO: { enabled: boolean };
+}
+
+export async function fetchAgentToggles(signal?: AbortSignal): Promise<AgentToggleState> {
+  return get<AgentToggleState>('/agents', signal);
+}
+
+async function agentToggle(role: OrchestratorAgentRole, action: 'enable' | 'disable'): Promise<{ message: string; disabled: string[] }> {
+  const authToken = process.env.NEXT_PUBLIC_ORCHESTRATOR_TOKEN || '';
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  const res = await fetch(`${ORCHESTRATOR_URL}/agents/${role}/${action}`, { method: 'POST', headers });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Agent ${action} failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export function enableAgent(role: OrchestratorAgentRole) {
+  return agentToggle(role, 'enable');
+}
+
+export function disableAgent(role: OrchestratorAgentRole) {
+  return agentToggle(role, 'disable');
 }

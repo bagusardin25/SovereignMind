@@ -19,12 +19,14 @@ import {
   CheckCircle2,
   XCircle,
   ExternalLink,
+  Zap,
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import { toast } from '@/components/ui/Toast';
 import { useOrchestrator } from '@/hooks/useOrchestrator';
 import { contracts } from '@/lib/somnia/contracts';
 import { useTreasuryPaused } from '@/hooks/useTreasuryVault';
+import type { OrchestratorAgentRole } from '@/lib/orchestrator';
 
 interface AgentControlPanelProps {
   currentObjective?: string | null;
@@ -289,6 +291,63 @@ export default function AgentControlPanel({
           error={objectiveError}
           txHash={objectiveHash}
         />
+      </div>
+
+      {/* Agent Toggles */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-[--color-muted-foreground] mb-3">
+          <Zap size={14} className="inline mr-1.5" />
+          Agent Toggles
+          <span className="text-[--color-muted] text-xs ml-2">(save STT by pausing agents)</span>
+        </label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {([
+            { role: 'CFO' as OrchestratorAgentRole, label: 'CFO', cost: '~0.10 STT', desc: 'Price fetch + Risk analysis' },
+            { role: 'CMO' as OrchestratorAgentRole, label: 'CMO', cost: '~0.17 STT', desc: 'Web scrape + Sentiment' },
+            { role: 'CEO' as OrchestratorAgentRole, label: 'CEO', cost: '~0.07 STT', desc: 'Decision + Rebalance' },
+          ]).map(({ role, label, cost, desc }) => {
+            const enabled = orchestrator.agentToggles?.[role]?.enabled ?? true;
+            const isMutating = orchestrator.enableAgent.isPending || orchestrator.disableAgent.isPending;
+
+            return (
+              <div
+                key={role}
+                className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                  enabled
+                    ? 'bg-white/[0.03] border-[--color-border]'
+                    : 'bg-[--color-warning]/5 border-[--color-warning]/20'
+                }`}
+              >
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-[--color-foreground]">{label}</span>
+                    <span className="text-[10px] text-[--color-muted]">{cost}/cycle</span>
+                  </div>
+                  <p className="text-[10px] text-[--color-muted-foreground] mt-0.5">{desc}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    const mutation = enabled ? orchestrator.disableAgent : orchestrator.enableAgent;
+                    mutation.mutate(role, {
+                      onSuccess: () => toast(`${label} agent ${enabled ? 'paused' : 'enabled'}`, 'success'),
+                      onError: (err) => toast(`Toggle failed: ${err.message}`, 'error'),
+                    });
+                  }}
+                  disabled={isMutating || !orchestrator.isOnline}
+                  className={`relative w-11 h-6 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                    enabled ? 'bg-[--color-success]' : 'bg-[--color-muted]'
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                      enabled ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Action Buttons */}

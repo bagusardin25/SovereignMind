@@ -5,7 +5,7 @@
 // ============================================================
 
 import { motion } from 'framer-motion';
-import { Bot, Brain, LineChart, Megaphone } from 'lucide-react';
+import { Bot, Brain, LineChart, Megaphone, Power } from 'lucide-react';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { AGENT_COLORS } from '@/lib/constants';
 import { formatRelativeTime } from '@/lib/constants';
@@ -16,6 +16,9 @@ interface AgentCardProps {
   delay?: number;
   compact?: boolean;
   onClick?: () => void;
+  isPaused?: boolean;
+  isToggling?: boolean;
+  onToggle?: () => void;
 }
 
 const roleIcons: Record<AgentRole, React.ReactNode> = {
@@ -35,17 +38,21 @@ export default function AgentCard({
   delay = 0,
   compact = false,
   onClick,
+  isPaused = false,
+  isToggling = false,
+  onToggle,
 }: AgentCardProps) {
   const colors = AGENT_COLORS[agent.role];
   const isProcessing = agent.status === 'processing';
+  const dimmed = isPaused;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{ opacity: dimmed ? 0.5 : 1, y: 0 }}
       transition={{ duration: 0.5, delay, ease: 'easeOut' }}
       whileHover={{ scale: 1.02, y: -2 }}
-      className={`relative glass rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${
+      className={`relative glass rounded-2xl overflow-hidden transition-all duration-300 ${
         onClick ? 'cursor-pointer' : ''
       }`}
       style={{
@@ -105,7 +112,40 @@ export default function AgentCard({
               <p className="text-xs text-[--color-muted-foreground]">{agent.name}</p>
             </div>
           </div>
-          <StatusBadge status={agent.status} size="sm" />
+          <div className="flex items-center gap-2">
+            {isPaused && (
+              <span className="px-2 py-0.5 rounded-lg bg-[--color-warning]/10 border border-[--color-warning]/30 text-[--color-warning] text-[10px] font-bold">
+                PAUSED
+              </span>
+            )}
+            <StatusBadge status={isPaused ? 'idle' : agent.status} size="sm" />
+            {onToggle && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggle();
+                }}
+                disabled={isToggling}
+                className={`p-1.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                  isPaused
+                    ? 'bg-[--color-success]/10 text-[--color-success] hover:bg-[--color-success]/20'
+                    : 'bg-[--color-error]/10 text-[--color-error] hover:bg-[--color-error]/20'
+                }`}
+                title={isPaused ? `Enable ${agent.role} Agent` : `Pause ${agent.role} Agent`}
+              >
+                {isToggling ? (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  >
+                    <Power size={14} />
+                  </motion.div>
+                ) : (
+                  <Power size={14} />
+                )}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Current Task */}

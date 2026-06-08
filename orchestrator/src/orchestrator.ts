@@ -20,7 +20,7 @@ import { CEOService } from './services/ceo.service';
 import { EventService } from './services/events.service';
 import { FundingService } from './services/funding.service';
 import { PortfolioService } from './services/portfolio.service';
-import type { CycleStep, CycleResult, StepResult } from './types';
+import type { CycleStep, CycleResult, StepResult, AgentRole } from './types';
 
 export class Orchestrator {
   private cfo: CFOService;
@@ -44,6 +44,9 @@ export class Orchestrator {
   // Budget tracking
   private _totalSttSpent = 0;
   private _sessionBudgetExceeded = false;
+
+  // Agent toggle — individually enable/disable agents to save STT
+  private _disabledAgents: Set<AgentRole> = new Set();
 
   constructor(deps: {
     cfo: CFOService;
@@ -70,6 +73,34 @@ export class Orchestrator {
   get consecutiveFailures(): number { return this._consecutiveFailures; }
   get totalSttSpent(): number { return this._totalSttSpent; }
   get sessionBudgetExceeded(): boolean { return this._sessionBudgetExceeded; }
+  get disabledAgents(): Set<AgentRole> { return new Set(this._disabledAgents); }
+
+  /**
+   * Check if a specific agent is enabled (not in the disabled set).
+   */
+  isAgentEnabled(role: AgentRole): boolean {
+    return !this._disabledAgents.has(role);
+  }
+
+  /**
+   * Enable a previously disabled agent. Takes effect on next cycle.
+   */
+  enableAgent(role: AgentRole): void {
+    if (this._disabledAgents.delete(role)) {
+      logger.info(`✅ Agent ${role} enabled — will participate in next cycle`);
+    }
+  }
+
+  /**
+   * Disable an agent to save STT. Takes effect on next cycle.
+   * Disabled agents are skipped during the decision cycle.
+   */
+  disableAgent(role: AgentRole): void {
+    if (!this._disabledAgents.has(role)) {
+      this._disabledAgents.add(role);
+      logger.info(`⏸️ Agent ${role} disabled — will be skipped in next cycle`);
+    }
+  }
 
   /**
    * Manually reset the circuit breaker after operator investigation.
@@ -134,6 +165,9 @@ export class Orchestrator {
     logger.info(`\n${'═'.repeat(50)}`);
     logger.info(`  🔄 Decision Cycle #${cycleId} Starting`);
     logger.info(`  💰 Wallet: ${walletBefore.wallet.balance} STT | Session spent: ${this._totalSttSpent.toFixed(2)} / ${config.maxSessionBudgetSTT} STT`);
+    if (this._disabledAgents.size > 0) {
+      logger.info(`  ⏸️  Disabled agents: ${Array.from(this._disabledAgents).join(', ')} — will be skipped`);
+    }
     logger.info(`${'═'.repeat(50)}\n`);
 
     // ── Guard 4: Minimum wallet balance ───────────────────
@@ -167,34 +201,47 @@ export class Orchestrator {
       }
 
       // ── Step 2: Fetch prices for all tracked tokens ───
-      const priceConfigs = getPriceConfigs();
-      for (const priceConfig of priceConfigs) {
-        await this.executeStep('FETCHING_PRICES', steps, async () => {
-          const txHash = await this.cfo.fetchPrice(priceConfig);
-          const eventReceived = await this.waitForEvent('PriceFetched');
-          return { txHash, symbol: priceConfig.symbol, eventReceived };
-        });
-      }
+      if (!this.isAgentEnabled('CFO')) {
+        logger.warn(`⏸️ CFO disabled — skipping FETCHING_PRICES and ANALYZING_RISK`);
+        steps.push({ step: 'FETCHING_PRICES', success: true, duration: 0, data: { skipped: true, reason: 'agent_disabled' } });
+        steps.push({ step: 'ANALYZING_RISK', success: true, duration: 0, data: { skipped: true, reason: 'agent_disabled' } });
+      } else {
+        const priceConfigs = getPriceConfigs();
+        for (const priceConfig of priceConfigs) {
+          await this.executeStep('FETCHING_PRICES', steps, async () => {
+            const txHash = await this.cfo.fetchPrice(priceConfig);
+            const eventReceived = await this.waitForEvent('PriceFetched');
+            return { txHash, symbol: priceConfig.symbol, eventReceived };
+          });
+        }
 
       // ── Step 3: Analyze risk ──────────────────────────
-      await this.executeStep('ANALYZING_RISK', steps, async () => {
-        const txHash = await this.cfo.analyzeRisk();
-        const eventReceived = await this.waitForEvent('RiskAnalyzed');
-        const riskScore = await this.cfo.getCurrentRiskScore();
-        return { txHash, riskScore, eventReceived };
-      });
+        await this.executeStep('ANALYZING_RISK', steps, async () => {
+          const txHash = await this.cfo.analyzeRisk();
+          const eventReceived = await this.waitForEvent('RiskAnalyzed');
+          const riskScore = await this.cfo.getCurrentRiskScore();
+          return { txHash, riskScore, eventReceived };
+        });
+      }
 
       // ── Step 4: Scan market ───────────────────────────
       // This is the most expensive step (2 chained Agent Runner requests):
       //   1. ParseWeb: scrape website (30-60s)
       //   2. LLM Inference: sentiment analysis (30-60s)
       // Needs 3x normal timeout to account for both steps.
-      const cmoStep = await this.executeStep('SCANNING_MARKET', steps, async () => {
-        const txHash = await this.cmo.scanMarket();
-        const cmoTimeout = config.eventTimeoutSeconds * 3 * 1000;
-        const eventReceived = await this.waitForEvent('SentimentAnalyzed', cmoTimeout);
-        return { txHash, eventReceived };
-      });
+      let cmoStep: StepResult;
+      if (!this.isAgentEnabled('CMO')) {
+        logger.warn(`⏸️ CMO disabled — skipping SCANNING_MARKET`);
+        cmoStep = { step: 'SCANNING_MARKET', success: false, duration: 0, data: { skipped: true, reason: 'agent_disabled' } };
+        steps.push(cmoStep);
+      } else {
+        cmoStep = await this.executeStep('SCANNING_MARKET', steps, async () => {
+          const txHash = await this.cmo.scanMarket();
+          const cmoTimeout = config.eventTimeoutSeconds * 3 * 1000;
+          const eventReceived = await this.waitForEvent('SentimentAnalyzed', cmoTimeout);
+          return { txHash, eventReceived };
+        });
+      }
 
       // ── Smart Step Skip ────────────────────────────────
       // If CMO scan failed or timed out, SKIP CEO entirely.
@@ -209,6 +256,18 @@ export class Orchestrator {
           duration: 0,
           error: `Skipped: ${reason}`,
           data: { skipped: true },
+        });
+      }
+
+      // CEO explicitly disabled by operator
+      if (!shouldSkipExpensiveSteps && !this.isAgentEnabled('CEO')) {
+        shouldSkipExpensiveSteps = true;
+        logger.warn(`⏸️ CEO disabled — skipping CEO_DECISION and PORTFOLIO_REBALANCE`);
+        steps.push({
+          step: 'CEO_DECISION',
+          success: true,
+          duration: 0,
+          data: { skipped: true, reason: 'agent_disabled' },
         });
       }
 

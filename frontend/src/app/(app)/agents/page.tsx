@@ -7,6 +7,7 @@
 
 import { useAccount } from 'wagmi';
 import { useAgentData } from '@/hooks/useAgentData';
+import { useOrchestrator } from '@/hooks/useOrchestrator';
 import { motion } from 'framer-motion';
 import AgentCard from '@/components/agents/AgentCard';
 import AgentControlPanel from '@/components/agents/AgentControlPanel';
@@ -16,6 +17,7 @@ import Skeleton, { SkeletonCard } from '@/components/ui/Skeleton';
 import { AGENT_COLORS } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, ArrowDown, Brain, LineChart, Megaphone, User, Landmark, Shield, Zap, Search } from 'lucide-react';
+import type { OrchestratorAgentRole } from '@/lib/orchestrator';
 
 const CONSOLE_SKELETON_WIDTHS = ['78%', '54%', '66%', '82%', '58%'];
 
@@ -23,6 +25,7 @@ export default function AgentsPage() {
   const router = useRouter();
   const { isConnected } = useAccount();
   const { agents, isLoading } = useAgentData();
+  const orchestrator = useOrchestrator();
 
   if (isLoading) {
     return (
@@ -93,14 +96,26 @@ export default function AgentsPage() {
 
       {/* Agent Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {agents.map((agent, index) => (
-          <AgentCard
-            key={agent.id}
-            agent={agent}
-            delay={index * 0.15}
-            onClick={() => router.push(`/agents/${agent.role.toLowerCase()}`)}
-          />
-        ))}
+        {agents.map((agent, index) => {
+          const role = agent.role as OrchestratorAgentRole;
+          const isPaused = orchestrator.agentToggles?.[role]?.enabled === false;
+          const isToggling = orchestrator.enableAgent.isPending || orchestrator.disableAgent.isPending;
+
+          return (
+            <AgentCard
+              key={agent.id}
+              agent={agent}
+              delay={index * 0.15}
+              isPaused={isPaused}
+              isToggling={isToggling}
+              onToggle={orchestrator.isOnline ? () => {
+                const mutation = isPaused ? orchestrator.enableAgent : orchestrator.disableAgent;
+                mutation.mutate(role);
+              } : undefined}
+              onClick={() => router.push(`/agents/${agent.role.toLowerCase()}`)}
+            />
+          );
+        })}
       </div>
 
       {/* Live Agent Console */}

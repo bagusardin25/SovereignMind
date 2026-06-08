@@ -126,25 +126,27 @@ export function useAgentData() {
   const isLoading = ceoInfo.isLoading || cfoInfo.isLoading || cmoInfo.isLoading;
 
   const agents = useMemo<Agent[]>(() => {
+    const disabled = orchestratorStatus?.disabledAgents ?? [];
+
     // CEO agent
     const phaseVal = typeof ceoPhase.data === 'number'
       ? ceoPhase.data
       : Number(ceoPhase.data ?? 0);
-    const ceoStatus = cyclePhaseToStatus(phaseVal);
+    const ceoStatus = disabled.includes('CEO') ? 'idle' as AgentStatus : cyclePhaseToStatus(phaseVal);
     const ceoPhaseName = CYCLE_PHASE_NAMES[phaseVal] || 'Idle';
-    const ceoTask = ceoPhaseName === 'Idle' ? 'Awaiting next decision cycle' : ceoPhaseName;
+    const ceoTask = disabled.includes('CEO') ? 'Agent paused by owner' : ceoPhaseName === 'Idle' ? 'Awaiting next decision cycle' : ceoPhaseName;
     const ceoDecisions = ceoDecisionCount.data != null ? Number(ceoDecisionCount.data) : undefined;
 
     // CFO agent
     const cfoHasData = cfoLatestRisk.data != null;
-    const cfoStatus: AgentStatus = cfoHasData ? 'active' : 'idle';
-    const cfoTask = cfoHasData ? 'Risk analysis active' : 'Awaiting analysis task';
+    const cfoStatus: AgentStatus = disabled.includes('CFO') ? 'idle' : cfoHasData ? 'active' : 'idle';
+    const cfoTask = disabled.includes('CFO') ? 'Agent paused by owner' : cfoHasData ? 'Risk analysis active' : 'Awaiting analysis task';
     const cfoDecisions = cfoAnalysisCount.data != null ? Number(cfoAnalysisCount.data) : undefined;
 
     // CMO agent — use scanCount (returns 0 instead of reverting like getLatestSignal)
     const cmoHasData = cmoScanCount.data != null && Number(cmoScanCount.data) > 0;
-    const cmoStatus: AgentStatus = cmoHasData ? 'active' : 'idle';
-    const cmoTask = cmoHasData ? 'Market monitoring active' : 'Awaiting scan task';
+    const cmoStatus: AgentStatus = disabled.includes('CMO') ? 'idle' : cmoHasData ? 'active' : 'idle';
+    const cmoTask = disabled.includes('CMO') ? 'Agent paused by owner' : cmoHasData ? 'Market monitoring active' : 'Awaiting scan task';
     const cmoDecisions = cmoSignalCount.data != null ? Number(cmoSignalCount.data) : undefined;
 
     return [
@@ -157,6 +159,7 @@ export function useAgentData() {
     ceoPhase.data, ceoDecisionCount.data,
     cfoAnalysisCount.data, cfoLatestRisk.data,
     cmoSignalCount.data, cmoScanCount.data,
+    orchestratorStatus,
   ]);
 
   // Build system health from on-chain + orchestrator
