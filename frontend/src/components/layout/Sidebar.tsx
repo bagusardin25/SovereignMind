@@ -121,10 +121,10 @@ export default function Sidebar() {
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden flex-1"
                   >
-                    <h1 className="text-sm font-bold gradient-text-primary whitespace-nowrap">
+                    <h1 className="text-sm font-bold text-white tracking-wide whitespace-nowrap">
                       SovereignMind
                     </h1>
-                    <p className="text-[10px] text-[--color-muted] whitespace-nowrap">
+                    <p className="text-[10px] font-medium text-[--color-muted-foreground] whitespace-nowrap uppercase tracking-wider">
                       Autonomous Venture Guild
                     </p>
                   </motion.div>

@@ -70,19 +70,27 @@ export default function Header() {
     <>
       <header className="sticky top-0 z-30 h-16 glass bg-black/20 shadow-md flex items-center justify-between px-4 md:px-6">
         {/* Left: Network Status */}
-        <div className="flex items-center gap-4 pl-12 md:pl-0">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[--color-success]/10 border border-[--color-success]/20">
-            <span className="w-2 h-2 rounded-full bg-[--color-success] status-dot-active" style={{ color: 'var(--color-success)' }} />
-            <span className="text-xs font-medium text-[--color-success] hidden sm:inline">Somnia Testnet</span>
-            <span className="text-xs font-medium text-[--color-success] sm:hidden">Somnia</span>
+        <div className="flex items-center gap-3 pl-12 md:pl-0">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.05] transition-colors cursor-default">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse" />
+            <span className="text-xs font-medium text-white/90 hidden sm:inline">Somnia Testnet</span>
+            <span className="text-xs font-medium text-white/90 sm:hidden">Somnia</span>
           </div>
-          <div className="hidden sm:flex items-center gap-2 text-xs text-[--color-muted-foreground]">
-            <Activity size={14} />
-            <span>Latency: {latency != null ? `${latency}ms` : '—'}</span>
+
+          <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/10">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-white/70">
+              <Activity size={14} className="text-[--color-agent-ceo]" />
+              <span>{latency != null ? `${latency}ms` : '—'}</span>
+            </div>
+            
             {isConnected && onChainAgentCount != null && (
-              <span className="ml-2 px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[10px]">
-                Agents: {Number(onChainAgentCount as bigint)}
-              </span>
+              <>
+                <div className="w-[1px] h-3 bg-white/20" />
+                <div className="flex items-center gap-1.5 text-xs font-medium text-white/70">
+                  <span className="text-[10px] uppercase tracking-wider text-[--color-muted-foreground]">Agents</span>
+                  <span className="text-white/90">{Number(onChainAgentCount as bigint)}</span>
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -169,11 +177,11 @@ export default function Header() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={openChainModal}
-                          className="hidden sm:flex items-center justify-center p-2 rounded-xl glass border border-white/10 hover:bg-white/5 transition-all duration-300"
+                          className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all duration-300 shadow-sm"
                           type="button"
                         >
                           {chain.hasIcon && (
-                            <div className="w-5 h-5 overflow-hidden rounded-full">
+                            <div className="w-5 h-5 overflow-hidden rounded-full bg-black/20 flex-shrink-0 border border-white/10">
                               {chain.iconUrl && (
                                 <img
                                   alt={chain.name ?? 'Chain icon'}
@@ -183,14 +191,17 @@ export default function Header() {
                               )}
                             </div>
                           )}
+                          <span className="text-xs font-bold text-white/90 tracking-wide">
+                            {chain.name}
+                          </span>
                         </button>
 
                         <button 
                           onClick={openAccountModal} 
                           type="button"
-                          className="flex items-center gap-2 px-4 py-2 rounded-xl glass border border-white/10 hover:border-[--color-primary]/50 hover:bg-white/5 transition-all duration-300 shadow-[0_4px_15px_rgba(0,0,0,0.2)]"
+                          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all duration-300 shadow-sm"
                         >
-                          <span className="text-sm font-medium gradient-text-primary">
+                          <span className="text-sm font-bold text-white tracking-wide">
                             {account.displayName}
                           </span>
                         </button>

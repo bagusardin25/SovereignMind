@@ -84,10 +84,8 @@ export default function AgentsPage() {
       {/* Page Title */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2">
         <div className="space-y-1">
-          <h1 className="text-4xl font-extrabold tracking-tight">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 drop-shadow-sm">
-              Agent Guild
-            </span>
+          <h1 className="text-4xl font-extrabold tracking-tight text-[--color-foreground]">
+            Agent Guild
           </h1>
           <p className="text-sm md:text-base text-[--color-muted-foreground] max-w-2xl">
             Monitor and control your autonomous AI agent network. Adjust strategies, toggle agents, and view real-time operations.
