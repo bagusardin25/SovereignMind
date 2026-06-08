@@ -38,6 +38,7 @@ export function useCEODecisionCount() {
     address: contracts.ceoAgent.address,
     abi: contracts.ceoAgent.abi,
     functionName: 'getDecisionCount',
+    query: { refetchInterval: 15_000 },
   });
 }
 
@@ -54,6 +55,7 @@ export function useCEORecentDecisions(count: bigint | undefined) {
     args: count !== undefined ? [count] : undefined,
     query: {
       enabled: count !== undefined,
+      refetchInterval: 15_000,
     },
   });
 }
@@ -67,6 +69,7 @@ export function useCEOCurrentPhase() {
     address: contracts.ceoAgent.address,
     abi: contracts.ceoAgent.abi,
     functionName: 'getCurrentPhase',
+    query: { refetchInterval: 10_000 },
   });
 }
 
@@ -79,6 +82,7 @@ export function useCEOPerformanceMetrics() {
     address: contracts.ceoAgent.address,
     abi: contracts.ceoAgent.abi,
     functionName: 'getPerformanceMetrics',
+    query: { refetchInterval: 30_000 },
   });
 }
 
@@ -115,5 +119,6 @@ export function useCEOCurrentObjective() {
     address: contracts.ceoAgent.address,
     abi: contracts.ceoAgent.abi,
     functionName: 'currentObjective',
+    query: { refetchInterval: 30_000 },
   });
 }

@@ -36,6 +36,7 @@ export function useCFOLatestRisk() {
     address: contracts.cfoAgent.address,
     abi: contracts.cfoAgent.abi,
     functionName: 'getLatestRisk',
+    query: { refetchInterval: 15_000 },
   });
 }
 
@@ -48,6 +49,7 @@ export function useCFORiskScore() {
     address: contracts.cfoAgent.address,
     abi: contracts.cfoAgent.abi,
     functionName: 'getCurrentRiskScore',
+    query: { refetchInterval: 30_000 },
   });
 }
 
@@ -64,6 +66,7 @@ export function useCFOLatestPrice(symbol: string | undefined) {
     args: symbol ? [symbol] : undefined,
     query: {
       enabled: !!symbol,
+      refetchInterval: 15_000,
     },
   });
 }
@@ -77,6 +80,7 @@ export function useCFOTrackedSymbols() {
     address: contracts.cfoAgent.address,
     abi: contracts.cfoAgent.abi,
     functionName: 'getTrackedSymbols',
+    query: { refetchInterval: 30_000 },
   });
 }
 
@@ -89,6 +93,7 @@ export function useCFOAnalysisCount() {
     address: contracts.cfoAgent.address,
     abi: contracts.cfoAgent.abi,
     functionName: 'getAnalysisCount',
+    query: { refetchInterval: 15_000 },
   });
 }
 
@@ -101,5 +106,6 @@ export function useCFORiskThreshold() {
     address: contracts.cfoAgent.address,
     abi: contracts.cfoAgent.abi,
     functionName: 'riskThreshold',
+    query: { refetchInterval: 30_000 },
   });
 }

@@ -32,6 +32,7 @@ export function useAgentCount() {
     address: contracts.agentRegistry.address,
     abi: contracts.agentRegistry.abi,
     functionName: 'getAgentCount',
+    query: { refetchInterval: 15_000 },
   });
 }
 
@@ -60,6 +61,7 @@ export function useAgentInfo(agentAddress: `0x${string}` | undefined) {
     args: agentAddress ? [agentAddress] : undefined,
     query: {
       enabled: !!agentAddress,
+      refetchInterval: 15_000,
     },
   });
 }
@@ -124,5 +126,6 @@ export function useTotalDecisions() {
     address: contracts.agentRegistry.address,
     abi: contracts.agentRegistry.abi,
     functionName: 'totalDecisions',
+    query: { refetchInterval: 15_000 },
   });
 }

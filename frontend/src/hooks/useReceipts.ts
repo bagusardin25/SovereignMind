@@ -9,7 +9,7 @@
 // Uses viem's publicClient.getLogs() since wagmi v2 doesn't
 // have useContractEvents. Fetches logs on mount and caches.
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { usePublicClient } from 'wagmi';
 import { parseAbiItem, type AbiEvent, type Log } from 'viem';
 import { CONTRACT_ADDRESSES } from '@/lib/constants';
@@ -57,144 +57,135 @@ export function useReceipts() {
   const [records, setRecords] = useState<ReceiptRecord[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (!publicClient) {
-      return;
-    }
+  const fetchLogs = useCallback(async () => {
+    if (!publicClient) return;
 
-    let cancelled = false;
+    try {
+      const results: ReceiptRecord[] = [];
 
-    async function fetchLogs() {
+      // Helper to fetch logs in chunks to bypass the 1000 block RPC limit
+      type EventLog = Log & { args?: Record<string, unknown> };
+      const fetchLogsInBatches = async (
+        address: `0x${string}`,
+        event: AbiEvent,
+        maxHistory = BigInt(10000),
+      ): Promise<EventLog[]> => {
+        const latestBlock = await publicClient.getBlockNumber();
+        const startBlock = latestBlock > maxHistory ? latestBlock - maxHistory : BigInt(0);
+        const chunkSize = BigInt(999);
+        let logs: EventLog[] = [];
+        
+        for (let from = startBlock; from <= latestBlock; from += chunkSize + BigInt(1)) {
+          const to = from + chunkSize > latestBlock ? latestBlock : from + chunkSize;
+          try {
+            const chunkLogs = await publicClient.getLogs({
+              address,
+              event,
+              fromBlock: from,
+              toBlock: to,
+            });
+            logs = logs.concat(chunkLogs as EventLog[]);
+          } catch (err) {
+            console.warn(`Failed to fetch logs chunk ${from}-${to} for ${address}:`, err);
+          }
+        }
+        return logs;
+      };
+
+      // Fetch CEO DecisionMade events
       try {
-        const results: ReceiptRecord[] = [];
+        const ceoLogs = await fetchLogsInBatches(
+          CONTRACT_ADDRESSES.ceoAgent as `0x${string}`,
+          CEO_DECISION_MADE
+        );
 
-        // Helper to fetch logs in chunks to bypass the 1000 block RPC limit
-        type EventLog = Log & { args?: Record<string, unknown> };
-        const fetchLogsInBatches = async (
-          address: `0x${string}`,
-          event: AbiEvent,
-          maxHistory = BigInt(10000),
-        ): Promise<EventLog[]> => {
-          const latestBlock = await publicClient!.getBlockNumber();
-          const startBlock = latestBlock > maxHistory ? latestBlock - maxHistory : BigInt(0);
-          const chunkSize = BigInt(999);
-          let logs: EventLog[] = [];
-          
-          for (let from = startBlock; from <= latestBlock; from += chunkSize + BigInt(1)) {
-            const to = from + chunkSize > latestBlock ? latestBlock : from + chunkSize;
-            try {
-              const chunkLogs = await publicClient!.getLogs({
-                address,
-                event,
-                fromBlock: from,
-                toBlock: to,
-              });
-              logs = logs.concat(chunkLogs as EventLog[]);
-            } catch (err) {
-              console.warn(`Failed to fetch logs chunk ${from}-${to} for ${address}:`, err);
-            }
-          }
-          return logs;
-        };
-
-        // Fetch CEO DecisionMade events
-        try {
-          const ceoLogs = await fetchLogsInBatches(
-            CONTRACT_ADDRESSES.ceoAgent as `0x${string}`,
-            CEO_DECISION_MADE
-          );
-
-          for (const log of ceoLogs) {
-            const txHash = log.transactionHash || '';
-            const args = log.args ?? {};
-            results.push({
-              id: `ceo-${args.id?.toString() || '0'}`,
-              requestId: null,
-              txHash,
-              agentRole: 'CEO',
-              explorerUrl: buildExplorerTxUrl(txHash),
-              verificationUrl: buildVerificationUrl(null, txHash),
-              blockNumber: log.blockNumber || BigInt(0),
-              timestamp: args.timestamp ? Number(args.timestamp) * 1000 : 0,
-            });
-          }
-        } catch (err) {
-          console.error('Failed to fetch CEO decision logs:', err);
-        }
-
-        // Fetch CFO AnalysisStarted events
-        try {
-          const cfoLogs = await fetchLogsInBatches(
-            CONTRACT_ADDRESSES.cfoAgent as `0x${string}`,
-            CFO_ANALYSIS_STARTED
-          );
-
-          for (const log of cfoLogs) {
-            const txHash = log.transactionHash || '';
-            const args = log.args ?? {};
-            const requestId = args.requestId?.toString() || null;
-            results.push({
-              id: `cfo-${requestId || txHash}`,
-              requestId,
-              txHash,
-              agentRole: 'CFO',
-              explorerUrl: buildExplorerTxUrl(txHash),
-              verificationUrl: buildVerificationUrl(requestId, txHash),
-              blockNumber: log.blockNumber || BigInt(0),
-              timestamp: args.timestamp ? Number(args.timestamp) * 1000 : 0,
-            });
-          }
-        } catch (err) {
-          console.error('Failed to fetch CFO analysis logs:', err);
-        }
-
-        // Fetch CMO ScanStarted events
-        try {
-          const cmoLogs = await fetchLogsInBatches(
-            CONTRACT_ADDRESSES.cmoAgent as `0x${string}`,
-            CMO_SCAN_STARTED
-          );
-
-          for (const log of cmoLogs) {
-            const txHash = log.transactionHash || '';
-            const args = log.args ?? {};
-            const requestId = args.requestId?.toString() || null;
-            results.push({
-              id: `cmo-${requestId || txHash}`,
-              requestId,
-              txHash,
-              agentRole: 'CMO',
-              explorerUrl: buildExplorerTxUrl(txHash),
-              verificationUrl: buildVerificationUrl(requestId, txHash),
-              blockNumber: log.blockNumber || BigInt(0),
-              timestamp: args.timestamp ? Number(args.timestamp) * 1000 : 0,
-            });
-          }
-        } catch (err) {
-          console.error('Failed to fetch CMO scan logs:', err);
-        }
-
-        // Sort by block number descending
-        results.sort((a, b) => Number(b.blockNumber - a.blockNumber));
-
-        if (!cancelled) {
-          setRecords(results);
-          setIsLoading(false);
+        for (const log of ceoLogs) {
+          const txHash = log.transactionHash || '';
+          const args = log.args ?? {};
+          results.push({
+            id: `ceo-${args.id?.toString() || '0'}`,
+            requestId: null,
+            txHash,
+            agentRole: 'CEO',
+            explorerUrl: buildExplorerTxUrl(txHash),
+            verificationUrl: buildVerificationUrl(null, txHash),
+            blockNumber: log.blockNumber || BigInt(0),
+            timestamp: args.timestamp ? Number(args.timestamp) * 1000 : 0,
+          });
         }
       } catch (err) {
-        console.error('Failed to fetch blockchain receipt logs:', err);
-        if (!cancelled) {
-          setIsLoading(false);
-        }
+        console.error('Failed to fetch CEO decision logs:', err);
       }
+
+      // Fetch CFO AnalysisStarted events
+      try {
+        const cfoLogs = await fetchLogsInBatches(
+          CONTRACT_ADDRESSES.cfoAgent as `0x${string}`,
+          CFO_ANALYSIS_STARTED
+        );
+
+        for (const log of cfoLogs) {
+          const txHash = log.transactionHash || '';
+          const args = log.args ?? {};
+          const requestId = args.requestId?.toString() || null;
+          results.push({
+            id: `cfo-${requestId || txHash}`,
+            requestId,
+            txHash,
+            agentRole: 'CFO',
+            explorerUrl: buildExplorerTxUrl(txHash),
+            verificationUrl: buildVerificationUrl(requestId, txHash),
+            blockNumber: log.blockNumber || BigInt(0),
+            timestamp: args.timestamp ? Number(args.timestamp) * 1000 : 0,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch CFO analysis logs:', err);
+      }
+
+      // Fetch CMO ScanStarted events
+      try {
+        const cmoLogs = await fetchLogsInBatches(
+          CONTRACT_ADDRESSES.cmoAgent as `0x${string}`,
+          CMO_SCAN_STARTED
+        );
+
+        for (const log of cmoLogs) {
+          const txHash = log.transactionHash || '';
+          const args = log.args ?? {};
+          const requestId = args.requestId?.toString() || null;
+          results.push({
+            id: `cmo-${requestId || txHash}`,
+            requestId,
+            txHash,
+            agentRole: 'CMO',
+            explorerUrl: buildExplorerTxUrl(txHash),
+            verificationUrl: buildVerificationUrl(requestId, txHash),
+            blockNumber: log.blockNumber || BigInt(0),
+            timestamp: args.timestamp ? Number(args.timestamp) * 1000 : 0,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch CMO scan logs:', err);
+      }
+
+      // Sort by block number descending
+      results.sort((a, b) => Number(b.blockNumber - a.blockNumber));
+
+      setRecords(results);
+      setIsLoading(false);
+    } catch (err) {
+      console.error('Failed to fetch blockchain receipt logs:', err);
+      setIsLoading(false);
     }
-
-    fetchLogs();
-
-    return () => {
-      cancelled = true;
-    };
   }, [publicClient]);
+
+  // Initial fetch + polling every 30s
+  useEffect(() => {
+    fetchLogs();
+    const interval = setInterval(fetchLogs, 30_000);
+    return () => clearInterval(interval);
+  }, [fetchLogs]);
 
   // Build lookup maps
   const byTxHash = useMemo(() => {

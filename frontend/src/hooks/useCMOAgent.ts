@@ -30,6 +30,7 @@ export function useCMOSignalCount() {
     address: contracts.cmoAgent.address,
     abi: contracts.cmoAgent.abi,
     functionName: 'getSignalCount',
+    query: { refetchInterval: 15_000 },
   });
 }
 
@@ -42,6 +43,7 @@ export function useCMOAggregatedSentiment() {
     address: contracts.cmoAgent.address,
     abi: contracts.cmoAgent.abi,
     functionName: 'getAggregatedSentiment',
+    query: { refetchInterval: 30_000 },
   });
 }
 
@@ -71,6 +73,7 @@ export function useCMOLatestSignal() {
     address: contracts.cmoAgent.address,
     abi: contracts.cmoAgent.abi,
     functionName: 'getLatestSignal',
+    query: { refetchInterval: 15_000 },
   });
 }
 
@@ -83,5 +86,6 @@ export function useCMOScanCount() {
     address: contracts.cmoAgent.address,
     abi: contracts.cmoAgent.abi,
     functionName: 'scanCount',
+    query: { refetchInterval: 30_000 },
   });
 }

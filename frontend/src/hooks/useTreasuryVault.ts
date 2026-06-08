@@ -31,6 +31,7 @@ export function useTreasuryBalance() {
     address: contracts.treasuryVault.address,
     abi: contracts.treasuryVault.abi,
     functionName: 'getBalance',
+    query: { refetchInterval: 15_000 },
   });
 }
 
@@ -43,6 +44,7 @@ export function useTreasuryDecisionCount() {
     address: contracts.treasuryVault.address,
     abi: contracts.treasuryVault.abi,
     functionName: 'getDecisionCount',
+    query: { refetchInterval: 15_000 },
   });
 }
 
@@ -59,6 +61,7 @@ export function useTreasuryRecentDecisions(count: bigint | undefined) {
     args: count !== undefined ? [count] : undefined,
     query: {
       enabled: count !== undefined,
+      refetchInterval: 15_000,
     },
   });
 }
@@ -72,6 +75,7 @@ export function useTreasuryTotalOperations() {
     address: contracts.treasuryVault.address,
     abi: contracts.treasuryVault.abi,
     functionName: 'totalOperations',
+    query: { refetchInterval: 15_000 },
   });
 }
 
@@ -84,6 +88,7 @@ export function useTreasuryTotalDeposited() {
     address: contracts.treasuryVault.address,
     abi: contracts.treasuryVault.abi,
     functionName: 'totalNativeDeposited',
+    query: { refetchInterval: 15_000 },
   });
 }
 
@@ -96,5 +101,6 @@ export function useTreasuryPaused() {
     address: contracts.treasuryVault.address,
     abi: contracts.treasuryVault.abi,
     functionName: 'paused',
+    query: { refetchInterval: 15_000 },
   });
 }
