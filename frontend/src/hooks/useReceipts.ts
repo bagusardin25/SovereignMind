@@ -182,6 +182,7 @@ export function useReceipts() {
 
   // Initial fetch + polling every 30s
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- valid polling pattern: fetch on mount + interval
     fetchLogs();
     const interval = setInterval(fetchLogs, 30_000);
     return () => clearInterval(interval);

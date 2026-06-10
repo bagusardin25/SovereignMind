@@ -25,7 +25,8 @@ export function buildExplorerAddressUrl(address: string): string {
 }
 
 /** Receipt URL for a given requestId (future Receipts API) */
-export function buildReceiptUrl(requestId: string): string {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function buildReceiptUrl(_requestId: string): string {
   // When Receipts API becomes available, replace this
   // For now, point to the AgentRunner address on explorer
   return buildExplorerAddressUrl(AGENT_RUNNER_ADDRESS);

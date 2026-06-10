@@ -6,7 +6,6 @@
 
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import GlassCard from './GlassCard';
 
 interface MetricCardProps {
   label: string;

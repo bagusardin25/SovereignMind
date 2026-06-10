@@ -8,7 +8,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, Activity, Target } from 'lucide-react';
-import { useAccount } from 'wagmi';
 import { useAgentData } from '@/hooks/useAgentData';
 import { useDecisionData } from '@/hooks/useDecisionData';
 import { useTreasuryData } from '@/hooks/useTreasuryData';
@@ -31,11 +30,8 @@ const accentMap: Record<Stat['accent'], string> = {
 };
 
 export default function LiveStatsGrid() {
-  // Wallet connection state
-  const { isConnected } = useAccount();
-
   // Composite on-chain data hooks
-  const { agents, totalDecisions, agentCount, systemHealth } = useAgentData();
+  const { agents, totalDecisions, systemHealth } = useAgentData();
   const { decisions } = useDecisionData(5);
   const { treasury } = useTreasuryData();
   const { data: currentObjective } = useCEOCurrentObjective();

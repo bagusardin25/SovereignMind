@@ -20,13 +20,12 @@ import {
   Activity,
   BarChart3,
 } from 'lucide-react';
-import Link from 'next/link';
 import GlassCard from '@/components/ui/GlassCard';
 import Skeleton, { SkeletonCard, SkeletonMetric } from '@/components/ui/Skeleton';
 import StatusBadge from '@/components/ui/StatusBadge';
 import Breadcrumbs from '@/components/ui/Breadcrumbs';
 import DecisionCard from '@/components/decisions/DecisionCard';
-import { AGENT_COLORS, formatRelativeTime, CONTRACT_ADDRESSES } from '@/lib/constants';
+import { AGENT_COLORS, formatRelativeTime } from '@/lib/constants';
 import type { AgentRole } from '@/lib/types';
 
 const roleIcons: Record<AgentRole, React.ReactNode> = {
@@ -61,7 +60,7 @@ export default function AgentDetailPage({
     description: d.rationale.length > 120 ? `${d.rationale.slice(0, 120)}...` : d.rationale,
     timestamp: d.timestamp,
   }));
-  const { isConnected } = useAccount();
+  useAccount(); // ensure wallet context is available
 
   // Use real contract address
   const contractAddr = agent?.contractAddress || '';

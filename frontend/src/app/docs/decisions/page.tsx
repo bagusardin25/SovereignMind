@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, ArrowLeft, ScrollText, CheckCircle } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
 
 export default function DecisionsDoc() {
   return (
@@ -68,7 +68,7 @@ export default function DecisionsDoc() {
       </div>
 
       <p className="text-[var(--color-on-surface)]/80 font-body-md mb-6 leading-relaxed text-sm sm:text-base">
-        By copying the transaction hash or request ID and visiting the <strong className="text-white">Somnia Block Explorer</strong> (Shannon Testnet), developers and users can inspect the raw bytecode events, confirming that the CFO or CEO did indeed execute under the blockchain's consensus bounds without any external manipulation.
+        By copying the transaction hash or request ID and visiting the <strong className="text-white">Somnia Block Explorer</strong> (Shannon Testnet), developers and users can inspect the raw bytecode events, confirming that the CFO or CEO did indeed execute under the blockchain&apos;s consensus bounds without any external manipulation.
       </p>
 
       {/* Navigation Buttons */}

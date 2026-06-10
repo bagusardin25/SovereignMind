@@ -81,7 +81,7 @@ export default function ReceiptBadge({
 }: ReceiptBadgeProps) {
   const cfg = config[status];
   const Icon = cfg.icon;
-  const href = receiptUrl || (txHash ? undefined : undefined);
+  const linkUrl = receiptUrl || (txHash ? `https://shannon.somnia.network/tx/${txHash}` : undefined);
   const iconSize = size === 'sm' ? 12 : 14;
   const textSize = size === 'sm' ? 'text-[10px]' : 'text-xs';
   const padding = size === 'sm' ? 'px-1.5 py-0.5' : 'px-2.5 py-1';
@@ -106,10 +106,10 @@ export default function ReceiptBadge({
   );
 
   // If there's a link, wrap in <a>
-  if (receiptUrl) {
+  if (linkUrl) {
     return (
       <a
-        href={receiptUrl}
+        href={linkUrl}
         target="_blank"
         rel="noopener noreferrer"
         className="hover:opacity-80 transition-opacity"

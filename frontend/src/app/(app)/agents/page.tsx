@@ -16,14 +16,14 @@ import GlassCard from '@/components/ui/GlassCard';
 import Skeleton, { SkeletonCard } from '@/components/ui/Skeleton';
 import { AGENT_COLORS } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, ArrowDown, Brain, LineChart, Megaphone, User, Landmark, Shield, Zap, Search } from 'lucide-react';
+import { ArrowRight, ArrowDown, User, Landmark } from 'lucide-react';
 import type { OrchestratorAgentRole } from '@/lib/orchestrator';
 
 const CONSOLE_SKELETON_WIDTHS = ['78%', '54%', '66%', '82%', '58%'];
 
 export default function AgentsPage() {
   const router = useRouter();
-  const { isConnected } = useAccount();
+  useAccount(); // ensure wallet context
   const { agents, isLoading } = useAgentData();
   const orchestrator = useOrchestrator();
 

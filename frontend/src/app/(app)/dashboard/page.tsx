@@ -33,7 +33,7 @@ import Link from 'next/link';
 
 export default function DashboardPage() {
   const [now, setNow] = useState(() => Date.now());
-  const { isConnected } = useAccount();
+  useAccount(); // ensure wallet context
 
   // Composite on-chain data hooks
   const { agents, totalDecisions, systemHealth: health, isLoading: agentsLoading } = useAgentData();

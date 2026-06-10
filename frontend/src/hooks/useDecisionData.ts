@@ -23,7 +23,7 @@ import {
   toJsTimestamp,
 } from '@/lib/agent-metadata';
 import { buildExplorerTxUrl } from '@/lib/somnia/receipts';
-import type { Decision, DecisionType, DecisionOutcome, AgentRole } from '@/lib/types';
+import type { Decision, DecisionType, AgentRole } from '@/lib/types';
 
 // ----- On-chain struct types -----
 
@@ -57,6 +57,10 @@ const SENTIMENT_ANALYZED_EVENT = parseAbiItem(
   'event SentimentAnalyzed(string source, uint8 sentiment, uint256 confidence, uint256 timestamp)'
 );
 const SENTIMENT_NAMES = ['NEUTRAL', 'BULLISH', 'BEARISH'];
+
+const DECISION_RECORDED_EVENT = parseAbiItem(
+  'event DecisionRecorded(address indexed agentAddress, uint256 newCount, uint256 timestamp)'
+);
 
 // ----- On-chain event log types -----
 
@@ -207,6 +211,7 @@ function useAgentEventLogs(event: AbiEvent, address: `0x${string}`) {
   }, [publicClient, address, event]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- valid polling pattern: fetch on mount + interval
     fetchLogs();
     const interval = setInterval(fetchLogs, 30_000);
     return () => clearInterval(interval);
@@ -234,7 +239,13 @@ export function useDecisionData(count: number = 20) {
     contracts.cmoAgent.address,
   );
 
-  const isLoading = ceoLoading || treasuryLoading || cfoEventsLoading || cmoEventsLoading;
+  // Fetch DecisionRecorded events from AgentRegistry as canonical fallback
+  const { logs: registryDecisionLogs, isLoading: registryEventsLoading } = useAgentEventLogs(
+    DECISION_RECORDED_EVENT,
+    contracts.agentRegistry.address,
+  );
+
+  const isLoading = ceoLoading || treasuryLoading || cfoEventsLoading || cmoEventsLoading || registryEventsLoading;
 
   const decisions = useMemo<Decision[]>(() => {
     const result: Decision[] = [];
@@ -334,11 +345,44 @@ export function useDecisionData(count: number = 20) {
       }
     }
 
+    // Add DecisionRecorded events from AgentRegistry as fallback
+    // These fill gaps when CEO/Treasury arrays are empty but recordDecision() was called
+    for (const log of registryDecisionLogs) {
+      try {
+        const args = log.args as { agentAddress?: string; newCount?: bigint; timestamp?: bigint } | undefined;
+        if (!args?.timestamp) continue;
+        const ts = Number(args.timestamp) * 1000;
+
+        // Deduplicate: skip if a decision from the same agent already exists within 30s
+        const agentRole: AgentRole = ADDRESS_TO_ROLE[(args.agentAddress || '').toLowerCase()] || 'CEO';
+        const isDuplicate = result.some(
+          (d) => d.agentRole === agentRole && Math.abs(d.timestamp - ts) < 30_000
+        );
+        if (isDuplicate) continue;
+
+        result.push({
+          id: `registry-${log.blockNumber}-${log.logIndex}`,
+          agentRole,
+          type: 'hold',
+          title: `${agentRole} Decision Recorded #${args.newCount?.toString() || '?'}`,
+          rationale: 'On-chain decision recorded via AgentRegistry',
+          action: 'recorded',
+          outcome: 'executed',
+          txHash: log.transactionHash || '',
+          receiptUrl: log.transactionHash ? buildExplorerTxUrl(log.transactionHash) : null,
+          timestamp: ts,
+          confidenceScore: 75,
+        });
+      } catch {
+        // Skip malformed
+      }
+    }
+
     // Sort by timestamp descending (newest first)
     result.sort((a, b) => b.timestamp - a.timestamp);
 
     return result;
-  }, [ceoDecisions, treasuryDecisions, receiptRecords, cfoRiskLogs, cmoSentimentLogs]);
+  }, [ceoDecisions, treasuryDecisions, receiptRecords, cfoRiskLogs, cmoSentimentLogs, registryDecisionLogs]);
 
   const totalDecisionCount = (ceoCount != null ? Number(ceoCount) : 0)
     + (treasuryCount != null ? Number(treasuryCount) : 0);

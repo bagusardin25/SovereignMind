@@ -4,7 +4,6 @@
 // Treasury Page — Vault overview and management
 // ============================================================
 
-import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { useAccount } from 'wagmi';
 import { useTreasuryData } from '@/hooks/useTreasuryData';
@@ -14,7 +13,7 @@ import {
   TrendingUp,
   TrendingDown,
   ArrowDownToLine,
-  ExternalLink,
+
   Shield,
   PieChart,
   Download,
@@ -34,7 +33,6 @@ import MetricCard from '@/components/ui/MetricCard';
 import AllocationChart from '@/components/treasury/AllocationChart';
 import TransactionList from '@/components/treasury/TransactionList';
 import { formatSTT } from '@/lib/constants';
-import { toast } from '@/components/ui/Toast';
 import PortfolioSection from '@/components/treasury/PortfolioSection';
 
 export default function TreasuryPage() {

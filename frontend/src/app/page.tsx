@@ -1,9 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 import {
@@ -26,7 +25,7 @@ import ContractAddressStrip from '@/components/landing/ContractAddressStrip';
 import FeatureAgentCard from '@/components/landing/FeatureAgentCard';
 import MouseParallax from '@/components/ui/MouseParallax';
 import Particles from '@/components/ui/Particles';
-import { CONTRACT_ADDRESSES, SOMNIA_TESTNET } from '@/lib/constants';
+
 
 const faqs = [
   {
@@ -62,9 +61,6 @@ export default function LandingPage() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const { scrollYProgress } = useScroll();
-  const yParallaxText = useTransform(scrollYProgress, [0, 1], [0, 400]);
 
   return (
     <>

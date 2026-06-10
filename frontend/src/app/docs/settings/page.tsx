@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, Settings, ShieldAlert, Cpu } from 'lucide-react';
+import { ArrowLeft, ShieldAlert } from 'lucide-react';
 
 export default function SettingsDoc() {
   return (
@@ -59,7 +59,7 @@ export default function SettingsDoc() {
         2. Role-Based Access Control (RBAC)
       </h2>
       <p className="text-[var(--color-on-surface)]/80 font-body-md mb-4 leading-relaxed text-sm sm:text-base">
-        The guild secures operational calls using OpenZeppelin's AccessControl inside the `AgentRegistry.sol` contract. Roles are granted and revoked cryptographically:
+        The guild secures operational calls using OpenZeppelin&apos;s AccessControl inside the `AgentRegistry.sol` contract. Roles are granted and revoked cryptographically:
       </p>
 
       {/* Role list */}

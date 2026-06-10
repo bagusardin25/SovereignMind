@@ -11,12 +11,9 @@ import { motion } from 'framer-motion';
 import {
   Landmark,
   TrendingUp,
-  TrendingDown,
-  Minus,
   Layers,
   Coins,
   ArrowUpFromLine,
-  ArrowDownToLine,
 } from 'lucide-react';
 import { formatEther } from 'viem';
 import GlassCard from '@/components/ui/GlassCard';

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, ArrowLeft, Cpu, Terminal } from 'lucide-react';
+import { ArrowRight, ArrowLeft } from 'lucide-react';
 
 export default function AgentsDoc() {
   return (
@@ -47,7 +47,7 @@ export default function AgentsDoc() {
             <h3 className="text-lg font-display-lg font-semibold text-white">CFO Agent (CFO_Quant)</h3>
           </div>
           <p className="text-[var(--color-on-surface)]/80 font-body-md text-sm leading-relaxed mb-4">
-            Manages the guild's financial risk parameters. When triggered, it requests live market statistics for the target assets using the JSON API request oracle. The results are fed into the on-chain LLM model along with the current portfolio allocations, generating a risk score (0 to 100) and recommendation logic.
+            Manages the guild&apos;s financial risk parameters. When triggered, it requests live market statistics for the target assets using the JSON API request oracle. The results are fed into the on-chain LLM model along with the current portfolio allocations, generating a risk score (0 to 100) and recommendation logic.
           </p>
           <div className="bg-black/20 p-3 rounded-lg border border-white/5">
             <span className="text-[10px] font-label-caps text-[var(--color-agent-cfo)] font-semibold tracking-wider uppercase block mb-1">Somnia Native Primitives Used</span>
@@ -80,7 +80,7 @@ export default function AgentsDoc() {
       
       {/* Code / Config Box */}
       <div className="glass-dark bg-black/40 border border-white/10 rounded-xl p-5 font-mono text-xs md:text-sm text-[var(--color-primary-container)] overflow-x-auto my-6 shadow-inner">
-        <div className="text-[var(--color-on-surface)]/40 mb-3">// On-Chain Agent request logic inside CEOAgent.sol</div>
+        <div className="text-[var(--color-on-surface)]/40 mb-3">{/* On-Chain Agent request logic inside CEOAgent.sol */}</div>
         <span className="text-[var(--color-primary)]">function</span> <span className="text-[var(--color-secondary)]">requestInference</span>(string memory prompt) <span className="text-[var(--color-primary)]">internal</span> &#123;
         <br />
         &nbsp;&nbsp;bytes memory payload = abi.encodeWithSignature(<span className="text-[var(--color-tertiary)]">&quot;infer(string)&quot;</span>, prompt);
@@ -91,7 +91,7 @@ export default function AgentsDoc() {
       </div>
 
       <p className="text-[var(--color-on-surface)]/80 font-body-md mb-6 leading-relaxed text-sm sm:text-base">
-        Every request made via <code className="text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-1 py-0.5 rounded">createRequest</code> processes off-chain via validators but is verified using Somnia's <strong className="text-white">BFT (Byzantine Fault Tolerance) consensus mechanism</strong>. By utilizing pinned model weights and synchronized random seeds, all validators arrive at the exact same deterministic LLM output, producing a verifiable <strong className="text-[var(--color-primary)]">On-Chain Execution Receipt</strong>.
+        Every request made via <code className="text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-1 py-0.5 rounded">createRequest</code> processes off-chain via validators but is verified using Somnia&apos;s <strong className="text-white">BFT (Byzantine Fault Tolerance) consensus mechanism</strong>. By utilizing pinned model weights and synchronized random seeds, all validators arrive at the exact same deterministic LLM output, producing a verifiable <strong className="text-[var(--color-primary)]">On-Chain Execution Receipt</strong>.
       </p>
 
       {/* Navigation Buttons */}

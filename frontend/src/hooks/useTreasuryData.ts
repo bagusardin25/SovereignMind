@@ -16,7 +16,7 @@ import {
   useTreasuryRecentDecisions,
   useTreasuryDecisionCount,
 } from './useTreasuryVault';
-import { ADDRESS_TO_ROLE, TREASURY_OUTCOMES, toJsTimestamp } from '@/lib/agent-metadata';
+import { ADDRESS_TO_ROLE, toJsTimestamp } from '@/lib/agent-metadata';
 import type { TreasuryState, TokenHolding, Transaction } from '@/lib/types';
 
 // ----- On-chain struct type -----
@@ -47,8 +47,8 @@ export function useTreasuryData(recentCount: number = 20) {
     const balanceWei = balance as bigint | undefined;
     const depositedWei = totalDeposited as bigint | undefined;
 
-    const sttBalance = balanceWei ? parseFloat(formatEther(balanceWei)) : 0;
-    const sttDeposited = depositedWei ? parseFloat(formatEther(depositedWei)) : 0;
+    const sttBalance = balanceWei != null ? parseFloat(formatEther(balanceWei)) : 0;
+    const sttDeposited = depositedWei != null ? parseFloat(formatEther(depositedWei)) : 0;
 
     // Calculate return since inception: (current balance - total deposits) / total deposits
     const returnSinceInception = sttDeposited > 0
@@ -80,7 +80,6 @@ export function useTreasuryData(recentCount: number = 20) {
     if (!recentDecisions || !Array.isArray(recentDecisions)) return [];
 
     return (recentDecisions as OnChainTreasuryDecision[]).map((d) => {
-      const outcome = TREASURY_OUTCOMES[d.outcome] || 'pending';
       const agentRole = ADDRESS_TO_ROLE[d.initiator.toLowerCase()];
       const valueEth = parseFloat(formatEther(d.value));
 

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, ArrowLeft, Landmark, Settings } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Landmark } from 'lucide-react';
 
 export default function TreasuryDoc() {
   return (
@@ -60,7 +60,7 @@ export default function TreasuryDoc() {
 
       {/* Code block */}
       <div className="glass-dark bg-black/40 border border-white/10 rounded-xl p-5 font-mono text-xs md:text-sm text-[var(--color-primary-container)] overflow-x-auto my-6 shadow-inner">
-        <div className="text-[var(--color-on-surface)]/40 mb-3">// Rebalance execution inside TreasuryVault.sol</div>
+        <div className="text-[var(--color-on-surface)]/40 mb-3">{/* Rebalance execution inside TreasuryVault.sol */}</div>
         <span className="text-[var(--color-primary)]">function</span> <span className="text-[var(--color-secondary)]">executeRebalance</span>(
         <br />
         &nbsp;&nbsp;address[] memory tokens,
@@ -69,7 +69,7 @@ export default function TreasuryDoc() {
         <br />
         ) <span className="text-[var(--color-primary)]">external</span> <span className="text-[var(--color-secondary)]">onlyCEO</span> &#123;
         <br />
-        &nbsp;&nbsp;<span className="text-[var(--color-on-surface)]/40">// Securely validates role access and modifies weights on-chain</span>
+        &nbsp;&nbsp;<span className="text-[var(--color-on-surface)]/40">{/* Securely validates role access and modifies weights on-chain */}</span>
         <br />
         &nbsp;&nbsp;_performAssetSwaps(tokens, weights);
         <br />

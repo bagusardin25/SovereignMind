@@ -7,7 +7,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { parseEther } from 'viem';
 import {
   Play,
   Pause,
@@ -302,48 +301,80 @@ export default function AgentControlPanel({
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {([
-            { role: 'CFO' as OrchestratorAgentRole, label: 'CFO', cost: '~0.10 STT', desc: 'Price fetch + Risk analysis' },
-            { role: 'CMO' as OrchestratorAgentRole, label: 'CMO', cost: '~0.17 STT', desc: 'Web scrape + Sentiment' },
-            { role: 'CEO' as OrchestratorAgentRole, label: 'CEO', cost: '~0.07 STT', desc: 'Decision + Rebalance' },
-          ]).map(({ role, label, cost, desc }) => {
+            { role: 'CFO' as OrchestratorAgentRole, label: 'CFO', cost: '~0.10 STT', desc: 'Price fetch + Risk analysis', color: 'var(--color-agent-cfo)' },
+            { role: 'CMO' as OrchestratorAgentRole, label: 'CMO', cost: '~0.17 STT', desc: 'Web scrape + Sentiment', color: 'var(--color-agent-cmo)' },
+            { role: 'CEO' as OrchestratorAgentRole, label: 'CEO', cost: '~0.07 STT', desc: 'Decision + Rebalance', color: 'var(--color-agent-ceo)' },
+          ]).map(({ role, label, cost, desc, color }) => {
             const enabled = orchestrator.agentToggles?.[role]?.enabled ?? true;
             const isMutating = orchestrator.enableAgent.isPending || orchestrator.disableAgent.isPending;
 
             return (
               <div
                 key={role}
-                className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-300 hover:-translate-y-0.5 ${
+                className={`relative p-4 rounded-xl border transition-all duration-300 hover:-translate-y-0.5 ${
                   enabled
-                    ? 'bg-gradient-to-br from-white/[0.05] to-transparent border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.02)]'
-                    : 'bg-red-500/5 border-red-500/20 grayscale-[0.5]'
+                    ? 'bg-gradient-to-br from-white/[0.06] to-transparent border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.03)]'
+                    : 'bg-red-500/[0.04] border-red-500/15'
                 }`}
               >
-                <div>
+                {/* Top row: agent info + status badge */}
+                <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
+                    <span
+                      className={`w-2 h-2 rounded-full shrink-0 ${enabled ? 'animate-pulse' : ''}`}
+                      style={{ backgroundColor: enabled ? color : 'rgba(255,255,255,0.15)' }}
+                    />
                     <span className="text-sm font-bold text-[--color-foreground]">{label}</span>
-                    <span className="text-[10px] text-[--color-muted]">{cost}/cycle</span>
                   </div>
-                  <p className="text-[10px] text-[--color-muted-foreground] mt-0.5">{desc}</p>
-                </div>
-                <button
-                  onClick={() => {
-                    const mutation = enabled ? orchestrator.disableAgent : orchestrator.enableAgent;
-                    mutation.mutate(role, {
-                      onSuccess: () => toast(`${label} agent ${enabled ? 'paused' : 'enabled'}`, 'success'),
-                      onError: (err) => toast(`Toggle failed: ${err.message}`, 'error'),
-                    });
-                  }}
-                  disabled={isMutating || !orchestrator.isOnline}
-                  className={`relative w-12 h-6 rounded-full transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-inner ${
-                    enabled ? 'bg-[--color-agent-ceo] shadow-[0_0_10px_rgba(255,255,255,0.2)]' : 'bg-white/10'
-                  }`}
-                >
                   <span
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-300 ${
-                      enabled ? 'translate-x-6' : 'translate-x-0'
+                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                      enabled
+                        ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+                        : 'bg-red-500/10 text-red-400 border border-red-500/20'
                     }`}
-                  />
-                </button>
+                  >
+                    {enabled ? 'ON' : 'OFF'}
+                  </span>
+                </div>
+
+                {/* Description + cost */}
+                <p className="text-[10px] text-[--color-muted-foreground] mb-1">{desc}</p>
+                <p className="text-[10px] text-[--color-muted] mb-3">{cost}/cycle</p>
+
+                {/* Toggle switch — larger and clearer */}
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-[--color-muted-foreground]">
+                    {enabled ? 'Click to pause' : 'Click to enable'}
+                  </span>
+                  <button
+                    onClick={() => {
+                      const mutation = enabled ? orchestrator.disableAgent : orchestrator.enableAgent;
+                      mutation.mutate(role, {
+                        onSuccess: () => toast(`${label} agent ${enabled ? 'paused' : 'enabled'}`, 'success'),
+                        onError: (err) => toast(`Toggle failed: ${err.message}`, 'error'),
+                      });
+                    }}
+                    disabled={isMutating || !orchestrator.isOnline}
+                    className={`relative w-14 h-7 rounded-full transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed ${
+                      enabled
+                        ? 'shadow-[0_0_12px_rgba(52,211,153,0.3)]'
+                        : 'shadow-inner'
+                    }`}
+                    style={{
+                      backgroundColor: enabled ? 'rgb(52, 211, 153)' : 'rgba(255, 255, 255, 0.08)',
+                    }}
+                  >
+                    <span
+                      className={`absolute top-1 left-1 w-5 h-5 rounded-full shadow-md transition-transform duration-300 flex items-center justify-center ${
+                        enabled ? 'translate-x-7 bg-white' : 'translate-x-0 bg-white/70'
+                      }`}
+                    >
+                      {isMutating ? (
+                        <Loader2 size={10} className="animate-spin text-gray-500" />
+                      ) : null}
+                    </span>
+                  </button>
+                </div>
               </div>
             );
           })}

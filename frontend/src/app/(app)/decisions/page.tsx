@@ -5,7 +5,7 @@
 // ============================================================
 
 import { useState, useMemo, useEffect } from 'react';
-import { useAccount } from 'wagmi';
+
 import { useDecisionData } from '@/hooks/useDecisionData';
 import { motion } from 'framer-motion';
 import {
@@ -20,7 +20,7 @@ import {
 import { downloadCSV } from '@/lib/exportUtils';
 import GlassCard from '@/components/ui/GlassCard';
 import DecisionCard from '@/components/decisions/DecisionCard';
-import Skeleton, { SkeletonCard, SkeletonDecision } from '@/components/ui/Skeleton';
+import Skeleton, { SkeletonDecision } from '@/components/ui/Skeleton';
 import { AGENT_COLORS } from '@/lib/constants';
 import type { AgentRole, DecisionType } from '@/lib/types';
 
@@ -32,7 +32,7 @@ export default function DecisionsPage() {
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const { isConnected } = useAccount();
+
 
   // Composite on-chain decision data
   const { decisions: allDecisions, totalDecisionCount } = useDecisionData(50);

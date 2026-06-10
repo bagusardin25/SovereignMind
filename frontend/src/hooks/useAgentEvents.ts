@@ -178,6 +178,7 @@ export function useAgentEvents() {
 
   // Initial fetch + polling every 15s
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- valid polling pattern: fetch on mount + interval
     fetchEvents();
     const interval = setInterval(fetchEvents, 15_000);
     return () => clearInterval(interval);

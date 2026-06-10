@@ -448,13 +448,23 @@ contract CMOAgent is IAgentCallback {
     }
 
     function _calculateDeposit(uint256 agentId) internal view returns (uint256) {
-        uint256 baseDeposit = agentRunner.getRequestDeposit();
+        uint256 baseDeposit;
         uint256 perAgentCost;
+
+        // Try to get base deposit from AgentRunner
+        try agentRunner.getRequestDeposit() returns (uint256 deposit) {
+            baseDeposit = deposit;
+        } catch {
+            baseDeposit = 30000000000000000; // 0.03 STT fallback for reserve
+        }
+
+        // Try to get per-agent cost from AgentRunner
         try agentRunner.getAgentPrice(agentId) returns (uint256 price) {
             perAgentCost = price;
         } catch {
-            perAgentCost = 100000000000000000; // 0.10 STT fallback
+            perAgentCost = 100000000000000000; // 0.10 STT fallback per agent
         }
+
         return baseDeposit + (perAgentCost * 3); // subcommittee size = 3
     }
 

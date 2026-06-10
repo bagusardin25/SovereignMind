@@ -27,12 +27,6 @@ const roleIcons: Record<AgentRole, React.ReactNode> = {
   CMO: <Megaphone size={24} />,
 };
 
-const roleLabels: Record<AgentRole, string> = {
-  CEO: 'Chief Executive Officer',
-  CFO: 'Chief Financial Officer',
-  CMO: 'Chief Marketing Officer',
-};
-
 export default function AgentCard({
   agent,
   delay = 0,

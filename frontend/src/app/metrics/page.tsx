@@ -33,7 +33,7 @@ const statCardClass =
 const explorerBase = SOMNIA_TESTNET.blockExplorers.default.url;
 
 export default function PublicMetricsPage() {
-  const { agents, totalDecisions, systemHealth, isLoading } = useAgentData();
+  const { agents, totalDecisions, systemHealth } = useAgentData();
   const { decisions, isLoading: decisionsLoading } = useDecisionData(10);
   const { treasury } = useTreasuryData();
   const { data: currentObjective } = useCEOCurrentObjective();

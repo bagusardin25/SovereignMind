@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, ArrowLeft, TrendingUp, Info } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Info } from 'lucide-react';
 
 export default function PortfolioDoc() {
   return (
@@ -14,7 +14,7 @@ export default function PortfolioDoc() {
         Portfolio & Investments
       </h1>
       <p className="text-[var(--color-on-surface)]/80 font-body-md text-base sm:text-lg mb-8 leading-relaxed font-light">
-        SovereignMind manages capital pools via the `VaultShares.sol` smart contract. By investing STT tokens, users receive Vault Shares representing fractional ownership of the guild's managed assets.
+        SovereignMind manages capital pools via the `VaultShares.sol` smart contract. By investing STT tokens, users receive Vault Shares representing fractional ownership of the guild&apos;s managed assets.
       </p>
 
       <h2 className="text-xl sm:text-2xl font-display-lg font-semibold text-white mt-10 mb-4 border-b border-white/10 pb-2">
@@ -46,7 +46,7 @@ export default function PortfolioDoc() {
       
       {/* Code math box */}
       <div className="glass-dark bg-black/40 border border-white/10 rounded-xl p-5 font-mono text-xs md:text-sm text-[var(--color-primary-container)] overflow-x-auto my-6 shadow-inner">
-        <div className="text-[var(--color-on-surface)]/40 mb-3">// Share minting math inside VaultShares.sol</div>
+        <div className="text-[var(--color-on-surface)]/40 mb-3">{/* Share minting math inside VaultShares.sol */}</div>
         uint256 sharesToMint = (depositAmount * totalShareSupply) / totalManagedAssets;
         <br />
         <span className="text-[var(--color-tertiary)]">_mint</span>(userAddress, sharesToMint);

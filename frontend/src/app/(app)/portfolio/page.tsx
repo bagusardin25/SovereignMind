@@ -12,11 +12,10 @@ import {
   Wallet,
   ArrowDownToLine,
   ArrowUpFromLine,
-  TrendingUp,
+
   Percent,
   CircleDollarSign,
-  TrendingDown,
-  Info,
+
   Loader2,
   CheckCircle2,
   Coins,
@@ -26,7 +25,6 @@ import {
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import MetricCard from '@/components/ui/MetricCard';
-import Skeleton, { SkeletonMetric, SkeletonTable } from '@/components/ui/Skeleton';
 import { formatSTT, formatCompact } from '@/lib/constants';
 import {
   useSharePrice,
@@ -48,7 +46,6 @@ export default function PortfolioPage() {
   const { address, isConnected } = useAccount();
 
   const vaultSharesAddress = contracts.vaultShares.address || undefined;
-  const isDeployed = !!vaultSharesAddress;
 
   // Read User STT Balance
   const { data: sttBalanceData, refetch: refetchSttBalance } = useBalance({
@@ -58,7 +55,7 @@ export default function PortfolioPage() {
   // Read Hooks from VaultShares
   const { data: sharePrice, refetch: refetchSharePrice } = useSharePrice();
   const { data: totalValue, refetch: refetchTotalValue } = useTotalPortfolioValue();
-  const { data: totalSupply, refetch: refetchTotalSupply } = useVaultTotalSupply();
+  const { refetch: refetchTotalSupply } = useVaultTotalSupply();
   const { data: userShares, refetch: refetchUserShares } = useUserShares(address);
   const { deposited, withdrawn, depositCount, withdrawCount } = useVaultStats();
   const { data: allocation, refetch: refetchAllocation } = usePortfolioAllocation();
@@ -81,6 +78,7 @@ export default function PortfolioPage() {
       depositCount.refetch();
       withdrawCount.refetch();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vaultDeposit.isSuccess, vaultWithdraw.isSuccess]);
 
   // Compute User values

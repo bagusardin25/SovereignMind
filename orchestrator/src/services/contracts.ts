@@ -123,8 +123,8 @@ export function createContracts(signer: ethers.Signer): Contracts {
 
 // Fallback per-agent execution costs (used only if on-chain query fails)
 const FALLBACK_PER_AGENT_COSTS: Record<string, bigint> = {
-  '13174292974160097713': ethers.parseEther('0.03'), // JSON API Request Agent
-  '12847293847561029384': ethers.parseEther('0.07'), // LLM Inference Agent
+  '13174292974160097713': ethers.parseEther('0.10'), // JSON API Request Agent (updated to 0.10)
+  '12847293847561029384': ethers.parseEther('0.10'), // LLM Inference Agent (updated to 0.10)
   '12875401142070969085': ethers.parseEther('0.10'), // LLM Parse Website Agent
 };
 const SUBCOMMITTEE_SIZE = 3n;

@@ -58,22 +58,27 @@ function buildAgent(
   status: AgentStatus,
   currentTask: string,
   decisionsOverride?: number,
+  avgResponseMs?: number,
 ): Agent {
   const meta = AGENT_METADATA[role];
-  const now = Date.now();
   const registeredAt = data?.registeredAt ? Number(data.registeredAt) * 1000 : 0;
   const lastAction = data?.lastActionTimestamp ? Number(data.lastActionTimestamp) * 1000 : 0;
-  const decisions = decisionsOverride ?? (data?.decisionsCount ? Number(data.decisionsCount) : 0);
+  const registryDecisions = data?.decisionsCount ? Number(data.decisionsCount) : 0;
+  const decisions = Math.max(registryDecisions, decisionsOverride ?? 0);
   const success = data?.successCount ? Number(data.successCount) : 0;
 
   // Determine effective status:
-  // - If we have on-chain data AND the agent was registered (registeredAt > 0)
-  //   but is now deactivated (isActive === false), show 'error'.
-  // - If registeredAt === 0, the agent isn't registered on-chain yet — use
-  //   the status derived from agent-specific hooks (idle/active/processing).
+  // - If registered + deactivated (isActive === false) → 'error'
+  // - If registered + active (isActive === true) and downstream says 'idle' → upgrade to 'active'
+  // - If not registered on-chain yet → use downstream-derived status as-is
   const isRegistered = data != null && Number(data.registeredAt) > 0;
   const isDeactivated = isRegistered && data.isActive === false;
-  const effectiveStatus: AgentStatus = isDeactivated ? 'error' : status;
+  const isActiveOnChain = isRegistered && data.isActive === true;
+  const effectiveStatus: AgentStatus = isDeactivated
+    ? 'error'
+    : isActiveOnChain && status === 'idle'
+      ? 'active'
+      : status;
 
   return {
     id: `agent-${role.toLowerCase()}`,
@@ -90,7 +95,7 @@ function buildAgent(
       : 0,
     decisionsCount: decisions,
     successRate: decisions > 0 ? Math.round((success / decisions) * 1000) / 10 : 0,
-    avgResponseTime: 0,
+    avgResponseTime: avgResponseMs ?? 0,
     objective: meta.objective,
   };
 }
@@ -136,6 +141,10 @@ export function useAgentData() {
     const ceoPhaseName = CYCLE_PHASE_NAMES[phaseVal] || 'Idle';
     const ceoTask = disabled.includes('CEO') ? 'Agent paused by owner' : ceoPhaseName === 'Idle' ? 'Awaiting next decision cycle' : ceoPhaseName;
     const ceoDecisions = ceoDecisionCount.data != null ? Number(ceoDecisionCount.data) : undefined;
+    const ceoAvgResponse = (() => {
+      const m = normalizeCEOMetrics(ceoMetrics.data);
+      return m.averageCycleTime > BigInt(0) ? Number(m.averageCycleTime) * 1000 : undefined;
+    })();
 
     // CFO agent
     const cfoHasData = cfoLatestRisk.data != null;
@@ -150,13 +159,13 @@ export function useAgentData() {
     const cmoDecisions = cmoSignalCount.data != null ? Number(cmoSignalCount.data) : undefined;
 
     return [
-      buildAgent('CEO', ceoInfo.data as AgentInfo | undefined, ceoStatus, ceoTask, ceoDecisions),
+      buildAgent('CEO', ceoInfo.data as AgentInfo | undefined, ceoStatus, ceoTask, ceoDecisions, ceoAvgResponse),
       buildAgent('CFO', cfoInfo.data as AgentInfo | undefined, cfoStatus, cfoTask, cfoDecisions),
       buildAgent('CMO', cmoInfo.data as AgentInfo | undefined, cmoStatus, cmoTask, cmoDecisions),
     ];
   }, [
     ceoInfo.data, cfoInfo.data, cmoInfo.data,
-    ceoPhase.data, ceoDecisionCount.data,
+    ceoPhase.data, ceoDecisionCount.data, ceoMetrics.data,
     cfoAnalysisCount.data, cfoLatestRisk.data,
     cmoSignalCount.data, cmoScanCount.data,
     orchestratorStatus,

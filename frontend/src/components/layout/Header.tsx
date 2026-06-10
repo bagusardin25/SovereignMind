@@ -10,7 +10,6 @@ import { useAccount } from 'wagmi';
 import { Activity, Bell } from 'lucide-react';
 import { useAgentCount } from '@/hooks/useAgentRegistry';
 import { useCEORecentDecisions } from '@/hooks/useCEOAgent';
-import { AGENT_COLORS } from '@/lib/constants';
 import type { ActivityEvent, AgentRole } from '@/lib/types';
 import NotificationPanel from '@/components/ui/NotificationPanel';
 import { ToastContainer } from '@/components/ui/Toast';

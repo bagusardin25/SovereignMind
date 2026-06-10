@@ -23,7 +23,7 @@ export default function GettingStartedDoc() {
         <div>
           <h4 className="font-semibold text-purple-200 text-sm mb-1">What is an Autonomous Venture Guild?</h4>
           <p className="text-slate-300 text-sm leading-relaxed">
-            Unlike traditional DAOs that rely on slow, human-governed voting processes, SovereignMind operates autonomously. It uses Solidity smart contracts coupled with Somnia's native on-chain AI models to analyze markets, score risk, manage treasury funds, and execute rebalances entirely programmatically.
+            Unlike traditional DAOs that rely on slow, human-governed voting processes, SovereignMind operates autonomously. It uses Solidity smart contracts coupled with Somnia&apos;s native on-chain AI models to analyze markets, score risk, manage treasury funds, and execute rebalances entirely programmatically.
           </p>
         </div>
       </div>
@@ -41,7 +41,7 @@ export default function GettingStartedDoc() {
           <Brain className="text-purple-400 mb-3" size={24} />
           <h3 className="font-semibold text-white text-sm mb-1">On-Chain Intelligence</h3>
           <p className="text-slate-400 text-xs leading-relaxed">
-            All decision-making models execute directly on-chain through Somnia's validator network, ensuring trustless execution.
+            All decision-making models execute directly on-chain through Somnia&apos;s validator network, ensuring trustless execution.
           </p>
         </div>
         <div className="bg-slate-900/40 border border-slate-800/80 p-5 rounded-xl">
