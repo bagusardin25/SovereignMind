@@ -44,70 +44,92 @@ Every decision produces a **public execution receipt** verifiable via Somnia's c
 ## 🏗 Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Frontend (Next.js + Vercel)              │
-│  Dashboard · Agent Monitor · Decision Log · Treasury View   │
-│         wagmi v2 + RainbowKit + ethers.js v6               │
-└────────────────────────┬────────────────────────────────────┘
-                         │ Read contract state / events
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│              Orchestrator (Node.js + Express)               │
-│  Scheduler · Auto-funding · Sequential Cycle Engine         │
-│         ethers.js v6 · node-cron · Winston Logging         │
-└────────────────────────┬────────────────────────────────────┘
-                         │ Write transactions / trigger cycles
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  Somnia Testnet (EVM-Compatible)             │
-│                                                             │
-│  ┌──────────────┐  delegates   ┌──────────────────────┐    │
-│  │ CEOAgent.sol │─────────────▶│    CFOAgent.sol       │    │
-│  │ (Orchestrator)│              │ (Risk & Finance)     │    │
-│  └──────┬───────┘              └──────────┬───────────┘    │
-│         │ delegates                       │                 │
-│         ▼                                 │ executes        │
-│  ┌──────────────────┐                     ▼                 │
-│  │  CMOAgent.sol    │          ┌──────────────────────┐    │
-│  │ (Market Intel)   │          │  TreasuryVault.sol   │    │
-│  └──────────────────┘          │  (Asset Management)  │    │
-│                                └──────────────────────┘    │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │              AgentRegistry.sol                       │  │
-│  │        (Role-based Access Control)                   │  │
-│  └──────────────────────────────────────────────────────┘  │
-│                         │                                   │
-│                         ▼                                   │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │           Somnia Agent Runner (Validator Nodes)       │  │
-│  │                                                      │  │
-│  │  ┌─────────────┐ ┌──────────────┐ ┌──────────────┐  │  │
-│  │  │ JSON API    │ │ LLM Inference│ │ LLM Parse    │  │  │
-│  │  │ Request     │ │ Agent        │ │ Website      │  │  │
-│  │  │ Agent       │ │ (Determin.)  │ │ Agent        │  │  │
-│  │  └─────────────┘ └──────────────┘ └──────────────┘  │  │
-│  └──────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│                    Frontend (Next.js + Vercel)                │
+│  Dashboard · Agent Monitor · Decision Log · Treasury View     │
+│         wagmi v2 + RainbowKit + ethers.js v6                 │
+└──────────────────────────┬────────────────────────────────────┘
+                           │ Read contract state / events
+                           ▼
+┌───────────────────────────────────────────────────────────────┐
+│               Orchestrator (Node.js + Express)                │
+│  Scheduler · Auto-funding · Cycle Engine (6 steps)           │
+│  Fund → Fetch → Analyze → Scan → Decide → Rebalance         │
+│         ethers.js v6 · node-cron · Winston Logging           │
+└──────────┬──────────────────────────────┬─────────────────────┘
+           │ Write transactions (v3 core)  │ Write (v4 portfolio)
+           ▼                              ▼
+┌───────────────────────────────────────────────────────────────┐
+│                  Somnia Testnet (EVM-Compatible)               │
+│                                                               │
+│  ┌──────────────┐  delegates   ┌──────────────────────┐      │
+│  │ CEOAgent.sol │─────────────▶│    CFOAgent.sol       │      │
+│  │ (Orchestrator)│              │ (Risk & Finance)     │      │
+│  └──────┬───────┘              └──────────┬───────────┘      │
+│         │ delegates                       │                   │
+│         ▼                                 │ executes          │
+│  ┌──────────────────┐                     ▼                   │
+│  │  CMOAgent.sol    │          ┌──────────────────────┐      │
+│  │ (Market Intel)   │          │  TreasuryVault.sol   │      │
+│  └──────────────────┘          │  (Asset Management)  │      │
+│                                └──────────────────────┘      │
+│                                                               │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │              v4 Synthetic Portfolio System              │  │
+│  │                                                        │  │
+│  │  ┌──────────────┐    pushes price via handleResponse() │  │
+│  │  │ PriceOracle  │◄─────────────────────────────       │  │
+│  │  └──────┬───────┘                                     │  │
+│  │         │ reads                                        │  │
+│  │         ▼                                              │  │
+│  │  ┌──────────────────────────┐                         │  │
+│  │  │  SyntheticSwapRouter     │                         │  │
+│  │  └──┬─────────────────┬────┘                         │  │
+│  │     │ swaps            │ mints / burns                │  │
+│  │     ▼                  ▼                              │  │
+│  │  ┌──────────┐   ┌──────────────────────┐             │  │
+│  │  │Vault     │   │  SyntheticToken      │             │  │
+│  │  │Shares    │   │ (sBTC, sETH, sSOL)   │             │  │
+│  │  └──────────┘   └──────────────────────┘             │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                                                               │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │              AgentRegistry.sol                         │  │
+│  │        (Role-based Access Control)                     │  │
+│  └────────────────────────────────────────────────────────┘  │
+│                           │                                   │
+│                           ▼                                   │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │           Somnia Agent Runner (Validator Nodes)         │  │
+│  │                                                        │  │
+│  │  ┌─────────────┐ ┌──────────────┐ ┌──────────────┐    │  │
+│  │  │ JSON API    │ │ LLM Inference│ │ LLM Parse    │    │  │
+│  │  │ Request     │ │ Agent        │ │ Website      │    │  │
+│  │  │ Agent       │ │ (Determin.)  │ │ Agent        │    │  │
+│  │  └─────────────┘ └──────────────┘ └──────────────┘    │  │
+│  └────────────────────────────────────────────────────────┘  │
+└───────────────────────────────────────────────────────────────┘
 ```
 
 ### Request-Response Flow
 
 ```
-Contract                    Somnia Agent Runner              Contract
-   │                              │                              │
-   │── createRequest() ──────────▶│                              │
-   │   (deposit + payload)        │                              │
-   │                              │── BFT Consensus ──▶          │
-   │                              │   (validator nodes)          │
-   │                              │                              │
-   │◀── handleResponse() ────────│                              │
-   │   (requestId, data, status)  │                              │
-   │                                                             │
-   │── Execute Decision ────────────────────────────────────────▶│
-   │   (rebalance / allocate)     │                              │
-   │                              │                              │
-   │◀── Execution Receipt ───────│                              │
-       (public, auditable)        
+Agent Contract              Somnia Agent Runner             TreasuryVault
+(CEO / CFO / CMO)                                               │
+      │                              │                          │
+      │── createRequest() ──────────▶│                          │
+      │   (deposit + payload)        │                          │
+      │                              │── BFT Consensus ──▶      │
+      │                              │   (validator nodes)      │
+      │                              │                          │
+      │◀── handleResponse() ────────│                          │
+      │   (requestId, data, status)  │                          │
+      │                                                        │
+      │── executeRebalance() ──────────────────────────────────▶│
+      │   (allocate / rebalance)     │                          │
+      │                                                        │
+      │◀── DecisionExecuted event ─────────────────────────────│
+      │   (receipt: rationale, confidence, actions)            │
 ```
 
 ---
@@ -133,7 +155,7 @@ Contract                    Somnia Agent Runner              Contract
 
 ### 🔄 Agent Orchestration Backend
 - Automated decision cycles every 15 minutes via cron scheduler
-- Sequential step engine: Fund → Fetch Prices → Analyze Risk → Scan Market → CEO Decision
+- Sequential 6-step engine: Fund → Fetch Prices → Analyze Risk → Scan Market → CEO Decision → Portfolio Rebalance
 - Auto-funding: monitors agent contract balances, tops up when below threshold
 - Health API with endpoints for monitoring, triggering, and controlling cycles
 
@@ -217,17 +239,17 @@ Add Somnia Testnet to your wallet:
 
 | Contract | Address | Status |
 |----------|---------|--------|
-| AgentRegistry | `0xc7aaa0fbef5660E2AF3592a4D80F278f48e989a2` | ✅ Deployed (v3) |
-| TreasuryVault | `0x67f363ef90FC2f1C4AFD530f18C706d9A0012497` | ✅ Deployed (v3) |
-| CEOAgent | `0x22CbB6f3ef01478b68846291390D91C2eEE92e0B` | ✅ Deployed (v3) |
-| CFOAgent | `0xCa324fC74A3D8C52D9128BC158ef62a6004fa7De` | ✅ Deployed (v3) |
-| CMOAgent | `0x80Ac28fc43899dB56a5db28b3767fd5Bf61BdECB` | ✅ Deployed (v3) |
-| PriceOracle | `0xc01BDABB279dCBf89F093b8efB4294E10763B119` | ✅ Deployed (v4) |
-| SyntheticSwapRouter | `0x4c92c0EdF00a95702a1268DC01196b7f7144405d` | ✅ Deployed (v4) |
-| VaultShares | `0x2029d8E6333A43E17d400b4f8EDF4694Af79aEe6` | ✅ Deployed (v4) |
-| sBTC | `0xcb79A18D66343072D312D2416a3d4bcd4C86d19a` | ✅ Deployed (v4) |
-| sETH | `0x6Fb11bA7c20e10F8db34a99DCbe29473bFDac155` | ✅ Deployed (v4) |
-| sSOL | `0x24aBB4203C69695c59bf8BD4FAe26C18f72eA126` | ✅ Deployed (v4) |
+| AgentRegistry | `0xE2B310a670854F8d507B96d41b248e49A5f5324A` | ✅ Deployed |
+| TreasuryVault | `0x44278a104681739F70d64CFF83DB127Da02112Ec` | ✅ Deployed |
+| CEOAgent | `0xA267764bDC6a53Dc8aF41D739E51e42dD3Ca6097` | ✅ Deployed |
+| CFOAgent | `0x8dd3a39C84256f272C769183cbD1b5BCF2C68377` | ✅ Deployed |
+| CMOAgent | `0x5f5B2D3ea120b694A7244F4a6d12B9e5f37291f6` | ✅ Deployed |
+| PriceOracle | `0xCEF4a8A823f39e80B79062b60cb64E77B8777a84` | ✅ Deployed |
+| SyntheticSwapRouter | `0xf34498293c83B43bb3e040339F432D898cc6d4eB` | ✅ Deployed |
+| VaultShares | `0x931853e3053A3BFD34dAFADF609F4D6F4BeE8C61` | ✅ Deployed |
+| sBTC | `0x293924138580553e62bF94A59cb1eD1C22F01FFf` | ✅ Deployed |
+| sETH | `0xe65D781B22c2174b524FcF4B1432853da296537F` | ✅ Deployed |
+| sSOL | `0xb50767aFaA178c2FAff2BbBC268429aD5997296e` | ✅ Deployed |
 | AgentRunner | `0x037Bb9C718F3f7fe5eCBDB0b600D607b52706776` | 🔗 Somnia Platform |
 
 ---
@@ -315,13 +337,18 @@ SovereignMind/
 │   │   ├── deploy-resume.ts              # Resume deployment (deploy CEOAgent + configure roles)
 │   │   ├── deploy-v4.ts                  # Full v4 deploy (all 10 contracts)
 │   │   ├── deploy-v4-addon.ts            # Incremental v4 addon (4 new contracts + link to v3)
+│   │   ├── redeploy-v3.ts                # Redeploy v3 core contracts
+│   │   ├── redeploy-agents.ts            # Redeploy agent contracts only
+│   │   ├── transfer-admin-to-safe.ts     # Transfer admin role to multisig safe
+│   │   ├── debug-cfo-deposit.ts          # Debug CFO deposit issues
 │   │   ├── copy-abis.ts                  # Sync compiled ABIs to frontend + orchestrator
 │   │   └── check-gas.ts                  # Check wallet balance & estimate gas costs
 │   ├── test/
 │   │   ├── AgentRegistry.test.ts         # AgentRegistry unit tests
 │   │   ├── TreasuryVault.test.ts         # TreasuryVault unit tests
 │   │   ├── AgentIntegration.test.ts      # Cross-contract integration tests
-│   │   └── SyntheticPortfolio.test.ts    # v4 portfolio: oracle, swap, vault, full cycle
+│   │   └── Portfolio.test.ts             # v4 portfolio: oracle, swap, vault, full cycle
+│   ├── deployed-addresses.json           # Deployed contract addresses snapshot
 │   ├── hardhat.config.ts                 # Hardhat config (Solidity 0.8.28, optimizer, viaIR)
 │   ├── package.json
 │   └── tsconfig.json
@@ -335,13 +362,29 @@ SovereignMind/
 │   │   ├── config.ts                     # Environment config & contract addresses
 │   │   ├── logger.ts                     # Winston structured logging
 │   │   ├── types.ts                      # TypeScript interfaces
+│   │   ├── check-agent-runner.ts         # Diagnostic: verify Somnia Agent Runner availability
+│   │   ├── check-cmo.ts                  # Diagnostic: inspect CMO contract state
+│   │   ├── check-cmo-events.ts           # Diagnostic: fetch CMO event history
+│   │   ├── abis/                         # Contract ABIs (auto-copied from Hardhat)
+│   │   │   ├── AgentRegistry.json
+│   │   │   ├── CEOAgent.json
+│   │   │   ├── CFOAgent.json
+│   │   │   ├── CMOAgent.json
+│   │   │   ├── TreasuryVault.json
+│   │   │   ├── PriceOracle.json
+│   │   │   ├── SyntheticToken.json
+│   │   │   ├── SyntheticSwapRouter.json
+│   │   │   └── VaultShares.json
+│   │   ├── __tests__/
+│   │   │   └── orchestrator.test.ts      # Orchestrator unit tests (circuit breaker, retry logic)
 │   │   └── services/
 │   │       ├── contracts.ts              # ethers.js v6 contract instances
 │   │       ├── ceo.service.ts            # CEO decision cycle service
 │   │       ├── cfo.service.ts            # CFO price fetching & risk analysis
 │   │       ├── cmo.service.ts            # CMO market scanning & sentiment
 │   │       ├── funding.service.ts        # Agent auto-funding & balance monitoring
-│   │       └── events.service.ts         # Contract event listening & waiting
+│   │       ├── events.service.ts         # Contract event listening & waiting
+│   │       └── portfolio.service.ts      # Portfolio rebalance step (v4)
 │   ├── railway.json                      # Railway deployment config
 │   ├── package.json
 │   └── tsconfig.json
@@ -351,13 +394,20 @@ SovereignMind/
     │   ├── 3d_coin_chart.png             # Hero section 3D asset
     │   ├── logo.png                      # SovereignMind logo (PNG)
     │   ├── logo.jpg                      # SovereignMind logo (JPG)
-    │   └── manifest.json                 # PWA manifest
+    │   ├── manifest.json                 # PWA manifest
+    │   ├── file.svg                      # Generic file icon
+    │   ├── globe.svg                     # Globe icon
+    │   ├── next.svg                      # Next.js icon
+    │   ├── vercel.svg                    # Vercel icon
+    │   └── window.svg                    # Window icon
     ├── src/
     │   ├── app/
     │   │   ├── page.tsx                  # Landing page (3D hero orb + FAQ)
     │   │   ├── layout.tsx                # Root layout (fonts, Web3Provider)
     │   │   ├── globals.css               # Design system & CSS theme tokens
     │   │   ├── not-found.tsx             # Global 404 page
+    │   │   ├── metrics/
+    │   │   │   └── page.tsx              # Live metrics dashboard for monitors
     │   │   │
     │   │   └── (app)/                    # 🔒 Route Group — Sidebar layout
     │   │       ├── layout.tsx            # App shell (Sidebar + Header)
@@ -404,7 +454,9 @@ SovereignMind/
     │   │   │   ├── AgentControlPanel.tsx # Agent management controls
     │   │   │   └── LiveAgentConsole.tsx  # Real-time agent log viewer
     │   │   ├── decisions/
-    │   │   │   └── DecisionCard.tsx      # Decision entry with rationale
+    │   │   │   ├── DecisionCard.tsx      # Decision entry with rationale
+    │   │   │   ├── ReceiptBadge.tsx      # On-chain receipt verification badge
+    │   │   │   └── ReceiptModal.tsx      # Receipt detail modal viewer
     │   │   ├── treasury/
     │   │   │   ├── AllocationChart.tsx   # SVG donut allocation chart
     │   │   │   ├── TransactionList.tsx   # Transaction history list
@@ -421,12 +473,17 @@ SovereignMind/
     │   │       └── BottomNav.tsx         # Mobile bottom navigation
     │   │
     │   ├── hooks/                        # Custom React Hooks
+    │   │   ├── useAgentData.ts           # Aggregated agent status & metrics
+    │   │   ├── useAgentEvents.ts         # Real-time agent event subscriptions
     │   │   ├── useAgentRegistry.ts       # Read hooks for AgentRegistry contract
     │   │   ├── useCEOAgent.ts            # Read hooks for CEOAgent contract
     │   │   ├── useCFOAgent.ts            # Read hooks for CFOAgent contract
     │   │   ├── useCMOAgent.ts            # Read hooks for CMOAgent contract
     │   │   ├── useTreasuryVault.ts       # Read hooks for TreasuryVault contract
     │   │   ├── useContractActions.ts     # Write hooks for all contracts
+    │   │   ├── useDecisionData.ts        # Aggregated decision log & history
+    │   │   ├── useReceipts.ts            # On-chain receipt parsing & verification
+    │   │   ├── useTreasuryData.ts        # Aggregated treasury & portfolio data
     │   │   ├── useVaultShares.ts         # Read/write hooks for VaultShares (v4)
     │   │   └── useOrchestrator.ts        # Orchestrator backend API hook
     │   │
@@ -450,7 +507,8 @@ SovereignMind/
     │   │       │   ├── SyntheticSwapRouter.json # (v4)
     │   │       │   └── VaultShares.json      # (v4)
     │   │       ├── contracts.ts          # Contract config (addresses + ABIs)
-    │   │       └── deployed-addresses.json # Deployed contract addresses
+    │   │       ├── deployed-addresses.json # Deployed contract addresses
+    │   │       └── receipts.ts           # Receipt parsing & verification utilities
     │   │
     │   └── providers/
     │       └── Web3Provider.tsx           # wagmi + RainbowKit + QueryClient provider
@@ -466,34 +524,12 @@ SovereignMind/
 | Resource | Link |
 |----------|------|
 | **Live Demo** | [sovereignmind-app.vercel.app](https://sovereignmind-app.vercel.app) |
+| **Video Demo** | [youtu.be/-4XjtlxUu64](https://youtu.be/-4XjtlxUu64) |
 | Somnia Docs | [docs.somnia.network](https://docs.somnia.network) |
 | Somnia Testnet RPC | `https://dream-rpc.somnia.network` |
 | Somnia Block Explorer | [shannon.somnia.network](https://shannon.somnia.network) |
 | Live Metrics Dashboard | [/metrics](https://sovereignmind-app.vercel.app/metrics) |
 | Somnia Agent Dashboard | [agents.somnia.network](https://agents.somnia.network) |
-| Security Review | [SECURITY.md](./SECURITY.md) |
-| Multisig Setup Guide | [MULTISIG.md](./MULTISIG.md) |
-
----
-
-## 💬 Testimonials
-
-> **Note to contributors:** SovereignMind is in active beta. If you've interacted with the platform and want to share feedback, add a testimonial below using the template at the bottom of this section.
-
-<!-- Add testimonials below this line -->
-
-<!-- ### "Quote here."
-> **Name** — [@handle](https://twitter.com/handle), [role/affiliation]
-> 
-> Optional: detailed feedback here in 2-3 sentences.
--->
-
-<!-- Testimonial template - copy and fill in:
-### "Your quote here (1-2 sentences)."
-> **Your Name** — [@twitter_handle](https://twitter.com/handle), *Role / Affiliation*
->
-> Optional: longer context about what you tested, what impressed you, what could improve. Keep it honest and specific.
--->
 
 ---
 
