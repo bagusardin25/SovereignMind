@@ -1,15 +1,14 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Somnia-Agentathon_2026-6C5CE7?style=for-the-badge&logo=ethereum&logoColor=white" alt="Somnia Agentathon 2026" />
-  <img src="https://img.shields.io/badge/Track-Novel_Agent_Applications-00B894?style=for-the-badge" alt="Track" />
-  <img src="https://img.shields.io/badge/Status-Live_on_Testnet-00B894?style=for-the-badge" alt="Status" />
+  <img src="https://img.shields.io/badge/Network-Somnia_Testnet-6C5CE7?style=for-the-badge&logo=ethereum&logoColor=white" alt="Somnia Testnet" />
+  <img src="https://img.shields.io/badge/Mode-Policy_Controlled-00B894?style=for-the-badge" alt="Policy-controlled treasury" />
 </p>
 
 <h1 align="center">🧠 SovereignMind</h1>
 
-<h3 align="center">Autonomous On-Chain Agentic Venture Guild</h3>
+<h3 align="center">Policy-Controlled On-Chain AI Treasury Copilot</h3>
 
 <p align="center">
-  <em>An autonomous executive suite where AI agents make transparent, blockchain-anchored treasury decisions. Built on Somnia L1 with contracts deployed natively, agent intelligence runs through Somnia's Agent Runner, and a minimal off-chain orchestrator handles cycle scheduling and transaction signing.</em>
+  <em>CEO, CFO, and CMO agents turn market and risk inputs into auditable on-chain decisions. Rebalances remain pending proposals until an approved execution path exists; a minimal off-chain orchestrator handles scheduling and transaction signing.</em>
 </p>
 
 <p align="center">
@@ -29,7 +28,7 @@
 
 ## 📖 Overview
 
-**SovereignMind** deploys a collaborative network of autonomous AI agents as a "virtual executive suite" on-chain, with contracts deployed natively on **Somnia L1**. Three specialized agents — **CEO**, **CFO**, and **CMO** — are implemented as Solidity smart contracts that leverage Somnia's three native base agents:
+**SovereignMind** is an AI treasury copilot with Solidity contracts on **Somnia L1**. Three specialized agents — **CEO**, **CFO**, and **CMO** — gather risk and market inputs, synthesize recommendations, and record explicit proposal or execution outcomes:
 
 | Agent | Role | Somnia Primitives Used |
 |-------|------|------------------------|
@@ -37,7 +36,7 @@
 | 🟣 **CFO Agent** | Financial analysis, risk scoring & treasury execution | JSON API Request Agent + LLM Inference Agent |
 | 🔷 **CMO Agent** | Market intelligence & sentiment analysis | LLM Parse Website Agent + LLM Inference Agent |
 
-Every decision produces a **public execution receipt** verifiable via Somnia's consensus mechanism — making SovereignMind a transparent, blockchain-anchored autonomous treasury manager. Admin authority is gated behind `onlyOwner` and intended for multisig custody.
+Decisions and treasury outcomes are recorded on-chain. A receipt proves the recorded transaction; it does not by itself prove that a proposed rebalance executed. Admin authority is gated behind `onlyOwner` and is intended for multisig custody.
 
 ---
 
@@ -54,7 +53,7 @@ Every decision produces a **public execution receipt** verifiable via Somnia's c
 ┌───────────────────────────────────────────────────────────────┐
 │               Orchestrator (Node.js + Express)                │
 │  Scheduler · Auto-funding · Cycle Engine (6 steps)           │
-│  Fund → Fetch → Analyze → Scan → Decide → Rebalance         │
+│  Fund → Fetch → Analyze → Scan → Decide → Propose/Allocate  │
 │         ethers.js v6 · node-cron · Winston Logging           │
 └──────────┬──────────────────────────────┬─────────────────────┘
            │ Write transactions (v3 core)  │ Write (v4 portfolio)
@@ -125,11 +124,11 @@ Agent Contract              Somnia Agent Runner             TreasuryVault
       │◀── handleResponse() ────────│                          │
       │   (requestId, data, status)  │                          │
       │                                                        │
-      │── executeRebalance() ──────────────────────────────────▶│
-      │   (allocate / rebalance)     │                          │
+      │── proposeRebalance() ──────────────────────────────────▶│
+      │   (pending proposal)         │                          │
       │                                                        │
-      │◀── DecisionExecuted event ─────────────────────────────│
-      │   (receipt: rationale, confidence, actions)            │
+      │◀── DecisionRecorded event ─────────────────────────────│
+      │   (outcome: PENDING, rationale, proposed amount)       │
 ```
 
 ---
@@ -143,26 +142,26 @@ Agent Contract              Somnia Agent Runner             TreasuryVault
 
 ### 💰 On-Chain Treasury Management
 - Secure vault with role-based access control via Agent Registry
-- AI-driven rebalancing decisions with on-chain execution records
+- AI-driven rebalance proposals with explicit pending outcomes
 - Full transaction history with on-chain audit trail
 
 ### 📊 Real-Time Dashboard
 - **Dashboard** — Key metrics, agent status, decision feed, treasury allocation overview
 - **Agent Monitor** — Detailed view per agent: status, current task, performance metrics, uptime
-- **Decision Log** — Chronological history of all autonomous decisions with rationale and confidence scores
+- **Decision Log** — Chronological history with rationale, transaction provenance, explicit outcomes, and confidence only when the source emits it
 - **Treasury View** — Portfolio breakdown, allocation chart, holding details, rebalancing history
 - **Settings** — Risk thresholds, rebalance interval, notifications, and on-chain contract interactions
 
 ### 🔄 Agent Orchestration Backend
 - Automated decision cycles every 15 minutes via cron scheduler
-- Sequential 6-step engine: Fund → Fetch Prices → Analyze Risk → Scan Market → CEO Decision → Portfolio Rebalance
+- Sequential 6-step engine: Fund → Fetch Prices → Analyze Risk → Scan Market → CEO Decision → Proposal or configured portfolio action
 - Auto-funding: monitors agent contract balances, tops up when below threshold
 - Health API with endpoints for monitoring, triggering, and controlling cycles
 
-### 🔐 Fully Transparent & Trustless
-- Every decision produces a verifiable **on-chain execution receipt**
-- Deterministic LLM outputs via Somnia's pinned model weights and synchronized seeds
-- Permissionless cycle trigger — anyone can call `initiateDecisionCycle()` on-chain once cooldown elapses. Off-chain orchestrator automates this but is not required
+### 🔐 Auditable Authority Boundaries
+- Decision transactions and treasury outcomes are inspectable on-chain
+- Rebalance intent remains `PENDING` and cannot move funds through the deprecated execution entrypoint
+- Permissionless cycle trigger — anyone can call `initiateDecisionCycle()` on-chain once cooldown elapses; the off-chain orchestrator automates scheduling and signing
 
 ---
 
@@ -537,16 +536,16 @@ SovereignMind/
 
 **Team SovereignMind**
 
-Built with ❤️ for the Somnia Agentathon 2026.
+Originally developed for the Somnia Agentathon 2026; currently being evaluated for the Indonesia Web3 Hackathon 2026 under an unverified pre-existing-work policy.
 
 ---
 
 ## 📄 License
 
-This project is built for the Somnia Agentathon 2026 hackathon.
+Licensed under the repository license. Competition eligibility and disclosure requirements must be confirmed before submission.
 
 ---
 
 <p align="center">
-  <strong>SovereignMind</strong> — Autonomous. Transparent. Blockchain-Anchored.
+  <strong>SovereignMind</strong> — Policy-Controlled. Auditable. Blockchain-Anchored.
 </p>
