@@ -57,10 +57,16 @@ npm run lint
 npm run build
 ```
 
-Status: the contracts, frontend flow, live read-only Coston2 check, production
-build, and local desktop QA are complete. Mobile visual QA, Coston2 deployment,
-public `/flare` publication, wallet-backed receipts, and the new competition
-video are intentionally still pending.
+Status: the contracts are deployed and their wiring was read back on Coston2.
+The frontend flow, production build, live Coston2 check, and local desktop QA are
+complete. Public `/flare` publication, mobile visual QA, wallet-backed assessment
+and approval receipts, and the new competition video are still pending.
+
+| Coston2 contract | Address |
+|---|---|
+| PriceOracle | [`0x92a23E...d3725`](https://coston2-explorer.flare.network/address/0x92a23E036639f77D34F12624fA0bADb251Ed3725) |
+| FlareFtsoPriceAdapter | [`0x28162b...1634C`](https://coston2-explorer.flare.network/address/0x28162b1fA606BaC60c0B82075e878fb0C981634C) |
+| FXRPTreasuryGuard | [`0x269B22...3a40`](https://coston2-explorer.flare.network/address/0x269B22DFF373Bb3aC9c564141edbfe9De3903a40) |
 
 See [FLARE_INTEGRATION.md](./FLARE_INTEGRATION.md) for the technical boundary and
 [FLARE_SUMMER_SIGNAL_SUBMISSION.md](./FLARE_SUMMER_SIGNAL_SUBMISSION.md) for the

@@ -87,7 +87,21 @@ npm run build
 zero, the AssetManager cannot return the FXRP token, or the FTSOv2 read fails.
 Live output naturally changes between runs.
 
-## Deployment procedure (not executed)
+## Coston2 deployment
+
+The candidate was deployed on 2026-08-12 and its bytecode and wiring were read
+back at Coston2 block `33974221`:
+
+| Contract | Address |
+|---|---|
+| `PriceOracle` | [`0x92a23E036639f77D34F12624fA0bADb251Ed3725`](https://coston2-explorer.flare.network/address/0x92a23E036639f77D34F12624fA0bADb251Ed3725) |
+| `FlareFtsoPriceAdapter` | [`0x28162b1fA606BaC60c0B82075e878fb0C981634C`](https://coston2-explorer.flare.network/address/0x28162b1fA606BaC60c0B82075e878fb0C981634C) |
+| `FXRPTreasuryGuard` | [`0x269B22DFF373Bb3aC9c564141edbfe9De3903a40`](https://coston2-explorer.flare.network/address/0x269B22DFF373Bb3aC9c564141edbfe9De3903a40) |
+
+The deployment and role-grant transaction hashes are retained in
+`evidence/runtime/coston2-deployment.json`.
+
+## Reproduction procedure
 
 1. Fund the deployment wallet with faucet C2FLR only.
 2. Set `PRIVATE_KEY` in `contracts/.env`; never commit it.
@@ -102,11 +116,11 @@ Flare dependencies at deployment time.
 
 ## Proof boundary
 
-As of 2026-08-12, the contract tests, frontend production build, live read-only
-Coston2 resolution, and local desktop dashboard have been verified. Mobile visual
-QA is still pending because the browser connection did not remain stable. No
-Coston2 deployment, signed wallet transaction, new public frontend build, new
-competition video, or DoraHacks submission is claimed yet.
+As of 2026-08-12, the contract tests, frontend production build, live Coston2
+resolution, deployed contract bytecode, wiring, updater role, and local desktop
+dashboard have been verified. Mobile visual QA is still pending. No wallet-backed
+FXRP assessment or approval, new public frontend build, competition video, or
+DoraHacks submission is claimed yet.
 
 ## Official references
 

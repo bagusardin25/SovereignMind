@@ -4,7 +4,12 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const PRIVATE_KEY = process.env.PRIVATE_KEY || "0x" + "0".repeat(64);
+const rawPrivateKey = process.env.PRIVATE_KEY?.trim();
+const PRIVATE_KEY = rawPrivateKey
+  ? rawPrivateKey.startsWith("0x")
+    ? rawPrivateKey
+    : `0x${rawPrivateKey}`
+  : "0x" + "0".repeat(64);
 const SOMNIA_RPC_URL = process.env.SOMNIA_RPC_URL || "https://dream-rpc.somnia.network";
 const COSTON2_RPC_URL =
   process.env.COSTON2_RPC_URL || "https://coston2-api.flare.network/ext/C/rpc";

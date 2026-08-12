@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-08-12T23:15:17+07:00",
+  "network": "Flare Testnet Coston2",
+  "chain_id": 114,
+  "verification_block": 33974221,
+  "deployer": "0xF8EBBd9c50f2A33A4d8B9964cF39Ed9013CF0381",
+  "faucet_balance_before_c2flr": "100.0",
+  "balance_after_deployment_c2flr": "98.3924759",
+  "contracts": {
+    "price_oracle": {
+      "address": "0x92a23E036639f77D34F12624fA0bADb251Ed3725",
+      "deployment_transaction": "0xe8db544146c61ebfd5cb188b3ed492809ac58a48532e83ec7bd981576fb4cf15",
+      "bytecode_present": true
+    },
+    "ftso_adapter": {
+      "address": "0x28162b1fA606BaC60c0B82075e878fb0C981634C",
+      "deployment_transaction": "0x7f7c9b5c72e24e5fd1437e9540b8a1251c7b8d3f7cc3f3dffd4f22ff6d07b0f2",
+      "bytecode_present": true
+    },
+    "treasury_guard": {
+      "address": "0x269B22DFF373Bb3aC9c564141edbfe9De3903a40",
+      "deployment_transaction": "0x52f33ce231a942868c4b4f95b601f80c80f10a90da375c7d2933ed91d99e5f22",
+      "bytecode_present": true
+    },
+    "updater_role_grant_transaction": "0x62dd6dd54680002deb9447ca0a04a4ff22f1226043b78fb9c7171f048b5f0392"
+  },
+  "dependencies": {
+    "ftso_v2": "0xC4e9c78EA53db782E28f28Fdf80BaF59336B304d",
+    "asset_manager_fxrp": "0xc1Ca88b937d0b528842F95d5731ffB586f4fbDFA",
+    "fxrp": "0x0b6A3645c240605887a5532109323A3E12273dc7",
+    "fxrp_decimals": 6
+  },
+  "wiring_verified": {
+    "adapter_points_to_price_oracle": true,
+    "adapter_points_to_registry_ftso_v2": true,
+    "guard_points_to_price_oracle": true,
+    "guard_points_to_adapter": true,
+    "guard_points_to_fxrp": true,
+    "adapter_has_updater_role": true,
+    "adapter_and_guard_fee_match": true
+  },
+  "claim_limit": "This proves a Coston2 deployment and read-back wiring at the named block. It does not prove a wallet-backed FXRP assessment or approval transaction."
+}

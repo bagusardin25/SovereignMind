@@ -3,17 +3,18 @@
   "project": "SovereignMind - FXRP Treasury Guard",
   "event": "Flare Summer Signal 2026",
   "bounty": "Bounty 1 - Interoperable Asset Products",
-  "status": "blocked_on_external_evidence",
+  "status": "deployed_frontend_publication_pending",
   "deadline_utc": "2026-08-14T19:59:00Z",
   "repository_url": null,
   "public_flare_url": null,
   "competition_video_url": null,
   "coston2": {
     "chain_id": 114,
-    "price_oracle": null,
-    "ftso_adapter": null,
+    "price_oracle": "0x92a23E036639f77D34F12624fA0bADb251Ed3725",
+    "ftso_adapter": "0x28162b1fA606BaC60c0B82075e878fb0C981634C",
     "fxrp_token": "0x0b6A3645c240605887a5532109323A3E12273dc7",
-    "treasury_guard": null,
+    "treasury_guard": "0x269B22DFF373Bb3aC9c564141edbfe9De3903a40",
+    "deployment_evidence": "evidence/runtime/coston2-deployment.json",
     "assessment_transaction": null,
     "human_response_transaction": null
   },
@@ -27,11 +28,16 @@
     "rendered_qa": "desktop verified locally; mobile visual review pending after browser connection timeouts"
   },
   "blocking_items": [
-    "Deploy and verify the contracts on Coston2",
     "Record a wallet-backed assessment and approval or rejection receipt",
     "Publish the updated /flare route",
     "Record and publish the Flare-specific demo video",
     "Fill all null evidence fields and perform final judge rehearsal"
   ],
-  "external_actions_authorized": false
+  "external_actions_authorized": {
+    "coston2_deployment": true,
+    "frontend_publication": true,
+    "wallet_assessment_or_approval": false,
+    "video_upload": false,
+    "dorahacks_submission": false
+  }
 }

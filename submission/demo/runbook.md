@@ -2,8 +2,8 @@
 
 ## Before recording
 
-- Deploy with `npm run deploy:flare` from `contracts/` on Coston2 only.
-- Save the four emitted addresses in the manifest; never save the private key.
+- Use the deployed addresses recorded in `evidence/runtime/coston2-deployment.json`.
+- Confirm the addresses and role-grant transaction in the Coston2 explorer; never expose the private key.
 - Configure the adapter and guard public environment variables and rebuild.
 - Fund the demo wallet with faucet C2FLR and FXRP.
 - Confirm `npm run check:flare`, contract tests, lint, and build still pass.

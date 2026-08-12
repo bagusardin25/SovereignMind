@@ -48,7 +48,7 @@
     {
       "id": "coston2-deployment",
       "title": "Deploy and verify the candidate on Coston2",
-      "status": "pending",
+      "status": "completed",
       "estimated_hours": 1,
       "rubric_value": 5,
       "required": false,
@@ -57,7 +57,7 @@
     {
       "id": "public-demo-video",
       "title": "Publish the frontend and record the final demo video",
-      "status": "pending",
+      "status": "in_progress",
       "estimated_hours": 2,
       "rubric_value": 5,
       "required": false,
@@ -72,13 +72,12 @@
     "raw_team_capacity_hours": 12.0,
     "reserve_hours": 3.6,
     "delivery_capacity_hours": 8.4,
-    "planned_hours": 3.0,
+    "planned_hours": 2.0,
     "keep": [
-      "coston2-deployment",
       "public-demo-video"
     ],
     "cut": [],
-    "next_task": "coston2-deployment",
+    "next_task": "public-demo-video",
     "replan_when": "Reassess after every completed task, any estimate change, a failed gate, or when half of the protected reserve is consumed."
   },
   "authorization_gate": "Remaining tasks fit the time budget but require explicit user permission because they deploy, publish, or upload externally."

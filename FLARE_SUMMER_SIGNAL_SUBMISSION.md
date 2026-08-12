@@ -64,12 +64,13 @@ Flare Summer Signal work.
 | Live Coston2 registry, FTSOv2, and FXRP read | Verified locally |
 | Frontend lint and production build | Verified locally |
 | Desktop rendered `/flare` review | Verified locally; mobile visual review pending |
-| Coston2 deployment and verified addresses | Pending |
+| Coston2 deployment, bytecode, and wiring | Verified at block 33974221 |
 | Assessment and approval transaction receipts | Pending |
 | Public `/flare` build and competition video | Pending |
 
-Deployment addresses and final URLs must be copied from
-`submission/submission-manifest.json` only after verification.
+Deployment addresses are recorded in `submission/submission-manifest.json` and
+`evidence/runtime/coston2-deployment.json`. Public application and receipt URLs
+remain pending until independently verified.
 
 ## Repository and architecture
 

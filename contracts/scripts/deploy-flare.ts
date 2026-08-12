@@ -61,12 +61,14 @@ async function main() {
 
   const oracle = await ethers.deployContract("PriceOracle");
   await oracle.waitForDeployment();
+  const oracleDeploymentTx = oracle.deploymentTransaction();
 
   const adapter = await ethers.deployContract("FlareFtsoPriceAdapter", [
     await oracle.getAddress(),
     ftsoV2Address,
   ]);
   await adapter.waitForDeployment();
+  const adapterDeploymentTx = adapter.deploymentTransaction();
 
   const updaterRole = await oracle.UPDATER_ROLE();
   const grantTx = await oracle.grantRole(updaterRole, await adapter.getAddress());
@@ -78,6 +80,7 @@ async function main() {
     fxrpAddress,
   ]);
   await guard.waitForDeployment();
+  const guardDeploymentTx = guard.deploymentTransaction();
 
   console.log(
     JSON.stringify(
@@ -91,8 +94,13 @@ async function main() {
         fxrp: fxrpAddress,
         fxrpDecimals: fxrpDecimals.toString(),
         priceOracle: await oracle.getAddress(),
+        priceOracleDeploymentTx: oracleDeploymentTx?.hash ?? null,
         flareFtsoPriceAdapter: await adapter.getAddress(),
+        flareFtsoPriceAdapterDeploymentTx:
+          adapterDeploymentTx?.hash ?? null,
         fxrpTreasuryGuard: await guard.getAddress(),
+        fxrpTreasuryGuardDeploymentTx: guardDeploymentTx?.hash ?? null,
+        updaterRoleGrantTx: grantTx.hash,
         updaterRoleGranted: true,
         authorityBoundary:
           "The guard records assessments and approvals but never transfers FXRP.",

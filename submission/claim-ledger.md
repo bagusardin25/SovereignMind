@@ -2,7 +2,7 @@
 
 | Claim | Evidence | Current boundary |
 |---|---|---|
-| Flare is causal to the flagship flow | Registry, FTSOv2 adapter, FXRP token resolution, guard source and tests | Code and local tests verified; deployment pending |
+| Flare is causal to the flagship flow | Registry, deployed FTSOv2 adapter, FXRP token resolution, guard source and tests | Coston2 bytecode and wiring verified; wallet-backed flow pending |
 | The assessment uses the caller's real FXRP balance | `fxrp.balanceOf(msg.sender)` and guard tests | Verified with mock token locally; live wallet receipt pending |
 | Price is current and normalized | Adapter freshness checks, oracle updater role, FTSO tests, live read checker | Local contract behavior and public read verified |
 | Human authority is separate | `approveAssessment` and `rejectAssessment` plus status events | Local tests verified; public receipts pending |
