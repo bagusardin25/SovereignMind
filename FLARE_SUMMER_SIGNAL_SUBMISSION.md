@@ -66,11 +66,13 @@ Flare Summer Signal work.
 | Desktop rendered `/flare` review | Verified locally; mobile visual review pending |
 | Coston2 deployment, bytecode, and wiring | Verified at block 33974221 |
 | Assessment and approval transaction receipts | Pending |
-| Public `/flare` build and competition video | Pending |
+| Public `/flare` build | Verified at [`sovereignmind-app.vercel.app/flare`](https://sovereignmind-app.vercel.app/flare) |
+| Competition video | Pending |
 
 Deployment addresses are recorded in `submission/submission-manifest.json` and
-`evidence/runtime/coston2-deployment.json`. Public application and receipt URLs
-remain pending until independently verified.
+`evidence/runtime/coston2-deployment.json`. The production deployment and smoke
+check are recorded in `evidence/runtime/vercel-production-deployment.json`.
+Wallet-backed receipt URLs remain pending until independently verified.
 
 ## Repository and architecture
 
@@ -89,7 +91,6 @@ remain pending until independently verified.
 
 ## Final submission warning
 
-Do not submit this draft until the guard is deployed on Coston2, at least one real
-assessment and human-response receipt are recorded, `/flare` is public, the new
-demo video is available, and every pending field in the manifest is replaced with
-verified evidence.
+Do not submit this draft until at least one real assessment and human-response
+receipt are recorded, the new demo video is available, and every required pending
+field in the manifest is replaced with verified evidence.

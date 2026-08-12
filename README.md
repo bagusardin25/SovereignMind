@@ -58,9 +58,10 @@ npm run build
 ```
 
 Status: the contracts are deployed and their wiring was read back on Coston2.
-The frontend flow, production build, live Coston2 check, and local desktop QA are
-complete. Public `/flare` publication, mobile visual QA, wallet-backed assessment
-and approval receipts, and the new competition video are still pending.
+The frontend flow, production build, live Coston2 check, local desktop QA, and
+[public `/flare` deployment](https://sovereignmind-app.vercel.app/flare) are
+complete. Mobile visual QA, wallet-backed assessment and approval receipts, and
+the new competition video are still pending.
 
 | Coston2 contract | Address |
 |---|---|

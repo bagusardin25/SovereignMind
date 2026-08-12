@@ -3,10 +3,10 @@
   "project": "SovereignMind - FXRP Treasury Guard",
   "event": "Flare Summer Signal 2026",
   "bounty": "Bounty 1 - Interoperable Asset Products",
-  "status": "deployed_frontend_publication_pending",
+  "status": "public_candidate_receipts_and_video_pending",
   "deadline_utc": "2026-08-14T19:59:00Z",
   "repository_url": null,
-  "public_flare_url": null,
+  "public_flare_url": "https://sovereignmind-app.vercel.app/flare",
   "competition_video_url": null,
   "coston2": {
     "chain_id": 114,
@@ -17,6 +17,15 @@
     "deployment_evidence": "evidence/runtime/coston2-deployment.json",
     "assessment_transaction": null,
     "human_response_transaction": null
+  },
+  "vercel_production": {
+    "deployment_id": "dpl_FrJUbzUvvT52WBXtN5gBrPrCcwiB",
+    "source_commit": "06e709b",
+    "deployment_url": "https://sovereignmind-gbfhnbyl7-bagusardinp-3679s-projects.vercel.app",
+    "production_alias": "https://sovereignmind-app.vercel.app",
+    "flare_route": "https://sovereignmind-app.vercel.app/flare",
+    "status": "ready",
+    "deployment_evidence": "evidence/runtime/vercel-production-deployment.json"
   },
   "local_verification": {
     "workplan_receipt": ".hackathon/receipts/product-workplan-1546491ddfb1.json",
@@ -29,7 +38,6 @@
   },
   "blocking_items": [
     "Record a wallet-backed assessment and approval or rejection receipt",
-    "Publish the updated /flare route",
     "Record and publish the Flare-specific demo video",
     "Fill all null evidence fields and perform final judge rehearsal"
   ],

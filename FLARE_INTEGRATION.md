@@ -62,9 +62,15 @@ addresses, and transaction receipts. Missing deployment configuration is shown a
 Required public-build variables after deployment:
 
 ```dotenv
-NEXT_PUBLIC_FLARE_FTSO_ADAPTER_ADDRESS=0x...
-NEXT_PUBLIC_FXRP_TREASURY_GUARD_ADDRESS=0x...
+NEXT_PUBLIC_FLARE_FTSO_ADAPTER_ADDRESS=0x28162b1fA606BaC60c0B82075e878fb0C981634C
+NEXT_PUBLIC_FXRP_TREASURY_GUARD_ADDRESS=0x269B22DFF373Bb3aC9c564141edbfe9De3903a40
 ```
+
+The production route is available at
+[`https://sovereignmind-app.vercel.app/flare`](https://sovereignmind-app.vercel.app/flare).
+Its unauthenticated smoke check returned HTTP 200 and contained both configured
+contract addresses. Deployment metadata is retained in
+`evidence/runtime/vercel-production-deployment.json`.
 
 ## Verification
 
@@ -118,9 +124,10 @@ Flare dependencies at deployment time.
 
 As of 2026-08-12, the contract tests, frontend production build, live Coston2
 resolution, deployed contract bytecode, wiring, updater role, and local desktop
-dashboard have been verified. Mobile visual QA is still pending. No wallet-backed
-FXRP assessment or approval, new public frontend build, competition video, or
-DoraHacks submission is claimed yet.
+dashboard have been verified. The public `/flare` route is live and passed an
+unauthenticated content smoke check. Mobile visual QA is still pending. No
+wallet-backed FXRP assessment or approval, competition video, or DoraHacks
+submission is claimed yet.
 
 ## Official references
 

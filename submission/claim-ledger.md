@@ -8,7 +8,7 @@
 | Human authority is separate | `approveAssessment` and `rejectAssessment` plus status events | Local tests verified; public receipts pending |
 | The guard cannot custody or transfer FXRP | No token write methods; balance invariance test | Source and local test verified |
 | Changed state fails closed | Superseded policy, price/timestamp, balance, and stale-price tests | Local tests verified |
-| The `/flare` experience is buildable | Next production build, lint, local desktop rendered review | Mobile visual review and public publication pending |
+| The `/flare` experience is public and buildable | Next production build, lint, local desktop rendered review, Vercel production record and unauthenticated HTTP smoke check | Public route verified; mobile visual review pending |
 | Work is meaningfully new | Git diff and baseline/delta disclosure | Must preserve commit history and disclosure |
 
 Never upgrade a pending boundary to “verified” without a direct explorer receipt,

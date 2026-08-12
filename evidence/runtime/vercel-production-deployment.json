@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-08-12T23:25:00+07:00",
+  "provider": "Vercel",
+  "project": "sovereignmind",
+  "team": "bagusardinp-3679s-projects",
+  "source": {
+    "commit": "06e709b",
+    "archive_sha256": "1457EB5D81CABAC903DD07EFD7DF0033C91D2AB1500F61A6B16DC77D29855614"
+  },
+  "deployment": {
+    "id": "dpl_FrJUbzUvvT52WBXtN5gBrPrCcwiB",
+    "status": "ready",
+    "target": "production",
+    "url": "https://sovereignmind-gbfhnbyl7-bagusardinp-3679s-projects.vercel.app",
+    "production_alias": "https://sovereignmind-app.vercel.app",
+    "inspector_url": "https://vercel.com/bagusardinp-3679s-projects/sovereignmind/FrJUbzUvvT52WBXtN5gBrPrCcwiB"
+  },
+  "flare_route_smoke_check": {
+    "url": "https://sovereignmind-app.vercel.app/flare",
+    "authentication": "none",
+    "http_status": 200,
+    "final_uri_matched": true,
+    "contained_fxrp_treasury_guard_label": true,
+    "contained_ftso_adapter_address": true,
+    "contained_treasury_guard_address": true,
+    "response_length_bytes": 53210
+  },
+  "configured_public_addresses": {
+    "ftso_adapter": "0x28162b1fA606BaC60c0B82075e878fb0C981634C",
+    "treasury_guard": "0x269B22DFF373Bb3aC9c564141edbfe9De3903a40"
+  },
+  "claim_limit": "This proves the production deployment and unauthenticated route content only. It does not prove mobile visual quality, a wallet-backed assessment or approval, a competition video, or a DoraHacks submission."
+}
