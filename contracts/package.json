@@ -1,13 +1,14 @@
 {
   "name": "sovereignmind-contracts",
   "version": "1.0.0",
-  "description": "SovereignMind Smart Contracts for Somnia Testnet",
+  "description": "SovereignMind smart contracts for Somnia and Flare Coston2",
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
     "deploy": "hardhat run scripts/deploy.ts --network somnia_testnet",
     "deploy:v4": "hardhat run scripts/deploy-v4-addon.ts --network somnia",
     "deploy:full-v4": "hardhat run scripts/deploy-v4.ts --network somnia",
+    "deploy:flare": "hardhat run scripts/deploy-flare.ts --network coston2",
     "deploy:local": "hardhat run scripts/deploy.ts --network hardhat",
     "copy-abis": "ts-node scripts/copy-abis.ts",
     "clean": "hardhat clean"
@@ -15,12 +16,13 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@types/node": "^20.0.0",
+    "dotenv": "^16.4.0",
     "hardhat": "^2.22.0",
     "ts-node": "^10.9.0",
-    "typescript": "^5.0.0",
-    "dotenv": "^16.4.0"
+    "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@flarenetwork/flare-periphery-contracts": "0.1.52",
     "@openzeppelin/contracts": "^5.1.0"
   }
 }

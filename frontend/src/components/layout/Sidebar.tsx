@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Zap,
+  Flame,
   Menu,
   X,
 } from 'lucide-react';
@@ -26,6 +27,7 @@ const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Agents', href: '/agents', icon: Bot },
   { label: 'Portfolio', href: '/portfolio', icon: Briefcase },
+  { label: 'Flare', href: '/flare', icon: Flame },
   { label: 'Treasury', href: '/treasury', icon: Landmark },
   { label: 'Decisions', href: '/decisions', icon: ScrollText },
   { label: 'Settings', href: '/settings', icon: Settings },

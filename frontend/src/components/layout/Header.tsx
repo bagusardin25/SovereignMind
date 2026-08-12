@@ -6,13 +6,14 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount } from 'wagmi';
+import { useAccount, useChainId } from 'wagmi';
 import { Activity, Bell } from 'lucide-react';
 import { useAgentCount } from '@/hooks/useAgentRegistry';
 import { useCEORecentDecisions } from '@/hooks/useCEOAgent';
 import type { ActivityEvent, AgentRole } from '@/lib/types';
 import NotificationPanel from '@/components/ui/NotificationPanel';
 import { ToastContainer } from '@/components/ui/Toast';
+import { flareTestnet, somniaTestnet } from '@/lib/wagmi-config';
 
 // Map on-chain CEO decisions to ActivityEvent[]
 function decisionsToEvents(decisions: unknown): ActivityEvent[] {
@@ -36,6 +37,8 @@ function decisionsToEvents(decisions: unknown): ActivityEvent[] {
 export default function Header() {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const { isConnected } = useAccount();
+  const chainId = useChainId();
+  const activeChain = chainId === flareTestnet.id ? flareTestnet : somniaTestnet;
   const { data: onChainAgentCount } = useAgentCount();
   const { data: rawDecisions } = useCEORecentDecisions(BigInt(10));
 
@@ -50,7 +53,7 @@ export default function Header() {
     async function ping() {
       try {
         const start = performance.now();
-        await fetch('https://dream-rpc.somnia.network', {
+        await fetch(activeChain.rpcUrls.default.http[0], {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'net_version', params: [] }),
@@ -63,7 +66,7 @@ export default function Header() {
     ping();
     const interval = setInterval(ping, 30_000); // refresh every 30s
     return () => { cancelled = true; clearInterval(interval); };
-  }, []);
+  }, [activeChain.rpcUrls.default.http]);
 
   return (
     <>
@@ -72,8 +75,10 @@ export default function Header() {
         <div className="flex items-center gap-3 pl-12 md:pl-0">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.05] transition-colors cursor-default">
             <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse" />
-            <span className="text-xs font-medium text-white/90 hidden sm:inline">Somnia Testnet</span>
-            <span className="text-xs font-medium text-white/90 sm:hidden">Somnia</span>
+            <span className="text-xs font-medium text-white/90 hidden sm:inline">{activeChain.name}</span>
+            <span className="text-xs font-medium text-white/90 sm:hidden">
+              {activeChain.id === flareTestnet.id ? 'Coston2' : 'Somnia'}
+            </span>
           </div>
 
           <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/10">

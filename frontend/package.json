@@ -6,9 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:flare": "node scripts/check-flare.mjs"
   },
   "dependencies": {
+    "@flarenetwork/flare-wagmi-periphery-package": "3.6.0",
     "@rainbow-me/rainbowkit": "^2.2.11",
     "@tanstack/react-query": "^5.100.14",
     "ethers": "^6.16.0",

@@ -1,5 +1,6 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Network-Somnia_Testnet-6C5CE7?style=for-the-badge&logo=ethereum&logoColor=white" alt="Somnia Testnet" />
+  <img src="https://img.shields.io/badge/Flare-Coston2-E62058?style=for-the-badge&logo=ethereum&logoColor=white" alt="Flare Coston2" />
   <img src="https://img.shields.io/badge/Mode-Policy_Controlled-00B894?style=for-the-badge" alt="Policy-controlled treasury" />
 </p>
 
@@ -23,6 +24,36 @@
 <p align="center">
   🌐 <strong>Live Demo:</strong> <a href="https://sovereignmind-app.vercel.app">sovereignmind-app.vercel.app</a>
 </p>
+
+---
+
+## 🔥 Flare Coston2 Integration
+
+SovereignMind now includes a focused Flare path for verifiable treasury signals:
+
+- A live `/flare` dashboard reads the current XRP/USD feed from **FTSOv2**.
+- `AssetManagerFXRP` settings are resolved through the official Flare Contract Registry.
+- `FlareFtsoPriceAdapter` validates and normalizes XRP/USD into SovereignMind's
+  eight-decimal `PriceOracle` format.
+- Coston2 is configured in Hardhat and wagmi as chain ID `114`.
+
+Run the live, read-only integration check from `frontend/`:
+
+```bash
+npm run check:flare
+```
+
+Run the adapter and regression tests from `contracts/`:
+
+```bash
+npm test -- --grep FlareFtsoPriceAdapter
+npm test
+```
+
+The Flare contracts have been built and tested locally but are **not deployed**.
+The UI reports `Deployment pending` until a verified Coston2 adapter address is
+provided. See [FLARE_INTEGRATION.md](./FLARE_INTEGRATION.md) for the architecture,
+deployment steps, official references, and exact proof boundary.
 
 ---
 
