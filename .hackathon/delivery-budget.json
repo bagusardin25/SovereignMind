@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "deadline_utc": "2026-08-14T19:59:00Z",
+  "reserve_ratio": 0.3,
+  "team": [
+    {
+      "id": "codex-local",
+      "available_hours": 12
+    }
+  ],
+  "tasks": [
+    {
+      "id": "flare-guard-contract",
+      "title": "Implement and test the FXRP Treasury Guard contract",
+      "status": "completed",
+      "estimated_hours": 2.5,
+      "rubric_value": 5,
+      "required": true,
+      "dependencies": []
+    },
+    {
+      "id": "flare-guard-ui",
+      "title": "Turn the Flare page into the complete wallet assessment and approval flow",
+      "status": "completed",
+      "estimated_hours": 2.5,
+      "rubric_value": 5,
+      "required": true,
+      "dependencies": ["flare-guard-contract"]
+    },
+    {
+      "id": "flare-proof-docs",
+      "title": "Update README, integration guide, demo runbook, and submission draft",
+      "status": "completed",
+      "estimated_hours": 1.5,
+      "rubric_value": 4,
+      "required": true,
+      "dependencies": ["flare-guard-contract"]
+    },
+    {
+      "id": "flare-local-qa",
+      "title": "Run contracts, frontend, live Coston2 read, and rendered QA",
+      "status": "completed",
+      "estimated_hours": 1.5,
+      "rubric_value": 5,
+      "required": true,
+      "dependencies": ["flare-guard-ui", "flare-proof-docs"]
+    },
+    {
+      "id": "coston2-deployment",
+      "title": "Deploy and verify the candidate on Coston2",
+      "status": "pending",
+      "estimated_hours": 1,
+      "rubric_value": 5,
+      "required": false,
+      "dependencies": ["flare-local-qa"]
+    },
+    {
+      "id": "public-demo-video",
+      "title": "Publish the frontend and record the final demo video",
+      "status": "pending",
+      "estimated_hours": 2,
+      "rubric_value": 5,
+      "required": false,
+      "dependencies": ["coston2-deployment"]
+    }
+  ],
+  "assessment": {
+    "schema_version": 1,
+    "status": "executable",
+    "lane": "deep",
+    "wall_hours_remaining": 52.31,
+    "raw_team_capacity_hours": 12.0,
+    "reserve_hours": 3.6,
+    "delivery_capacity_hours": 8.4,
+    "planned_hours": 3.0,
+    "keep": [
+      "coston2-deployment",
+      "public-demo-video"
+    ],
+    "cut": [],
+    "next_task": "coston2-deployment",
+    "replan_when": "Reassess after every completed task, any estimate change, a failed gate, or when half of the protected reserve is consumed."
+  },
+  "authorization_gate": "Remaining tasks fit the time budget but require explicit user permission because they deploy, publish, or upload externally."
+}

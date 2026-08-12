@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "candidate_id": "sovereignmind-fxrp-treasury-guard",
+  "deadline_utc": "2026-08-14T19:59:00Z",
+  "reserve_seconds": 21600,
+  "steps": [
+    {
+      "id": "contract-vertical-slice",
+      "task_id": "flare-guard-contract",
+      "stage": "implementation",
+      "cwd": "contracts",
+      "command": ["npm.cmd", "test", "--", "--grep", "Flare"],
+      "external_effect": "none",
+      "timeout_seconds": 600,
+      "required": true,
+      "expected_paths": [
+        "contracts/contracts/flare/FXRPTreasuryGuard.sol",
+        "contracts/test/FXRPTreasuryGuard.test.ts"
+      ]
+    },
+    {
+      "id": "frontend-release-build",
+      "task_id": "flare-guard-ui",
+      "stage": "build",
+      "cwd": "frontend",
+      "command": ["npm.cmd", "run", "build"],
+      "external_effect": "none",
+      "timeout_seconds": 900,
+      "required": true,
+      "expected_paths": [
+        "frontend/.next",
+        "frontend/src/app/(app)/flare/page.tsx"
+      ]
+    },
+    {
+      "id": "frontend-lint",
+      "task_id": "flare-local-qa",
+      "stage": "test",
+      "cwd": "frontend",
+      "command": ["npm.cmd", "run", "lint"],
+      "external_effect": "none",
+      "timeout_seconds": 600,
+      "required": true,
+      "expected_paths": [
+        "frontend/src/lib/flare/constants.ts",
+        "frontend/src/lib/flare/public-client.ts"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+command=["npm.cmd", "run", "build"]
+
+> frontend@0.1.0 build
+> next build
+
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+▲ Next.js 16.2.6 (Turbopack)
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 10.8s
+  Running TypeScript ...
+  Finished TypeScript in 16.5s ...
+  Collecting page data using 19 workers ...
+  Generating static pages using 19 workers (0/21) ...
+  Generating static pages using 19 workers (5/21)
+  Generating static pages using 19 workers (10/21)
+  Generating static pages using 19 workers (15/21)
+✓ Generating static pages using 19 workers (21/21) in 742ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /agents
+├ ƒ /agents/[role]
+├ ○ /dashboard
+├ ○ /decisions
+├ ○ /docs
+├ ○ /docs/agents
+├ ○ /docs/dashboard
+├ ○ /docs/decisions
+├ ○ /docs/getting-started
+├ ○ /docs/portfolio
+├ ○ /docs/settings
+├ ○ /docs/treasury
+├ ○ /docs/wallet-setup
+├ ○ /flare
+├ ○ /metrics
+├ ○ /portfolio
+├ ○ /settings
+└ ○ /treasury
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+[SovereignMind] NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set. WalletConnect is disabled; injected browser wallets remain available.

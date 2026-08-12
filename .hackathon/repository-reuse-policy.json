@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "status": "verified_from_official_detail_page",
+  "rules_url": "https://dorahacks.io/hackathon/flaresummersignal/detail",
+  "rules_checked_at": "2026-08-12T00:00:00+07:00",
+  "exact_clause": "Existing projects are welcome when prior work, newly built work, Flare integration or port, and the meaningful event-period improvement are made clear.",
+  "reuse_policy": "allowed_with_clear_baseline_and_delta",
+  "disclosure_required": true,
+  "meaningful_enhancement_required": true,
+  "baseline": "The Somnia-based multi-agent treasury application, its original deployments, public demo, and earlier video predate Flare Summer Signal.",
+  "event_period_delta": "FTSOv2 price adapter, registry-resolved FXRP identity, non-custodial FXRP Treasury Guard, Coston2 deployment path, Flare page, contract tests, live read checker, and Flare submission evidence."
+}

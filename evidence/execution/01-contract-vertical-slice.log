@@ -1,0 +1,30 @@
+command=["npm.cmd", "test", "--", "--grep", "Flare"]
+
+> sovereignmind-contracts@1.0.0 test
+> hardhat test --grep Flare
+
+
+
+  FlareFtsoPriceAdapter
+    ✔ rejects zero dependency addresses (665ms)
+    ✔ exposes the fee required by FTSOv2 (51ms)
+    ✔ requires the exact fee and does not retain it
+    ✔ writes a normalized XRP/USD price into SovereignMind's oracle
+    ✔ scales feeds with more than eight decimals down to e8
+    ✔ rejects zero and unsupported feed data
+    ✔ rejects stale feed timestamps before refreshing the oracle
+
+  Flare FXRPTreasuryGuard
+    ✔ binds the guard to the adapter oracle and the six-decimal FXRP token (77ms)
+    ✔ rejects invalid dependencies and a mismatched adapter oracle
+    ✔ creates a REDUCE assessment from the caller's real FXRP balance and live FTSO price
+    ✔ creates a HOLD assessment when exposure stays within policy
+    ✔ requires a non-zero policy, an FXRP balance, and the exact FTSO fee
+    ✔ records a separate human approval without moving FXRP
+    ✔ supports explicit rejection by the assessed wallet
+    ✔ fails closed when a newer assessment supersedes the pending one
+    ✔ fails closed when the FXRP balance changes before approval
+    ✔ fails closed when the synchronized oracle price becomes stale
+
+
+  17 passing (967ms)

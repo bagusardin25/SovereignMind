@@ -1,5 +1,5 @@
 import { coston2 } from '@flarenetwork/flare-wagmi-periphery-package';
-import { createPublicClient, http, zeroAddress } from 'viem';
+import { createPublicClient, erc20Abi, http, zeroAddress } from 'viem';
 import { flareTestnet } from 'viem/chains';
 
 const registryAddress = '0xaD67FE66660Fb8dFE9d6b1b4240d8650e30F6019';
@@ -39,13 +39,23 @@ async function main() {
     abi: coston2.iAssetManagerAbi,
     functionName: 'getSettings',
   });
-  const { result: feed } = await client.simulateContract({
-    address: ftsoV2Address,
-    abi: coston2.ftsoV2InterfaceAbi,
-    functionName: 'getFeedById',
-    args: [xrpUsdFeedId],
-    value: 0n,
-  });
+  if (settings.fAsset === zeroAddress) {
+    throw new Error('AssetManagerFXRP returned a zero FXRP token address.');
+  }
+  const [fxrpDecimals, { result: feed }] = await Promise.all([
+    client.readContract({
+      address: settings.fAsset,
+      abi: erc20Abi,
+      functionName: 'decimals',
+    }),
+    client.simulateContract({
+      address: ftsoV2Address,
+      abi: coston2.ftsoV2InterfaceAbi,
+      functionName: 'getFeedById',
+      args: [xrpUsdFeedId],
+      value: 0n,
+    }),
+  ]);
 
   const [rawValue, decimals, timestamp] = feed;
   const lotSizeFxrp =
@@ -61,6 +71,8 @@ async function main() {
         blockNumber: blockNumber.toString(),
         registryAddress,
         assetManagerFXRP: assetManagerAddress,
+        fxrp: settings.fAsset,
+        fxrpDecimals,
         ftsoV2: ftsoV2Address,
         xrpUsdPrice,
         feedTimestamp: timestamp.toString(),

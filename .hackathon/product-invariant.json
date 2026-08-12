@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "status": "locked",
+  "actor": "An on-chain treasury operator holding FXRP",
+  "painful_moment": "The operator needs to decide whether current FXRP exposure remains within policy without trusting an off-chain price or silently granting software authority over funds.",
+  "permitted_input": "The operator's live Coston2 FXRP balance, an explicit USD exposure limit, and the XRP/USD feed returned by Flare FTSOv2.",
+  "state_change": "One wallet transaction refreshes FTSOv2, values the wallet's FXRP balance, and creates a pending HOLD or REDUCE assessment; only that wallet may approve or reject the unchanged assessment.",
+  "visible_outcome": "The operator sees FXRP balance, FTSO price and timestamp, calculated USD exposure, policy limit, signal, approval status, and Coston2 transaction provenance.",
+  "primary_proof": "A source-linked and test-covered trace from Flare Contract Registry and FTSOv2 through the price adapter into a policy assessment and a separate human approval receipt.",
+  "authority_boundary": "The contracts calculate and propose but never transfer FXRP. Only the assessed wallet may approve or reject; stale prices or changed balances invalidate approval. Deployment, publication, and submission require explicit user authorization.",
+  "target_track": "Bounty 1 - Interoperable Asset Products",
+  "sponsor_role": "Flare is causal: FTSOv2 supplies the price used in the assessment, AssetManagerFXRP identifies the actual FXRP token, and Coston2 records the assessment and human approval. Removing Flare breaks the flagship state change.",
+  "locked_at": "2026-08-12T00:00:00+07:00"
+}

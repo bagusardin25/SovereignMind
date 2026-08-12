@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "status": "conservative",
+  "event_name": "Flare Summer Signal",
+  "official_url": "https://dorahacks.io/hackathon/flaresummersignal/detail",
+  "rules_url": "https://dorahacks.io/hackathon/flaresummersignal/detail",
+  "rules_version": "Official DoraHacks detail page observed 2026-08-12",
+  "rules_checked_at": "2026-08-12T00:00:00+07:00",
+  "eligibility": "Open online hackathon; the detail page does not publish additional age, geography, or affiliation restrictions.",
+  "team": "No team-size rule is published on the official detail page.",
+  "location": "Virtual.",
+  "build_window": "Registration and development opened 2026-06-29 03:00 WIB. DoraHacks displays the final deadline as 2026-08-15 02:59 WIB (2026-08-14 19:59 UTC).",
+  "preexisting_work_policy": "Existing projects are explicitly welcome, but must separate the prior baseline, newly built work, Flare integration or port, and why the event-period work is meaningful.",
+  "mandatory_technology": [
+    "A meaningful Flare integration for the selected bounty"
+  ],
+  "permitted_inputs": [
+    "Existing owned project baseline with disclosure",
+    "Flare Coston2",
+    "FTSOv2",
+    "FAssets and FXRP",
+    "Public technical materials"
+  ],
+  "target_track": "Bounty 1 - Interoperable Asset Products",
+  "submission_artifacts": [
+    "Project name",
+    "Selected bounty",
+    "Short product description",
+    "Target user",
+    "Demo link, video, or working application",
+    "GitHub repository or technical materials",
+    "Explanation of Flare usage",
+    "Explanation of newly built, ported, integrated, or improved work",
+    "Smart contract addresses or deployment details when applicable",
+    "Short roadmap or next steps"
+  ],
+  "demo_constraints": "No duration or language limit is published on the official detail page. The local plan targets a truthful 2-3 minute English-captioned demo.",
+  "judging_rubric": [
+    "Product usefulness",
+    "Flare integration quality: meaningful rather than superficial",
+    "Technical execution: working demo and credible, understandable architecture",
+    "Evidence of new work",
+    "Clarity and future potential"
+  ],
+  "ip_and_license": "No event-specific IP or repository-license clause is published on the official detail page; the repository's existing license and third-party notices must remain intact.",
+  "privacy_and_conduct": [
+    "DoraHacks platform terms, privacy policy, and code of conduct remain applicable",
+    "Do not expose wallet private keys or other secrets"
+  ],
+  "disqualifiers": [
+    "Late or unavailable submission",
+    "Misrepresenting prior work, deployment, transactions, or Flare integration"
+  ],
+  "prizes": [
+    "Bounty 1: USD 6,000 total; first USD 4,000 and second USD 2,000",
+    "Bounty 2: USD 6,000 total; first USD 4,000 and second USD 2,000"
+  ],
+  "source_conflicts": [],
+  "blocking_unknowns": []
+}

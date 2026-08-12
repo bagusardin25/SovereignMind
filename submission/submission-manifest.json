@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "project": "SovereignMind - FXRP Treasury Guard",
+  "event": "Flare Summer Signal 2026",
+  "bounty": "Bounty 1 - Interoperable Asset Products",
+  "status": "blocked_on_external_evidence",
+  "deadline_utc": "2026-08-14T19:59:00Z",
+  "repository_url": null,
+  "public_flare_url": null,
+  "competition_video_url": null,
+  "coston2": {
+    "chain_id": 114,
+    "price_oracle": null,
+    "ftso_adapter": null,
+    "fxrp_token": "0x0b6A3645c240605887a5532109323A3E12273dc7",
+    "treasury_guard": null,
+    "assessment_transaction": null,
+    "human_response_transaction": null
+  },
+  "local_verification": {
+    "workplan_receipt": ".hackathon/receipts/product-workplan-1546491ddfb1.json",
+    "targeted_contract_tests": "verified 2026-08-12: 17 Flare tests passed in the latest targeted run",
+    "full_contract_tests": "verified 2026-08-12: 144 tests passed",
+    "live_coston2_read": "verified 2026-08-12 at Coston2 block 33973228",
+    "frontend_lint": "verified 2026-08-12: 0 errors and 5 pre-existing image warnings",
+    "frontend_build": "verified 2026-08-12: Next.js production build and /flare prerender passed",
+    "rendered_qa": "desktop verified locally; mobile visual review pending after browser connection timeouts"
+  },
+  "blocking_items": [
+    "Deploy and verify the contracts on Coston2",
+    "Record a wallet-backed assessment and approval or rejection receipt",
+    "Publish the updated /flare route",
+    "Record and publish the Flare-specific demo video",
+    "Fill all null evidence fields and perform final judge rehearsal"
+  ],
+  "external_actions_authorized": false
+}

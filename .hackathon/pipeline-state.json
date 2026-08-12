@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "workspace_id": "d39a2c8f049f89aa",
+  "phase": "rules_locked",
+  "phase_index": 2,
+  "next_phase": "prior_seasons_researched",
+  "updated_at": "2026-08-12T00:00:00+07:00",
+  "blockers": [],
+  "transitions": [
+    {
+      "to_phase": "event_discovered",
+      "at": "2026-08-12T00:00:00+07:00",
+      "receipt": "Official Flare Summer Signal DoraHacks page inspected and selected for the existing SovereignMind workspace."
+    },
+    {
+      "to_phase": "rules_locked",
+      "at": "2026-08-12T00:00:00+07:00",
+      "receipt": "Deadline, Bounty 1, existing-project disclosure, required artifacts, and judging criteria recorded in competition-contract.json."
+    }
+  ],
+  "note": "The local product invariant and implementation are ahead of this formal evidence pipeline. The phase is intentionally not overstated because prior-season and problem-evidence artifacts have not been completed."
+}

@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "mode": "bounded_autonomous",
+  "origin_prompt": "oke lu atur sendiri lah",
+  "objective": "Turn the existing SovereignMind repository into one verified, judge-legible Flare Summer Signal candidate centered on an FXRP Treasury Guard; do not guarantee a win.",
+  "clarification_policy": {
+    "ask_only_when": "A missing answer materially changes eligibility, user authority, external side effects, paid spend, private data, or irreversible scope.",
+    "maximum_questions_per_checkpoint": 3,
+    "otherwise": "Make the narrowest reversible assumption, label it, continue, and schedule the fastest falsification test."
+  },
+  "authorized_without_new_approval": [
+    "read current official public event sources",
+    "read public Flare documentation and contracts",
+    "write and edit Flare-related files inside this workspace",
+    "run local builds, tests, live read-only Coston2 checks, and deterministic validators",
+    "prepare local demo and submission artifacts that are not sent externally",
+    "create a scoped local Git commit containing only Flare Summer Signal work"
+  ],
+  "requires_explicit_user_authorization": [
+    "register for an event or create an external account",
+    "purchase services, credits, domains, hardware, or paid assets",
+    "sign or broadcast a Coston2 deployment or other wallet transaction",
+    "deploy or publish the frontend",
+    "upload, message, or submit externally",
+    "use private data, credentials, or production systems",
+    "accept legal terms or represent the user to organizers"
+  ],
+  "defaults": {
+    "event": "Flare Summer Signal 2026",
+    "track": "Bounty 1 - Interoperable Asset Products",
+    "discovery_depth": "standard",
+    "candidate_count": "one existing project with one event-period Flare extension",
+    "product_scope": "one FXRP treasury operator, one exposure-policy decision, one human approval receipt",
+    "implementation_shape": "Coston2 contracts plus the existing Next.js web surface",
+    "evaluation": "official rubric with observed evidence and explicit proof limits",
+    "delivery_reserve": "protect 30 percent of verified capacity for integration, proof, demo, and submission",
+    "execution": "run only bounded local workplan commands and retain hashed receipts",
+    "progress_reporting": "phase, evidence gained, blocker, and next gate"
+  },
+  "evidence_loop": {
+    "maximum_cycles_before_replan": 6,
+    "maximum_consecutive_cycles_without_new_evidence": 1,
+    "cycle": [
+      "highest ranking-reversal risk",
+      "one hypothesis",
+      "smallest runnable or inspectable artifact",
+      "predeclared threshold",
+      "observed result and limitation",
+      "keep, cut, narrow, pivot, or stop decision"
+    ],
+    "stop_conditions": [
+      "material eligibility or rules blocker",
+      "unsafe or unauthorized authority boundary",
+      "critical mechanism fails its threshold twice",
+      "remaining work cannot fit the build and evidence window",
+      "candidate passes the applicable frozen submission gate",
+      "an external deployment or submission action is the only remaining gate"
+    ]
+  },
+  "visual_assets": {
+    "status": "defer_until_the_live_flare_loop_is_verified",
+    "admit_only_for": [
+      "real FXRP Treasury Guard screenshots",
+      "README architecture or workflow illustration",
+      "submission thumbnail required by the event"
+    ],
+    "prohibited": [
+      "fake product screenshot or nonexistent feature",
+      "undisclosed synthetic user, result, endorsement, or evidence",
+      "copied brand, winner trade dress, or unlicensed style imitation",
+      "asset work that delays the flagship loop or proof gate"
+    ],
+    "source_ledger": "submission/attribution.md"
+  }
+}

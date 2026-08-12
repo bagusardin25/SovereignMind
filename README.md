@@ -27,33 +27,44 @@
 
 ---
 
-## 🔥 Flare Coston2 Integration
+## 🔥 Flare Summer Signal: FXRP Treasury Guard
 
-SovereignMind now includes a focused Flare path for verifiable treasury signals:
+SovereignMind's Flare entry is a non-custodial policy guard for treasury operators
+who hold FXRP. One Coston2 transaction refreshes the official **FTSOv2** XRP/USD
+price, reads the caller's real FXRP balance, and records a pending `HOLD` or
+`REDUCE` assessment against an explicit USD limit. A separate wallet action must
+approve or reject that unchanged assessment; the guard can never transfer FXRP.
 
-- A live `/flare` dashboard reads the current XRP/USD feed from **FTSOv2**.
-- `AssetManagerFXRP` settings are resolved through the official Flare Contract Registry.
-- `FlareFtsoPriceAdapter` validates and normalizes XRP/USD into SovereignMind's
-  eight-decimal `PriceOracle` format.
-- Coston2 is configured in Hardhat and wagmi as chain ID `114`.
+The end-to-end Flare path is implemented locally:
 
-Run the live, read-only integration check from `frontend/`:
+- the Contract Registry resolves the current `FtsoV2` and `AssetManagerFXRP`;
+- `AssetManagerFXRP` supplies the canonical FXRP token address;
+- `FlareFtsoPriceAdapter` validates the paid FTSOv2 feed and writes USD e8 data;
+- `FXRPTreasuryGuard` combines that price with the caller's FXRP balance;
+- `/flare` exposes the policy, signal, state-change receipts, source contracts,
+  and deterministic failure rules.
 
-```bash
-npm run check:flare
-```
+Run the verification suite:
 
-Run the adapter and regression tests from `contracts/`:
-
-```bash
-npm test -- --grep FlareFtsoPriceAdapter
+```powershell
+cd contracts
+npm test -- --grep Flare
 npm test
+
+cd ../frontend
+npm run check:flare
+npm run lint
+npm run build
 ```
 
-The Flare contracts have been built and tested locally but are **not deployed**.
-The UI reports `Deployment pending` until a verified Coston2 adapter address is
-provided. See [FLARE_INTEGRATION.md](./FLARE_INTEGRATION.md) for the architecture,
-deployment steps, official references, and exact proof boundary.
+Status: the contracts, frontend flow, live read-only Coston2 check, production
+build, and local desktop QA are complete. Mobile visual QA, Coston2 deployment,
+public `/flare` publication, wallet-backed receipts, and the new competition
+video are intentionally still pending.
+
+See [FLARE_INTEGRATION.md](./FLARE_INTEGRATION.md) for the technical boundary and
+[FLARE_SUMMER_SIGNAL_SUBMISSION.md](./FLARE_SUMMER_SIGNAL_SUBMISSION.md) for the
+submission draft and prior-work disclosure.
 
 ---
 
@@ -567,13 +578,16 @@ SovereignMind/
 
 **Team SovereignMind**
 
-Originally developed for the Somnia Agentathon 2026; currently being evaluated for the Indonesia Web3 Hackathon 2026 under an unverified pre-existing-work policy.
+Originally developed for the Somnia Agentathon 2026. The Flare Summer Signal
+entry clearly separates that baseline from the event-period FXRP Treasury Guard,
+FTSOv2 integration, Coston2 deployment path, tests, UI, and submission evidence.
 
 ---
 
 ## 📄 License
 
-Licensed under the repository license. Competition eligibility and disclosure requirements must be confirmed before submission.
+Licensed under the repository license. Existing-project provenance and newly
+built Flare work are disclosed in the submission materials.
 
 ---
 

@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "candidate_id": "sovereignmind-fxrp-treasury-guard",
+  "plan_sha256": "1546491ddfb1982e68b3e882990cf65e4a66b015eb926a5ae86a209d5c8a69e2",
+  "started_at": "2026-08-12T15:42:36.281520Z",
+  "finished_at": "2026-08-12T15:43:27.083035Z",
+  "status": "passed",
+  "steps": [
+    {
+      "id": "contract-vertical-slice",
+      "task_id": "flare-guard-contract",
+      "stage": "implementation",
+      "status": "passed",
+      "exit_code": 0,
+      "timed_out": false,
+      "duration_seconds": 3.9351,
+      "log_ref": "evidence/execution/01-contract-vertical-slice.log",
+      "log_sha256": "924411f29a45dd90d3284bac163ca4b35c17bf371d64ac774c030f4406988af7",
+      "missing_expected_paths": []
+    },
+    {
+      "id": "frontend-release-build",
+      "task_id": "flare-guard-ui",
+      "stage": "build",
+      "status": "passed",
+      "exit_code": 0,
+      "timed_out": false,
+      "duration_seconds": 31.7982,
+      "log_ref": "evidence/execution/02-frontend-release-build.log",
+      "log_sha256": "9bbac2e66f6fbe773fbe0550de645719288c58389d791e4cf957cb08d73a039e",
+      "missing_expected_paths": []
+    },
+    {
+      "id": "frontend-lint",
+      "task_id": "flare-local-qa",
+      "stage": "test",
+      "status": "passed",
+      "exit_code": 0,
+      "timed_out": false,
+      "duration_seconds": 15.007,
+      "log_ref": "evidence/execution/03-frontend-lint.log",
+      "log_sha256": "9cdf3b976d8ee660d96b1ee7ace023994429429949e36ab486b21f07040b390c",
+      "missing_expected_paths": []
+    }
+  ],
+  "environment_policy": "allowlisted system variables; sensitive variables removed",
+  "external_effects": "none"
+}

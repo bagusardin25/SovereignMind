@@ -1,5 +1,5 @@
 import { coston2 } from '@flarenetwork/flare-wagmi-periphery-package';
-import { createPublicClient, http, zeroAddress } from 'viem';
+import { createPublicClient, erc20Abi, http, zeroAddress } from 'viem';
 import { flareTestnet } from 'viem/chains';
 import { FLARE_CONTRACT_REGISTRY, XRP_USD_FEED_ID } from './constants';
 
@@ -7,6 +7,8 @@ export interface FlareSnapshot {
   chainId: number;
   blockNumber: string;
   assetManagerAddress: `0x${string}`;
+  fxrpAddress: `0x${string}`;
+  fxrpDecimals: number;
   ftsoV2Address: `0x${string}`;
   xrpUsdPrice: number;
   feedDecimals: number;
@@ -62,6 +64,16 @@ export async function fetchFlareSnapshot(): Promise<FlareSnapshot> {
     }),
   ]);
 
+  if (settings.fAsset === zeroAddress) {
+    throw new Error('AssetManagerFXRP returned an unavailable FXRP token address.');
+  }
+
+  const fxrpDecimals = await flarePublicClient.readContract({
+    address: settings.fAsset,
+    abi: erc20Abi,
+    functionName: 'decimals',
+  });
+
   const [rawValue, rawDecimals, rawTimestamp] = feed.result;
   const feedDecimals = Number(rawDecimals);
   if (feedDecimals < 0 || feedDecimals > 18 || rawValue === BigInt(0)) {
@@ -78,6 +90,8 @@ export async function fetchFlareSnapshot(): Promise<FlareSnapshot> {
     chainId,
     blockNumber: blockNumber.toString(),
     assetManagerAddress,
+    fxrpAddress: settings.fAsset,
+    fxrpDecimals: Number(fxrpDecimals),
     ftsoV2Address,
     xrpUsdPrice,
     feedDecimals,
